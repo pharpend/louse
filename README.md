@@ -1,8 +1,8 @@
-# decamp-bugtracker
+# decamp
 
-decamp-bugtracker is a distributed bug-tracking system. It literally stores bugs
-in a YAML file and then version-controls the file with git. The idea is pretty
-portable, although this implementation is written in Haskell.
+decamp is a distributed bug-tracking system. It literally stores bugs in a YAML
+file and then version-controls the file with git. The idea is pretty portable,
+although this implementation is written in Haskell.
 
 The schema for the YAML file is stored in the `res/schemata/project.yml`. The
 other schemata (for people, comments, individual bugs, etc) are stored in the
@@ -60,5 +60,3 @@ The SFC has a trademark on the term "Git", so I can't use it in the name of my
 program without their permission. I looked in the thesaurus for synonyms to
 "git", and "decamp" came up. It seems appropriate, because camping is vaguely
 reminiscent of free/open-source developers collaborating.
-
-Hopefully the "bugtracker" portion of the name is obvious.
