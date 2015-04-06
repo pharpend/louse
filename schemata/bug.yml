@@ -1,0 +1,37 @@
+name: bug
+type: object
+properties:
+  bug-id:
+    type: string
+    description: >-
+      Unique identifier for this bug. Should be a whirlpool hash of the title concat
+      the time at which it was created.
+    required: true
+  bug-reporter:
+    type: object
+    description: >-
+      The person who reported the bug. Object should fit the person schema.
+    required: true
+  bug-creation-date:
+    type: string
+    description: The ISO 8601 date at which the bug was created.
+    required: true
+  bug-title:
+    type: string
+    description: The title of the bug.
+    required: true
+  bug-description:
+    type: string
+    description: >-
+      An optional description of the bug.
+    required: false
+  bug-open:
+    type: boolean
+    description: >-
+      Whether or not the bug is open
+    required: true
+  bug-comments:
+    type: array
+    description: Comments on the bug. Each item should fit the comment schema.
+    items:
+      type: object
