@@ -13,6 +13,26 @@ Copyright (C) 2015 Peter Harpending, and licensed under the
 [GNU General Public License, version >=3](https://gnu.org/licenses/gpl). A copy
 of the license can be found in the LICENSE file.
 
+## Installation
+
+You need to install the Haskell platform before installing decamp. Chris Allen
+maintains an
+[exhaustive guide](https://github.com/bitemyapp/learnhaskell#getting-set-up) on
+installing the Haskell platform.
+
+I haven't published a version on Hackage (the Haskell package repository) yet,
+so you'll have to use the git version. To download and compile decamp, run:
+
+```
+git clone ssh://git@github.com/pharpend/decamp.git
+cd decamp
+cabal update
+cabal install
+```
+
+For detailed usage instructions, see the [USAGE.md file](USAGE.md). For less
+detailed instructions, run `decamp --help`.
+
 ## Inspiration
 
 If you're developing software with Git, there are, in broad terms, 4 components:
