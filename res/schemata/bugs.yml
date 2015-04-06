@@ -1,8 +1,0 @@
-name: bugs
-description: >-
-  Entirety of bug tracker
-type: array
-items:
-  type: object
-  description: >
-    List of bugs, not in any particular order. Should fit the bug schema.
