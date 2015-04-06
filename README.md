@@ -4,9 +4,9 @@ decamp-bugtrack is a distributed bug-tracking system. It literally stores bugs
 in a YAML file and then version-controls the file with git. The idea is pretty
 portable, although this implementation is written in Haskell.
 
-The schema for the YAML file is stored in the `schemata/bugs.yml`. The other
+The schema for the YAML file is stored in the `res/schemata/bugs.yml`. The other
 schemata (for people, comments, individual bugs, etc) are stored in the
-`schemata/` directory.
+`res/schemata/` directory.
 
 I can't really copyright an idea, but this particular implementation of it is
 Copyright (C) 2015 Peter Harpending, and licensed under the

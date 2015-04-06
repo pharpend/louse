@@ -11,7 +11,7 @@ properties:
     type: object
     description: >-
       The person who reported the bug. Object should fit the person schema.
-    required: true
+    required: false
   bug-creation-date:
     type: string
     description: The ISO 8601 date at which the bug was created.
