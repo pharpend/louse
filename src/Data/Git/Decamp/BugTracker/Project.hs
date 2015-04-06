@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Git.Decamp.Bugs
+-- Module      : Data.Git.Decamp.BugTracker.Projectn
 -- Description : Decamp's bug tracker
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -24,15 +24,14 @@
 -- Portability : Linux/GHC
 -- 
 
-module Git.Decamp.Bugs where
+module Data.Git.Decamp.BugTracker.Project where
 
 import           Control.Applicative
 import           Control.Monad
-import           Data.Aeson
-import           Data.Aeson.Encode.Pretty
 import           Data.ByteString (ByteString)
 import           Data.Text (Text)
 import           Data.Time
+import           Data.Yaml
 
 data Person = Person { personName :: Text
                      , personEmail :: Text
@@ -54,11 +53,50 @@ data Bug = Bug { bugId :: Text
                }
   deriving Show
 
-
 -- |Synonym for @bugReporter@
 bugPerson :: Bug -> Maybe Person
 bugPerson = bugReporter
 
+data Project =
+  Project {projectName :: Text
+          ,projectAuthor :: Maybe Person
+          ,projectHomepage :: Maybe Text
+          ,projectDescription :: Maybe Text
+          ,projectBugs :: [Bug]}
+
+encodeProject :: Project -> ByteString
+encodeProject = encode
+
+encodeProjectFile :: FilePath -> Project -> IO ()
+encodeProjectFile = encodeFile
+
+decodeProject :: ByteString -> Maybe Project
+decodeProject = decode
+
+decodeProjectFile :: FilePath -> IO (Maybe Project)
+decodeProjectFile = decodeFile
+
+decodeProjectEither :: ByteString -> Either String Project
+decodeProjectEither = decodeEither
+
+decodeProjectFileEither :: FilePath -> IO (Either String Project)
+decodeProjectFileEither = decodeFile
+
+instance FromJSON Project where
+  parseJSON (Object v) = Project <$> v .: "project-name"
+                                 <*> v .:? "project-author"
+                                 <*> v .:? "project-homepage"
+                                 <*> v .:? "project-description"
+                                 <*> v .: "project-bugs"
+  parseJSON _ = mzero
+
+instance ToJSON Project where
+  toJSON p = [ "project-name" .= projectName p
+             , "project-author" .= projectAuthor p
+             , "project-homepage" .= projectHomepage p
+             , "project-description" .= projectDescription p
+             , "project-bugs" .= projectBugs p
+             ]
 
 instance FromJSON Person where
   parseJSON (Object v) = Person <$> v .: "person-name" <*> v .: "person-email"
