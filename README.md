@@ -30,8 +30,9 @@ cabal update
 cabal install
 ```
 
-For tutorial, see the [TUTORIAL.md file](TUTORIAL.md). If you don't want to read
-that, you can run `decamp --help`.
+For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run `decamp
+tutorial`. For a brief listing of the available commands, you can run `decamp
+--help`.
 
 ## Inspiration
 
