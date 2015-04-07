@@ -30,8 +30,8 @@ cabal update
 cabal install
 ```
 
-For detailed usage instructions, see the [USAGE.md file](USAGE.md). For less
-detailed instructions, run `decamp --help`.
+For tutorial, see the [TUTORIAL.md file](TUTORIAL.md). If you don't want to read
+that, you can run `decamp --help`.
 
 ## Inspiration
 
