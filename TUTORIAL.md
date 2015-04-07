@@ -7,28 +7,23 @@ First of all, if you haven't already,
 
 Let's make a new git repo
 
-```
-~ $ mkdir my_project
-~ $ cd my_project
-~/my_project $ git init
-~/my_project $
-```
+    ~ $ mkdir my_project
+    ~ $ cd my_project
+    ~/my_project $ git init
+    ~/my_project $
 
-We're going to write "Hello, world in Haskell"
+We're going to write "Hello, world in Haskell". 
 
-```haskell
--- file: ~/my_project/hello.hs
-main = print "hello, world"
-```
+    ~/my_project $ cat > hello.hs
+    main = print "hello, world"
+    ~/my_project $
 
+(Hit `C-d` to get out of `cat`)
 Now, let's compile and run it:
 
-```
-~/my_project $ ghc hello.hs
-~/my_project $ ./hello
-"hello, world"
-~/my_project $
-```
+    ~/my_project $ ghc hello.hs
+    ~/my_project $ ./hello
+    "hello, world"
 
 Okay, cool. It works! Sort of. It prints out `"hello, world"`. Ideally, we would
 want it to print out `hello, world`, without the quotes. The fix for this is
