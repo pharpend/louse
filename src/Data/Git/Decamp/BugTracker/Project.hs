@@ -76,11 +76,11 @@ decodeProject = decode
 decodeProjectFile :: FilePath -> IO (Maybe Project)
 decodeProjectFile = decodeFile
 
-decodeProjectEither :: ByteString -> Either String Project
-decodeProjectEither = decodeEither
+decodeProjectEither :: ByteString -> Either ParseException Project
+decodeProjectEither = decodeEither'
 
-decodeProjectFileEither :: FilePath -> IO (Either String Project)
-decodeProjectFileEither = decodeFile
+decodeProjectFileEither :: FilePath -> IO (Either ParseException Project)
+decodeProjectFileEither = decodeFileEither
 
 instance FromJSON Project where
   parseJSON (Object v) = Project <$> v .: "project-name"
@@ -91,12 +91,13 @@ instance FromJSON Project where
   parseJSON _ = mzero
 
 instance ToJSON Project where
-  toJSON p = [ "project-name" .= projectName p
-             , "project-author" .= projectAuthor p
-             , "project-homepage" .= projectHomepage p
-             , "project-description" .= projectDescription p
-             , "project-bugs" .= projectBugs p
-             ]
+  toJSON p = object
+               [ "project-name" .= projectName p
+               , "project-author" .= projectAuthor p
+               , "project-homepage" .= projectHomepage p
+               , "project-description" .= projectDescription p
+               , "project-bugs" .= projectBugs p
+               ]
 
 instance FromJSON Person where
   parseJSON (Object v) = Person <$> v .: "person-name" <*> v .: "person-email"
