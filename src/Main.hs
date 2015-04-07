@@ -26,41 +26,80 @@
 
 module Main where
 
-import Control.Applicative
-import Data.Monoid
-import Options.Applicative
-import Options.Applicative.Arrows
+import           Control.Applicative
+import qualified Data.ByteString as Bs
+import           Data.Monoid
+import           Data.Version hiding (Version)
+import           Options.Applicative
+import           Options.Applicative.Arrows
+import           Paths_decamp
+import           System.IO
 
-data Args =
-  Init {bare :: Bool
-       ,interactive :: Bool}
-  deriving (Show)
+main :: IO ()
+main = execParser argsParserInfo >>= runArgs
 
-greet :: Args -> IO ()
-greet = print
+runArgs :: Args -> IO ()
+runArgs Tutorial = do
+  fnom <- getDataFileName "TUTORIAL.md"
+  hSetBinaryMode stdout False
+  hSetBuffering stdout NoBuffering
+  Bs.readFile fnom >>= Bs.hPut stdout
 
-infoHelp :: Parser a -> InfoMod a -> ParserInfo a
-infoHelp a = info (helper <*> a)
+runArgs License = do
+  fnom <- getDataFileName "LICENSE"
+  hSetBinaryMode stdout False
+  hSetBuffering stdout NoBuffering
+  Bs.readFile fnom >>= Bs.hPut stdout
 
-initCommand :: ParserInfo Args
-initCommand = infoHelp initParser fullDesc
+runArgs Version = putStrLn $ showVersion version
 
-initParser :: Parser Args
-initParser =
-  hsubparser $
-  command "init" initOptionsInfo
+runArgs x = print x
+
+
+argsParserInfo :: ParserInfo Args
+argsParserInfo = infoHelp argsParser argsHelp
+  where
+    argsHelp :: InfoMod Args
+    argsHelp = fullDesc <> header ("decamp v." <> showVersion version) <> progDesc
+                                                                            "A distributed bug tracker."
+
+    argsParser :: Parser Args
+    argsParser =
+      versionParser
+      <|> licenseParser
+      <|> hsubparser (command "init" initOptionsInfo)
+      <|> hsubparser (command "tutorial" tutorialOptionsInfo)
+
+    versionParser :: Parser Args
+    versionParser = flag' Tutorial
+                      (help ("Print the version (" <> showVersion version <> ")") <> long "version")
+
+    licenseParser :: Parser Args
+    licenseParser = flag' License (help "Print the license (GPL version 3)." <> long "license")
+
 
 initOptionsInfo :: ParserInfo Args
 initOptionsInfo = infoHelp initOptions fullDesc
+  where
+    initOptions :: Parser Args
+    initOptions =
+      Init <$> switch (long "bare" <>
+                       help "bare") <*> switch (short 'i' <>
+                                                help "interactive")
 
-initOptions :: Parser Args
-initOptions =
-  Init <$>
-  switch (long "bare" <>
-          help "bare") <*>
-  switch (short 'i' <>
-          help "interactive")
+tutorialOptionsInfo :: ParserInfo Args
+tutorialOptionsInfo = infoHelp tutorialOptions tutorialHelp
+  where
+    tutorialHelp = fullDesc <> progDesc "Print the tutorial."
+    tutorialOptions :: Parser Args
+    tutorialOptions = pure Tutorial
 
 
-main :: IO ()
-main = execParser initCommand >>= greet
+data Args = Init { bare :: Bool, interactive :: Bool }
+          | License
+          | Tutorial 
+          | Version
+  deriving Show
+
+infoHelp :: Parser a -> InfoMod a -> ParserInfo a
+infoHelp a = info (helper <*> a)
