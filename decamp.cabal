@@ -45,11 +45,13 @@ library
   -- other-extensions:    
 
 executable decamp
+  other-modules:
+    Paths_decamp
   build-depends:
       base                  ==4.7.*
+    , bytestring
     , decamp
     , optparse-applicative  ==0.11.*
-    , bytestring
   default-extensions:
     Arrows
     OverloadedStrings
