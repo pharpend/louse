@@ -31,8 +31,6 @@ library
     LambdaCase
   exposed-modules:     
     Data.Git.Decamp.BugTracker.Project
-  -- other-modules:       
-  -- other-extensions:    
   build-depends:
       base              ==4.7.*
     , base16-bytestring ==0.1.*
@@ -43,6 +41,8 @@ library
     , yaml              ==0.8.*
   hs-source-dirs:      src
   default-language:    Haskell2010
+  -- other-modules:       
+  -- other-extensions:    
 
 executable decamp
   build-depends:
