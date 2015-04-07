@@ -16,9 +16,13 @@ copyright:           Copyright (C) 2015 Peter Harpending
 category:            Data, Development, Git
 build-type:          Simple
 cabal-version:       >=1.10
+data-files:
+  LICENSE
+  TUTORIAL.md
 extra-source-files:
   README.md
-data-files:
+  LICENSE
+  TUTORIAL.md
   res/schemata/*.yml
 
 library
