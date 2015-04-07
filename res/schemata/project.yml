@@ -7,9 +7,9 @@ items:
     type: string
     description: The name of the project.
     required: true
-  project-author:
+  project-maintainer:
     type: object
-    description: The author. Should match the person schema.
+    description: The maintainer. Should match the person schema.
     required: false
   project-homepage:
     type: string
