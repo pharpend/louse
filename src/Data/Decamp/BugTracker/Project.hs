@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Git.Decamp.BugTracker.Projectn
+-- Module      : Data.Decamp.BugTracker.Projectn
 -- Description : Decamp's bug tracker
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -24,12 +24,12 @@
 -- Portability : Linux/GHC
 -- 
 
-module Data.Git.Decamp.BugTracker.Project where
+module Data.Decamp.BugTracker.Project where
 
 import           Control.Applicative
 import           Control.Monad
 import           Data.ByteString (ByteString)
-import           Data.Text (Text)
+import           Data.Text (Text, pack)
 import           Data.Time
 import           Data.Yaml
 
@@ -59,10 +59,40 @@ bugPerson = bugReporter
 
 data Project =
   Project {projectName :: Text
-          ,projectAuthor :: Maybe Person
+          ,projectMaintainer :: Maybe Person
           ,projectHomepage :: Maybe Text
           ,projectDescription :: Maybe Text
           ,projectBugs :: [Bug]}
+
+
+mkProject :: String -- ^Project Name
+          -> Maybe String -- ^Maintainer name
+          -> Maybe String -- ^Maintainer email
+          -> Maybe String -- ^Project home page
+          -> Maybe String -- ^Description
+          -> Project -- ^ Resulting @Project@
+mkProject nom mtrn mtre hp descr =
+  Project (pack nom)
+          mtr
+          (packmaybe hp)
+          (packmaybe descr)
+          []
+  where mtr =
+          case (mtrn,mtre) of
+            (Nothing,Just e) ->
+              Just .
+              Person "Anonymous" $
+              pack e
+            (Just n,Just e) ->
+              Just $
+              Person (pack n)
+                     (pack e)
+            (Just n,Nothing) -> Nothing
+            (Nothing,Nothing) -> Nothing
+        packmaybe x =
+          case x of
+            Nothing -> Nothing
+            Just d -> Just $ pack d
 
 encodeProject :: Project -> ByteString
 encodeProject = encode
@@ -83,21 +113,18 @@ decodeProjectFileEither :: FilePath -> IO (Either ParseException Project)
 decodeProjectFileEither = decodeFileEither
 
 instance FromJSON Project where
-  parseJSON (Object v) = Project <$> v .: "project-name"
-                                 <*> v .:? "project-author"
-                                 <*> v .:? "project-homepage"
-                                 <*> v .:? "project-description"
-                                 <*> v .: "project-bugs"
+  parseJSON (Object v) = Project <$> v .: "project-name" <*>
+                         v .:? "project-maintainer" <*> v .:? "project-homepage" <*>
+                         v .:? "project-description" <*> v .: "project-bugs"
   parseJSON _ = mzero
 
 instance ToJSON Project where
-  toJSON p = object
-               [ "project-name" .= projectName p
-               , "project-author" .= projectAuthor p
-               , "project-homepage" .= projectHomepage p
-               , "project-description" .= projectDescription p
-               , "project-bugs" .= projectBugs p
-               ]
+  toJSON p =
+    object ["project-name" .= projectName p
+           ,"project-maintainer" .= projectMaintainer p
+           ,"project-homepage" .= projectHomepage p
+           ,"project-description" .= projectDescription p
+           ,"project-bugs" .= projectBugs p]
 
 instance FromJSON Person where
   parseJSON (Object v) = Person <$> v .: "person-name" <*> v .: "person-email"
