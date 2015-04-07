@@ -49,6 +49,7 @@ executable decamp
       base                  ==4.7.*
     , decamp
     , optparse-applicative  ==0.11.*
+    , bytestring
   default-extensions:
     Arrows
     OverloadedStrings
