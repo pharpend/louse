@@ -26,7 +26,6 @@
 
 module Data.Decamp.Initialize where
 
-import qualified Data.ByteString as Bs
 import           Data.Decamp.Aeson
 import           Data.Decamp.Types
 import           Data.List.Utils
@@ -34,7 +33,6 @@ import           Data.Monoid
 import           Data.Text (pack)
 import           System.Console.Readline
 import           System.Directory
-import           System.Exit
 import           System.IO
 
 -- |This constructs a 'Project' value out of various values.
@@ -131,13 +129,11 @@ interactiveInit bar = do
 writeProject :: Bool -> Project -> IO ()
 writeProject bar p = do
   hSetBinaryMode stdout True
-  let projectStr = encodeProject p
   cwd <- getCurrentDirectory
   let decampDir = cwd <> "/.decamp"
   let populate dir = do
         let prjpth = dir <> "/project.json"
         encodeProjectFile prjpth p
-        -- Bs.hPut stdout $ encodeProject p
   if | bar -> populate cwd
      | otherwise -> do
         createDirectory decampDir

@@ -32,14 +32,13 @@ module Data.Decamp.Aeson where
 import           Control.Monad (mzero)
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
-import           Data.Aeson.Types (Pair, Value)
+import           Data.Aeson.Types (Pair)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import           Data.ByteString.Lazy (toStrict)
 import           Data.Decamp.Types
 import           Data.Maybe
-import           Data.Text (Text, pack)
-import           Data.Time
+import           Data.Text (Text)
 
 prettyEncode :: ToJSON a => a -> ByteString
 prettyEncode = toStrict . encodePretty' defConfig { confIndent = 2 }
