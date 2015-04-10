@@ -5,7 +5,7 @@
     "comment-person": {
       "required": false,
       "type": "object",
-      "description": "The person associated with this comment. Should fit the comment schema."
+      "description": "The person associated with this comment. Should fit the person schema."
     },
     "comment-text": {
       "required": true,
