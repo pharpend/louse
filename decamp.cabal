@@ -32,6 +32,7 @@ library
     MultiWayIf
     LambdaCase
   exposed-modules:     
+    Data.Decamp
     Data.Decamp.Initialize
     Data.Decamp.Project
   build-depends:
