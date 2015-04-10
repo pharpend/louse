@@ -1,8 +1,8 @@
 # decamp
 
 decamp is a distributed bug-tracking system. It literally stores bugs in a YAML
-file and then version-controls the file with git. The idea is pretty portable,
-although this implementation is written in Haskell.
+file and then (optionally) version-controls the file with git. The idea is
+pretty portable, although this implementation is written in Haskell.
 
 The schema for the YAML file is stored in the `res/schemata/project.yml`. The
 other schemata (for people, comments, individual bugs, etc) are stored in the
