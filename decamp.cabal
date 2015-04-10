@@ -1,10 +1,8 @@
--- -*- mode: fundamental -*-
-
 name:                decamp
 version:             0.0.0
 synopsis:            Distributed bug tracker
 description:         
-  decamp-bugtracker is a very simple distributed bug-tracking
+  decamp is a very simple distributed bug-tracking
   system. It literally stores bugs in a YAML file, and then
   (optionally) version-controls the file with git. The idea is pretty
   portable, although this implementation is written in Haskell.
@@ -68,4 +66,4 @@ executable decamp
 
 source-repository head
   type: git
-  location: https://github.com/pharpend/decamp-bugtracker.git
+  location: https://github.com/pharpend/decamp.git
