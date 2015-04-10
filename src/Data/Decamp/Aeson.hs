@@ -38,8 +38,18 @@ import           Data.Maybe
 import           Data.Text (Text, pack)
 import           Data.Time
 
+prettyEncode :: ToJSON a => a -> ByteString
+prettyEncode = toStrict . encodePretty' defConfig { confIndent = 2 }
+
+(.=?) :: ToJSON x => Text -> Maybe x -> Maybe Pair
+_ .=? Nothing = Nothing
+t .=? (Just x) = Just $ t .= x
+
+objectMaybe :: [Maybe Pair] -> Value
+objectMaybe = object . catMaybes
+
 encodeProject :: Project -> ByteString
-encodeProject = toStrict . encode
+encodeProject = prettyEncode
 
 encodeProjectFile :: FilePath -> Project -> IO ()
 encodeProjectFile fp = B.writeFile fp . encodeProject
@@ -63,13 +73,6 @@ instance FromJSON Project where
                                  <*> v .:? "project-description"
                                  <*> v .: "project-bugs"
   parseJSON _ = mzero
-
-(.=?) :: ToJSON x => Text -> Maybe x -> Maybe Pair
-_ .=? Nothing = Nothing
-t .=? (Just x) = Just $ t .= x
-
-objectMaybe :: [Maybe Pair] -> Value
-objectMaybe = object . catMaybes
 
 instance ToJSON Project where
   toJSON p = objectMaybe
