@@ -37,8 +37,13 @@ import           System.IO
 
 data Args = InitInteractive { bare :: Bool }
           | License
+          | Schema SchemaAction
           | Tutorial
           | Version
+  deriving Show
+
+data SchemaAction = ListSchemata
+                  | ShowSchema String
   deriving Show
 
 runArgs :: Args -> IO ()
@@ -56,31 +61,33 @@ runArgs License = do
 
 runArgs Version = putStrLn $ showVersion version
 runArgs (InitInteractive b) = interactiveInit b 
+runArgs (Schema ListSchemata) = listSchemata
+runArgs (Schema (ShowSchema s)) = showSchema s
 runArgs x = print x
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp
-  where argsHelp :: InfoMod Args
-        argsHelp =
-          fullDesc <>
-          header ("decamp v." <> showVersion version) <>
-          progDesc "A distributed bug tracker."
-        argsParser :: Parser Args
-        argsParser =
-          empty <|> licenseParser <|> versionParser <|>
-          hsubparser (command "init" initOptionsInfo) <|>
-          -- hsubparser (command "noninit" noninitOptionsInfo) <|>
-          hsubparser (command "tutorial" tutorialOptionsInfo)
-        versionParser :: Parser Args
-        versionParser =
-          flag' Version
-                (help ("Print the version (" <> showVersion version <> ")") <>
-                 long "version")
-        licenseParser :: Parser Args
-        licenseParser =
-          flag' License
-                (help "Print the license (GPL version 3)." <>
-                 long "license")
+  where
+    argsHelp :: InfoMod Args
+    argsHelp =
+      fullDesc <>
+      header ("decamp v." <> showVersion version) <>
+      progDesc "A distributed bug tracker."
+    argsParser :: Parser Args
+    argsParser =
+      empty <|> licenseParser <|> versionParser <|>
+      hsubparser (command "init" initOptionsInfo) <|>
+      -- hsubparser (command "noninit" noninitOptionsInfo) <|>
+      hsubparser (command "schemata" schemataInfo) <|>
+      hsubparser (command "tutorial" tutorialOptionsInfo)
+    versionParser :: Parser Args
+    versionParser =
+      flag' Version (help ("Print the version (" <> showVersion version <> ")") <>
+                     long "version")
+    licenseParser :: Parser Args
+    licenseParser =
+      flag' License (help "Print the license (GPL version 3)." <>
+                     long "license")
 
 
 -- noninitOptionsInfo :: ParserInfo Args
@@ -145,6 +152,25 @@ tutorialOptionsInfo =
 
 infoHelp :: Parser a -> InfoMod a -> ParserInfo a
 infoHelp a = info (helper <*> a)
+
+schemataInfo :: ParserInfo Args
+schemataInfo = infoHelp schemataOptions schemataHelp
+  where
+    schemataHelp = fullDesc <> progDesc "Do stuff with schemata."
+    schemataOptions :: Parser Args
+    schemataOptions = subparser (command "list" listSchemataInfo) <|> subparser (command "show" showSchemaInfo)
+
+showSchemaInfo :: ParserInfo Args
+showSchemaInfo = infoHelp theOptions theHelp
+  where
+    theHelp = fullDesc <> progDesc "Show a specific schema."
+    theOptions = fmap Schema $ ShowSchema <$> strArgument (help "The schema to show")
+
+listSchemataInfo :: ParserInfo Args
+listSchemataInfo = infoHelp theOptions theHelp
+  where
+    theHelp = fullDesc <> progDesc "List the available schemata"
+    theOptions = pure $ Schema ListSchemata
 
 main :: IO ()
 main = execParser argsParserInfo >>= runArgs
