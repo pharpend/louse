@@ -28,6 +28,8 @@ library
     OverloadedStrings
     MultiWayIf
     LambdaCase
+  other-modules:
+    Paths_decamp
   exposed-modules:     
     Data.Decamp
     Data.Decamp.Aeson
