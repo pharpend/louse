@@ -18,6 +18,7 @@ data-files:
   TUTORIAL.md
   res/copyright.txt
   res/schemata/*.json
+
 extra-source-files:
   README.md
   LICENSE
@@ -36,6 +37,7 @@ library
     Data.Decamp.Aeson
     Data.Decamp.Initialize
     Data.Decamp.Schemata
+    Data.Decamp.Trivia
     Data.Decamp.Types
   build-depends:
       aeson             >=0.7

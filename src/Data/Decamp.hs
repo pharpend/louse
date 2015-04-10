@@ -30,5 +30,6 @@ module Data.Decamp (module Data.Decamp) where
 import Data.Decamp.Aeson as Data.Decamp
 import Data.Decamp.Initialize as Data.Decamp
 import Data.Decamp.Schemata as Data.Decamp
+import Data.Decamp.Trivia as Data.Decamp
 import Data.Decamp.Types as Data.Decamp
 

@@ -36,6 +36,7 @@ import           Paths_decamp
 import           System.IO
 
 data Args = InitInteractive { bare :: Bool }
+          | Copyright
           | License
           | Schema SchemaAction
           | Tutorial
@@ -47,22 +48,13 @@ data SchemaAction = ListSchemata
   deriving Show
 
 runArgs :: Args -> IO ()
-runArgs Tutorial = do
-  fnom <- getDataFileName "TUTORIAL.md"
-  hSetBinaryMode stdout False
-  hSetBuffering stdout NoBuffering
-  Bs.readFile fnom >>= Bs.hPut stdout
-
-runArgs License = do
-  fnom <- getDataFileName "LICENSE"
-  hSetBinaryMode stdout False
-  hSetBuffering stdout NoBuffering
-  Bs.readFile fnom >>= Bs.hPut stdout
-
-runArgs Version = putStrLn $ showVersion version
+runArgs Tutorial = printOut tutorial
+runArgs License = printOut license
+runArgs Version = printVersion
 runArgs (InitInteractive b) = interactiveInit b 
 runArgs (Schema ListSchemata) = listSchemata
 runArgs (Schema (ShowSchema s)) = showSchema s
+runArgs Copyright = printOut copyright
 runArgs x = print x
 
 argsParserInfo :: ParserInfo Args
@@ -75,19 +67,21 @@ argsParserInfo = infoHelp argsParser argsHelp
       progDesc "A distributed bug tracker."
     argsParser :: Parser Args
     argsParser =
-      empty <|> licenseParser <|> versionParser <|>
+      empty <|> copyrightParser <|> licenseParser <|> versionParser <|>
       hsubparser (command "init" initOptionsInfo) <|>
       -- hsubparser (command "noninit" noninitOptionsInfo) <|>
+      hsubparser (command "schema" schemataInfo) <|>
       hsubparser (command "schemata" schemataInfo) <|>
       hsubparser (command "tutorial" tutorialOptionsInfo)
+    copyrightParser :: Parser Args
+    copyrightParser = flag' Copyright (help ("Print the copyright.") <>
+                                       long "copyright")
     versionParser :: Parser Args
-    versionParser =
-      flag' Version (help ("Print the version (" <> showVersion version <> ")") <>
-                     long "version")
+    versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ")") <>
+                                   long "version")
     licenseParser :: Parser Args
-    licenseParser =
-      flag' License (help "Print the license (GPL version 3)." <>
-                     long "license")
+    licenseParser = flag' License (help "Print the license (GPL version 3)." <>
+                                   long "license")
 
 
 -- noninitOptionsInfo :: ParserInfo Args
