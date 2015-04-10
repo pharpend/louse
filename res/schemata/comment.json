@@ -1,0 +1,16 @@
+{
+  "name": "comment",
+  "type": "object",
+  "properties": {
+    "comment-person": {
+      "required": false,
+      "type": "object",
+      "description": "The person associated with this comment. Should fit the comment schema."
+    },
+    "comment-text": {
+      "required": true,
+      "type": "string",
+      "description": "The comment itself"
+    }
+  }
+}

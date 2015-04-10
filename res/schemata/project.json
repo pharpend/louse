@@ -1,0 +1,35 @@
+{
+  "items": {
+    "project-name": {
+      "required": true,
+      "type": "string",
+      "description": "The name of the project."
+    },
+    "project-description": {
+      "required": false,
+      "type": "string",
+      "description": "A description of the project"
+    },
+    "project-homepage": {
+      "required": false,
+      "type": "string",
+      "description": "A URL for the home page of the project"
+    },
+    "project-bugs": {
+      "items": {
+        "type": "object"
+      },
+      "required": true,
+      "type": "array",
+      "description": "List of bugs, not in any particular order. Should fit the bug schema."
+    },
+    "project-maintainer": {
+      "required": false,
+      "type": "object",
+      "description": "The maintainer. Should match the person schema."
+    }
+  },
+  "name": "project",
+  "type": "object",
+  "description": "Entirety of bug tracker"
+}

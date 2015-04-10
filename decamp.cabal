@@ -16,12 +16,12 @@ cabal-version:       >=1.10
 data-files:
   LICENSE
   TUTORIAL.md
-  res/schemata/*.yml
+  res/schemata/*.json
 extra-source-files:
   README.md
   LICENSE
   TUTORIAL.md
-  res/schemata/*.yml
+  res/schemata/*.json
 
 library
   default-extensions:
