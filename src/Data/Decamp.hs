@@ -25,8 +25,9 @@
 -- 
 -- This is an umbrella module for the decamp library
 
-module Data.Decamp (module Data.Decamp, module Data.Decamp.Initialize, module Data.Decamp.Project) where
+module Data.Decamp (module Data.Decamp) where
 
-import Data.Decamp.Initialize
-import Data.Decamp.Project
+import Data.Decamp.Aeson as Data.Decamp
+import Data.Decamp.Initialize as Data.Decamp
+import Data.Decamp.Types as Data.Decamp
 

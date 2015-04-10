@@ -27,13 +27,40 @@
 module Data.Decamp.Initialize where
 
 import           Control.Applicative
-import           Data.Decamp.Project
+import           Data.Decamp.Aeson
+import           Data.Decamp.Types
 import           Data.List.Utils
 import           Data.Monoid
+import           Data.Text (pack)
 import           System.Console.Readline
 import           System.Directory
 import           System.Exit
 import           System.IO
+
+mkProject :: String -- ^Project Name
+          -> Maybe String -- ^Maintainer name
+          -> Maybe String -- ^Maintainer email
+          -> Maybe String -- ^Project home page
+          -> Maybe String -- ^Description
+          -> Project -- ^ Resulting @Project@
+mkProject nom mtrn mtre hp descr =
+  Project (pack nom) mtr (packmaybe hp) (packmaybe descr) []
+  where
+    mtr =
+      case (mtrn, mtre) of
+        (Nothing, Just e) ->
+          Just .
+          Person "Anonymous" $
+            pack e
+        (Just n, Just e) ->
+          Just $
+            Person (pack n) (pack e)
+        (Just n, Nothing) -> Nothing
+        (Nothing, Nothing) -> Nothing
+    packmaybe x =
+      case x of
+        Nothing -> Nothing
+        Just d  -> Just $ pack d
 
 interactiveInit :: Bool -> IO ()
 interactiveInit bar = do

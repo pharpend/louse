@@ -28,7 +28,7 @@ module Main where
 
 import           Control.Applicative
 import qualified Data.ByteString as Bs
-import           Data.Decamp.Initialize
+import           Data.Decamp
 import           Data.Monoid
 import           Data.Version hiding (Version)
 import           Options.Applicative
