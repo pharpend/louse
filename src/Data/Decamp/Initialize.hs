@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- decamp-bugtrack - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,16 +15,16 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Decamp.Run
--- Description : Nontrivial parts of the decamp binary
+-- Module      : Data.Decamp.Initialize
+-- Description : Module to initialize Decamp in directory.
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
--- Portability : Linux/GHC
+-- Portability : UNIX/GHC
 -- 
 
-module Decamp.Run where
+module Data.Decamp.Initialize where
 
 import           Control.Applicative
 import           Data.Decamp.Project
@@ -34,13 +34,6 @@ import           System.Console.Readline
 import           System.Directory
 import           System.Exit
 import           System.IO
-
-data Args = InitInteractive { bare :: Bool }
-          | License
-          | Tutorial
-          | Version
-  deriving Show
-
 
 interactiveInit :: Bool -> IO ()
 interactiveInit bar = do
