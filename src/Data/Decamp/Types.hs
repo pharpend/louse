@@ -26,46 +26,64 @@
 
 module Data.Decamp.Types where
 
-import           Data.Aeson
-import           Data.Aeson.Encode.Pretty
-import           Data.Maybe
-import           Control.Applicative
-import           Control.Monad
-import           Data.ByteString (ByteString)
-import qualified Data.ByteString as B
-import           Data.ByteString.Lazy (toStrict)
-import           Data.Text (Text, pack)
+import           Data.Text (Text)
 import           Data.Time
 
-data Person = Person { personName :: Text
-                     , personEmail :: Text
+-- |The most important data type: the data type for projects.
+data Project =
+       Project
+         {
+         -- |The project's name
+         projectName :: Text
+         -- |The 'Person' who maintains the project. (Can be anonymous).
+         , projectMaintainer :: Maybe Person
+         -- |Optional project home page
+         , projectHomepage :: Maybe Text
+         -- |Optional project description
+         , projectDescription :: Maybe Text
+         -- |List of 'Bug's associated with this project
+         , projectBugs :: [Bug]
+         }
+
+-- |Type for bugs
+data Bug =
+       Bug
+         {
+         -- |A unique id for the bug. I haven't decided how this is to be created.
+         bugId :: Text
+         -- |The person who reported the bug
+         , bugReporter :: Maybe Person
+         -- |The non-optional time at which the bug was created.
+         , bugCreationDate :: UTCTime
+         -- |The title of the bug
+         , bugTitle :: Text
+         -- |An optional description of the bug
+         , bugDescription :: Maybe Text
+         -- |Whether or not the bug is open
+         , bugOpen :: Bool
+         -- |'Comment's on the bug
+         , bugComments :: [Comment]
+         }
+  deriving Show
+
+-- |Type for a Person
+data Person = Person { personName :: Text -- ^The person's name
+                     , personEmail :: Text -- ^Their email
                      }
   deriving Show
 
-data Comment = Comment { commentPerson :: Maybe Person
-                       , commentText :: Text
+-- |This is the type for a comment, usually on a 'Bug'. It can really
+-- be a comment on anything.
+data Comment = Comment {
+-- |The person who made the comment (it can be anonymous)
+commentPerson :: Maybe Person 
+-- |The actual comment itself
+                       , commentText :: Text           
                        }
   deriving Show
 
-data Bug = Bug { bugId :: Text
-               , bugReporter :: Maybe Person
-               , bugCreationDate :: UTCTime
-               , bugTitle :: Text
-               , bugDescription :: Maybe Text
-               , bugOpen :: Bool
-               , bugComments :: [Comment]
-               }
-  deriving Show
 
--- |Synonym for @bugReporter@
+-- |Synonym for 'bugReporter'
 bugPerson :: Bug -> Maybe Person
 bugPerson = bugReporter
-
-data Project =
-  Project {projectName :: Text
-          ,projectMaintainer :: Maybe Person
-          ,projectHomepage :: Maybe Text
-          ,projectDescription :: Maybe Text
-          ,projectBugs :: [Bug]}
-
 

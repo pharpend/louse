@@ -37,6 +37,27 @@ import           System.Directory
 import           System.Exit
 import           System.IO
 
+-- |This constructs a 'Project' value out of various values.
+-- 
+-- @
+-- mkProject nom mtrn mtre hp descr =
+--   Project (pack nom) mtr (packmaybe hp) (packmaybe descr) []
+--   where
+--     mtr =
+--       case (mtrn, mtre) of
+--         (_, Nothing)      -> Nothing
+--         (Nothing, Just e) -> Just . Person "Anonymous" $ pack e
+--         (Just n, Just e)  -> Just $ Person (pack n) (pack e)
+--     packmaybe x =
+--       case x of
+--         Nothing -> Nothing
+--         Just d  -> Just $ pack d
+-- @
+-- 
+-- Note that if the maintainer email is 'Nothing', then the resulting
+-- value of 'projectMaintainer' will be 'Nothing'. If an email is
+-- given with no name, the assigned name is @"Anonymous"@.
+
 mkProject :: String -- ^Project Name
           -> Maybe String -- ^Maintainer name
           -> Maybe String -- ^Maintainer email
@@ -48,25 +69,46 @@ mkProject nom mtrn mtre hp descr =
   where
     mtr =
       case (mtrn, mtre) of
-        (Nothing, Just e) ->
-          Just .
-          Person "Anonymous" $
-            pack e
-        (Just n, Just e) ->
-          Just $
-            Person (pack n) (pack e)
-        (Just n, Nothing) -> Nothing
-        (Nothing, Nothing) -> Nothing
+        (_, Nothing)      -> Nothing
+        (Nothing, Just e) -> Just . Person "Anonymous" $ pack e
+        (Just n, Just e)  -> Just $ Person (pack n) (pack e)
     packmaybe x =
       case x of
         Nothing -> Nothing
         Just d  -> Just $ pack d
 
+-- |Initialize a decamp project interacitively
+-- 
+-- @
+-- interactiveInit :: Bool -> IO ()
+-- interactiveInit bar = do
+--   hSetBuffering stdout NoBuffering
+--   putStrLn
+--     "Alright, I'm going to ask you some questions about your project. If you make a mistake, type C-c C-c to cancel and run this command again.\n"
+--   dirnom <- last . split "/" \<$\> getCurrentDirectory
+--   let getPrjName = rdline ("1. What is this project's name? (Will default to " <> dirnom <> ") ") >>=
+--                    \\case
+--                      Nothing  -> pure dirnom
+--                      Just nom -> pure nom
+--   nom <- getPrjName
+--   mtnrNom <- rdline "2. What's the name of the project maintainer? (Leave empty for anonymous) "
+--   mtnrEml <- rdline "3. What's the email of the project maintainer? (Leave empty for anonymous) "
+--   homepg <- rdline "4. If the project has a home page, what is it? (Leave empty for no home page) "
+--   desc <- rdline "5. Give a one-line description of the project (Leave empty for no description): "
+--   writeProject bar $ mkProject nom mtnrNom mtnrEml homepg desc
+-- 
+--   where
+--     rdline s = readline s >>= \case
+--                  Nothing -> pure Nothing
+--                  Just x -> if | words x == [] -> pure Nothing
+--                               | otherwise -> pure $ Just x
+-- @
+
 interactiveInit :: Bool -> IO ()
 interactiveInit bar = do
   hSetBuffering stdout NoBuffering
   putStrLn
-    "Alright, I'm going to ask you some questions about your project. If you make a mistake, type C-c C-c to cancel and run this command again.\n"
+    "Alright, I'm going to ask you some questions about your project. If you make a mistake, type C-c C-c to cancel and run this command again."
   dirnom <- last . split "/" <$> getCurrentDirectory
   let getPrjName = rdline ("1. What is this project's name? (Will default to " <> dirnom <> ") ") >>=
                    \case
@@ -85,6 +127,7 @@ interactiveInit bar = do
                  Just x -> if | words x == [] -> pure Nothing
                               | otherwise -> pure $ Just x
 
+-- |Write the project to @$(pwd)\/.decamp\/project.json@
 writeProject :: Bool -> Project -> IO ()
 writeProject bar p = do
   hSetBinaryMode stdout True
@@ -94,7 +137,7 @@ writeProject bar p = do
   let populate dir = do
         let prjpth = dir <> "/project.json"
         encodeProjectFile prjpth p
-        Bs.hPut stdout $ encodeProject p
+        -- Bs.hPut stdout $ encodeProject p
   if | bar -> populate cwd
      | otherwise -> do
         createDirectory decampDir
