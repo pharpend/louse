@@ -31,7 +31,7 @@ library
     OverloadedStrings
     LambdaCase
   exposed-modules:     
-    Data.Decamp.BugTracker.Project
+    Data.Decamp.Project
   build-depends:
       base              ==4.7.*
     , base16-bytestring ==0.1.*

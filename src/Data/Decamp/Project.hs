@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.BugTracker.Projectn
+-- Module      : Data.Decamp.Project
 -- Description : Decamp's bug tracker
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -24,7 +24,7 @@
 -- Portability : Linux/GHC
 -- 
 
-module Data.Decamp.BugTracker.Project where
+module Data.Decamp.Project where
 
 import           Control.Applicative
 import           Control.Monad

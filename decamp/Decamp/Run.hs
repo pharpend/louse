@@ -27,7 +27,7 @@
 module Decamp.Run where
 
 import           Control.Applicative
-import           Data.Decamp.BugTracker.Project
+import           Data.Decamp.Project
 import           Data.List.Utils
 import           Data.Monoid
 import           System.Console.Readline
