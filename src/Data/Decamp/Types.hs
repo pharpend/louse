@@ -44,6 +44,7 @@ data Project =
          -- |List of 'Bug's associated with this project
          , projectBugs :: [Bug]
          }
+  deriving Show
 
 -- |Type for bugs
 data Bug =
