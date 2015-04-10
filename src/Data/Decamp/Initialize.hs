@@ -26,7 +26,7 @@
 
 module Data.Decamp.Initialize where
 
-import           Control.Applicative
+import qualified Data.ByteString as Bs
 import           Data.Decamp.Aeson
 import           Data.Decamp.Types
 import           Data.List.Utils
@@ -68,18 +68,22 @@ interactiveInit bar = do
   putStrLn
     "Alright, I'm going to ask you some questions about your project. If you make a mistake, type C-c C-c to cancel and run this command again.\n"
   dirnom <- last . split "/" <$> getCurrentDirectory
-  let getPrjName = readline ("1. What is this project's name? (Will default to " <> dirnom <> ") ") >>=
+  let getPrjName = rdline ("1. What is this project's name? (Will default to " <> dirnom <> ") ") >>=
                    \case
                      Nothing  -> pure dirnom
                      Just nom -> pure nom
   nom <- getPrjName
-  mtnrNom <- readline "2. What's the name of the project maintainer? (Leave empty for anonymous) "
-  mtnrEml <- readline "3. What's the email of the project maintainer? (Leave empty for anonymous) "
-  homepg <- readline
-              "4. If the project has a home page, what is it? (Leave empty for no home page) "
-  desc <- readline
-            "5. Give a one-line description of the project (Leave empty for no description): "
+  mtnrNom <- rdline "2. What's the name of the project maintainer? (Leave empty for anonymous) "
+  mtnrEml <- rdline "3. What's the email of the project maintainer? (Leave empty for anonymous) "
+  homepg <- rdline "4. If the project has a home page, what is it? (Leave empty for no home page) "
+  desc <- rdline "5. Give a one-line description of the project (Leave empty for no description): "
   writeProject bar $ mkProject nom mtnrNom mtnrEml homepg desc
+
+  where
+    rdline s = readline s >>= \case
+                 Nothing -> pure Nothing
+                 Just x -> if | words x == [] -> pure Nothing
+                              | otherwise -> pure $ Just x
 
 writeProject :: Bool -> Project -> IO ()
 writeProject bar p = do
@@ -88,8 +92,9 @@ writeProject bar p = do
   cwd <- getCurrentDirectory
   let decampDir = cwd <> "/.decamp"
   let populate dir = do
-        let prjpth = dir <> "/project.yml"
+        let prjpth = dir <> "/project.json"
         encodeProjectFile prjpth p
+        Bs.hPut stdout $ encodeProject p
   if | bar -> populate cwd
      | otherwise -> do
         createDirectory decampDir
