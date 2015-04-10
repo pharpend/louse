@@ -108,3 +108,8 @@ The SFC has a trademark on the term "Git", so I can't use it in the name of my
 program without their permission. I looked in the thesaurus for synonyms to
 "git", and "decamp" came up. It seems appropriate, because camping is vaguely
 reminiscent of free/open-source developers collaborating.
+
+## Contact
+
+You can email me at `<peter@harpending.org>`, or contact me via IRC. I am
+`pharpend` on FreeNode and OFTC.
