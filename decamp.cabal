@@ -2,10 +2,9 @@ name:                decamp
 version:             0.0.0
 synopsis:            Distributed bug tracker
 description:         
-  decamp is a very simple distributed bug-tracking
-  system. It literally stores bugs in a YAML file, and then
-  (optionally) version-controls the file with git. The idea is pretty
-  portable, although this implementation is written in Haskell.
+  decamp is a very simple distributed bug-tracking system. It literally stores
+  bugs in a JSON file. The idea is pretty portable, although this implementation
+  is written in Haskell.
 license:             GPL-3
 license-file:        LICENSE
 author:              Peter Harpending
