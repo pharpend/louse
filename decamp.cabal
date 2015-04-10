@@ -19,6 +19,7 @@ cabal-version:       >=1.10
 data-files:
   LICENSE
   TUTORIAL.md
+  res/schemata/*.yml
 extra-source-files:
   README.md
   LICENSE
