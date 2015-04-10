@@ -1,19 +1,66 @@
 # decamp
 
-decamp is a distributed bug-tracking system. It literally stores bugs in a YAML
-file and then (optionally) version-controls the file with git. The idea is
-pretty portable, although this implementation is written in Haskell.
+decamp is a very simple distributed bug-tracking system. It literally stores
+bugs in a JSON file. The idea is pretty portable, although this implementation
+is written in Haskell.
 
-The schema for the YAML file is stored in the `res/schemata/project.yml`. The
+The schema for the JSON file is stored in the `res/schemata/project.json`. The
 other schemata (for people, comments, individual bugs, etc) are stored in the
 `res/schemata/` directory.
+
+You can also access the schemata with the `decamp` tool.
+
+    $ decamp schemata list
+    bug
+    comment
+    person
+    project
+    $ decamp schemata show comment
+    {
+      "name": "comment",
+      "type": "object",
+      "properties": {
+        "comment-person": {
+          "required": false,
+          "type": "object",
+          "description": "The person associated with this comment. Should fit the person schema."
+        },
+        "comment-text": {
+          "required": true,
+          "type": "string",
+          "description": "The comment itself"
+        }
+      }
+    }
+
+Or, with highlighting:
+
+```json
+{
+  "name": "comment",
+  "type": "object",
+  "properties": {
+    "comment-person": {
+      "required": false,
+      "type": "object",
+      "description": "The person associated with this comment. Should fit the person schema."
+    },
+    "comment-text": {
+      "required": true,
+      "type": "string",
+      "description": "The comment itself"
+    }
+  }
+}
+```
+
 
 I can't really copyright an idea, but this particular implementation of it is
 Copyright (C) 2015 Peter Harpending, and licensed under the
 [GNU General Public License, version >=3](https://gnu.org/licenses/gpl). A copy
 of the license can be found in the LICENSE file.
 
-## Installation
+## Installation and Usage
 
 You need to install the Haskell platform before installing decamp. Chris Allen
 maintains an
