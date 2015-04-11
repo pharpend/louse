@@ -47,6 +47,7 @@ library
     , base16-bytestring ==0.1.*
     , bytestring        ==0.10.*
     , directory
+    , editor-open       ==0.1.0.1
     , MissingH
     , time              >=1.2
     , text              >=1.1    && <1.3
