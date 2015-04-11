@@ -36,7 +36,7 @@ import           Paths_decamp
 import           System.IO
 
 data Args = Copyright
-          | InitInteractive { bare :: Bool }
+          | InitInteractive
           | License
           | Readme
           | Schema SchemaAction
@@ -52,7 +52,7 @@ runArgs :: Args -> IO ()
 runArgs Tutorial = printOut tutorial
 runArgs License = printOut license
 runArgs Version = printVersion
-runArgs (InitInteractive b) = interactiveInit b 
+runArgs InitInteractive = interactiveInit
 runArgs (Schema ListSchemata) = listSchemata
 runArgs (Schema (ShowSchema s)) = showSchema s
 runArgs Copyright = printOut copyright
@@ -90,18 +90,10 @@ argsParserInfo = infoHelp argsParser argsHelp
                                  long "readme")
 
 initOptionsInfo :: ParserInfo Args
-initOptionsInfo =
-  infoHelp initOptions $
-    fullDesc <>
-    progDesc "Initialize decamp (interactively)"
+initOptionsInfo = infoHelp theOptions theHelp
   where
-    initOptions :: Parser Args
-    initOptions =
-      InitInteractive <$> switch
-                            (long "bare" <>
-                             help
-                               "Initialize decamp in this directory. (I.e. don't create a .decamp/ directory).")
-
+    theOptions = pure InitInteractive
+    theHelp = fullDesc <> progDesc "Initialize decamp (interactively)"
 
 infoHelp :: Parser a -> InfoMod a -> ParserInfo a
 infoHelp a = info (helper <*> a)
