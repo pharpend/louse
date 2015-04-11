@@ -29,7 +29,7 @@ module Data.Decamp.Initialize where
 import           Control.Monad (mzero)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import           Data.Decamp.Aeson
+import           Data.Decamp.Internal
 import           Data.Decamp.Types
 import           Data.List.Utils
 import           Data.Monoid
@@ -112,9 +112,3 @@ instance FromJSON Mtnr where
   parseJSON Null = pure Anon
   parseJSON _ = mzero
 
--- |Magic value for "replace with working directory"
-_repl_working_dir :: Text
-_repl_working_dir = "REPL_WORKING_DIR"
-
-_templ_prj_path :: FilePath
-_templ_prj_path = "res/templates/new-project.yaml"

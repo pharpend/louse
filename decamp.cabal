@@ -36,7 +36,8 @@ library
     Paths_decamp
   exposed-modules:     
     Data.Decamp
-    Data.Decamp.Aeson
+    Data.Decamp.Bug.Add
+    Data.Decamp.Internal
     Data.Decamp.Initialize
     Data.Decamp.Schemata
     Data.Decamp.Trivia

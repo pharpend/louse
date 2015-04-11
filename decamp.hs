@@ -29,6 +29,7 @@ module Main where
 import           Control.Applicative
 -- import qualified Data.ByteString as Bs
 import           Data.Decamp
+import           Data.Decamp.Trivia
 import           Data.Monoid
 import           Data.Version hiding (Version)
 import           Options.Applicative
@@ -50,15 +51,15 @@ data SchemaAction = ListSchemata
   deriving Show
 
 runArgs :: Args -> IO ()
-runArgs Tutorial = printOut tutorial
-runArgs License = printOut license
+runArgs Tutorial = printOut decampTutorial
+runArgs License = printOut decampLicense
 runArgs Version = printVersion
 runArgs InitInteractive = initialize
 runArgs (Schema ListSchemata) = listSchemata
 runArgs (Schema Path) = showSchemaDir
 runArgs (Schema (ShowSchema s)) = showSchema s
-runArgs Copyright = printOut copyright
-runArgs Readme = printOut readme
+runArgs Copyright = printOut decampCopyright
+runArgs Readme = printOut decampReadme
 runArgs x = print x
 
 argsParserInfo :: ParserInfo Args

@@ -15,26 +15,26 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp
--- Description : Umbrella module for decamp library
+-- Module      : Data.Decamp.Bug.Add
+-- Description : Add a bug.
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- This is an umbrella module for the decamp library
+-- This is a module for all things having to do with adding a bug to a
+-- project.
 
-module Data.Decamp (
-    module Data.Decamp,
-    module Data.Decamp.Bug.Add,
-    module Data.Decamp.Initialize,
-    module Data.Decamp.Schemata,
-    module Data.Decamp.Types
-    ) where
+module Data.Decamp.Bug.Add where
 
-import           Data.Decamp.Bug.Add
-import           Data.Decamp.Initialize
-import           Data.Decamp.Schemata
-import           Data.Decamp.Trivia
 import           Data.Decamp.Types
+
+-- |If you are running an executable, this is probably what you want to use.
+-- 
+addBugToCurrentProject :: IO ()
+addBugToCurrentProject = pure ()
+
+-- |Pure function to add a 'Bug' to a 'Project'
+addBug :: Project -> Bug -> Project
+addBug p b = p { projectBugs = b : (projectBugs p) }

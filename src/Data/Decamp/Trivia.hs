@@ -30,25 +30,26 @@ module Data.Decamp.Trivia where
 import           Control.Monad ((<=<))
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import           Data.Decamp.Internal
 import           Data.Version (showVersion)
 import           Paths_decamp (getDataFileName, version)
 import           System.IO (hSetBinaryMode, stdout)
 
 -- |The copyright notice
-copyright :: IO ByteString
-copyright =  readDataFile "res/copyright.txt"
+decampCopyright :: IO ByteString
+decampCopyright =  readDataFile "res/copyright.txt"
 
 -- |The tutorial
-tutorial :: IO ByteString
-tutorial =  readDataFile "TUTORIAL.md"
+decampTutorial :: IO ByteString
+decampTutorial =  readDataFile "TUTORIAL.md"
 
 -- |The license (GPLv3)
-license :: IO ByteString
-license = readDataFile "LICENSE"
+decampLicense :: IO ByteString
+decampLicense = readDataFile "LICENSE"
 
 -- |The readme
-readme :: IO ByteString
-readme = readDataFile "README.md"
+decampReadme :: IO ByteString
+decampReadme = readDataFile "README.md"
 
 -- |The version
 decampVersion :: String
@@ -64,10 +65,3 @@ printOut b = do
 printVersion :: IO ()
 printVersion = putStrLn $ decampVersion
 
--- |Read a data file
--- 
--- @
--- readDataFile = B.readFile <=< getDataFileName
--- @
-readDataFile :: FilePath -> IO ByteString
-readDataFile = B.readFile <=< getDataFileName

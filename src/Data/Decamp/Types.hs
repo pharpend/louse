@@ -26,6 +26,8 @@
 
 module Data.Decamp.Types where
 
+import           Control.Monad (mzero)
+import           Data.Aeson
 import           Data.Text (Text)
 import           Data.Time
 
@@ -88,3 +90,60 @@ commentPerson :: Maybe Person
 bugPerson :: Bug -> Maybe Person
 bugPerson = bugReporter
 
+
+-- The rest of the file contains orphan instances of 'Project',
+-- 'Person', 'Comment', and 'Bug'.
+
+instance FromJSON Project where
+  parseJSON (Object v) = Project <$> v .: "project-name"
+                                 <*> v .:? "project-maintainer"
+                                 <*> v .:? "project-homepage"
+                                 <*> v .:? "project-description"
+                                 <*> v .: "project-bugs"
+  parseJSON _ = mzero
+
+instance ToJSON Project where
+  toJSON p = object
+               [ "project-name" .= projectName p
+               , "project-maintainer" .= projectMaintainer p
+               , "project-homepage" .= projectHomepage p
+               , "project-description" .= projectDescription p
+               , "project-bugs" .= projectBugs p
+               ]
+               
+
+instance FromJSON Person where
+  parseJSON (Object v) = Person <$> v .: "person-name" <*> v .: "person-email"
+  parseJSON _ = mzero
+
+instance ToJSON Person where
+  toJSON (Person nom em) = object ["person-name" .= nom, "person-email" .= em]
+
+instance FromJSON Comment where
+  parseJSON (Object v) = Comment <$> v .:? "comment-person" <*> v .: "comment-text"
+  parseJSON (String v) = pure $ Comment Nothing v
+  parseJSON _ = mzero
+
+instance ToJSON Comment where
+  toJSON (Comment ps txt) = object ["comment-person" .= ps, "comment-text" .= txt]
+
+instance FromJSON Bug where
+  parseJSON (Object v) = Bug <$> v .: "bug-id"
+                             <*> v .:? "bug-reporter"
+                             <*> v .: "bug-creation-date"
+                             <*> v .: "bug-title"
+                             <*> v .: "bug-description"
+                             <*> v .: "bug-open"
+                             <*> v .: "bug-comments"
+  parseJSON _ = mzero
+
+instance ToJSON Bug where
+  toJSON bug = object
+                 [ "bug-id" .= bugId bug
+                 , "bug-reporter" .= bugReporter bug
+                 , "bug-creation-date" .= bugCreationDate bug
+                 , "bug-title" .= bugTitle bug
+                 , "bug-description" .= bugDescription bug
+                 , "bug-open" .= bugOpen bug
+                 , "bug-comments" .= bugComments bug
+                 ]

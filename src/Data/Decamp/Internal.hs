@@ -15,30 +15,47 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Aeson
--- Description : Aeson stuff for decamp
+-- Module      : Data.Decamp.Internal
+-- Description : Internal variables for Decamp
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- This module isn't very interesting. It just contains "Data.Aeson"
--- instances for the types in "Data.Decamp.Types".
--- 
 
-module Data.Decamp.Aeson where
+module Data.Decamp.Internal where
 
-import           Control.Monad (mzero)
+import           Control.Monad
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
 import           Data.Aeson.Types (Pair)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import           Data.ByteString.Lazy (toStrict)
-import           Data.Decamp.Types
 import           Data.Maybe
+import           Data.Decamp.Types
+import           Paths_decamp
 import           Data.Text (Text)
+
+_project_json :: FilePath
+_project_json = ".decamp/project.json"
+
+-- |Read a data file
+-- 
+-- @
+-- readDataFile = B.readFile <=< getDataFileName
+-- @
+readDataFile :: FilePath -> IO ByteString
+readDataFile = B.readFile <=< getDataFileName
+
+-- |Magic value for "replace with working directory"
+_repl_working_dir :: Text
+_repl_working_dir = "REPL_WORKING_DIR"
+
+-- |Template project path
+_templ_prj_path :: FilePath
+_templ_prj_path = "res/templates/new-project.yaml"
 
 prettyEncode :: ToJSON a => a -> ByteString
 prettyEncode = toStrict . encodePretty' defConfig { confIndent = 2 }
@@ -138,6 +155,16 @@ decodeProjectFile :: FilePath  -- ^File to decode
                   -> IO (Maybe Project)
 decodeProjectFile = fmap decodeStrict . B.readFile
 
+-- |This tries to decode a project from a file. Returns @Nothing@ if
+-- it fails, @Just Project@ if it succeeds.
+-- 
+-- @
+-- eitherDecodeProjectFile = fmap eitherDecodeStrict . B.readFile
+-- @
+eitherDecodeProjectFile :: FilePath  -- ^File to decode
+                        -> IO (Either String Project)
+eitherDecodeProjectFile = fmap eitherDecodeStrict . B.readFile
+
 -- |Alias for 'eitherDecodeStrict' from Aeson.
 eitherDecodeProject :: ByteString -> Either String Project
 eitherDecodeProject = eitherDecodeStrict
@@ -151,60 +178,3 @@ eitherDecodeProject = eitherDecodeStrict
 -- @
 decodeProjectFileEither :: FilePath -> IO (Either String Project)
 decodeProjectFileEither = fmap eitherDecodeStrict . B.readFile
-
--- |The rest of the file contains orphan instances of 'Project',
--- 'Person', 'Comment', and 'Bug'.
-
-instance FromJSON Project where
-  parseJSON (Object v) = Project <$> v .: "project-name"
-                                 <*> v .:? "project-maintainer"
-                                 <*> v .:? "project-homepage"
-                                 <*> v .:? "project-description"
-                                 <*> v .: "project-bugs"
-  parseJSON _ = mzero
-
-instance ToJSON Project where
-  toJSON p = objectMaybe
-               [ Just $ "project-name" .= projectName p
-               , "project-maintainer" .=? projectMaintainer p
-               , "project-homepage" .=? projectHomepage p
-               , "project-description" .=? projectDescription p
-               , Just $ "project-bugs" .= projectBugs p
-               ]
-               
-
-instance FromJSON Person where
-  parseJSON (Object v) = Person <$> v .: "person-name" <*> v .: "person-email"
-  parseJSON _ = mzero
-
-instance ToJSON Person where
-  toJSON (Person nom em) = object ["person-name" .= nom, "person-email" .= em]
-
-instance FromJSON Comment where
-  parseJSON (Object v) = Comment <$> v .:? "comment-person" <*> v .: "comment-text"
-  parseJSON (String v) = pure $ Comment Nothing v
-  parseJSON _ = mzero
-
-instance ToJSON Comment where
-  toJSON (Comment ps txt) = objectMaybe ["comment-person" .=? ps, Just $ "comment-text" .= txt]
-
-instance FromJSON Bug where
-  parseJSON (Object v) = Bug <$> v .: "bug-id"
-                             <*> v .:? "bug-reporter"
-                             <*> v .: "bug-creation-date"
-                             <*> v .: "bug-title"
-                             <*> v .: "bug-description"
-                             <*> v .: "bug-open"
-                             <*> v .: "bug-comments"
-  parseJSON _ = mzero
-
-instance ToJSON Bug where
-  toJSON bug = objectMaybe
-                 [ Just $ "bug-id" .= bugId bug
-                 , "bug-reporter" .=? bugReporter bug
-                 , Just $ "bug-creation-date" .= bugCreationDate bug
-                 , Just $ "bug-title" .= bugTitle bug
-                 , Just $ "bug-description" .= bugDescription bug
-                 , Just $ "bug-open" .= bugOpen bug
-                 , Just $ "bug-comments" .= bugComments bug
-                 ]
