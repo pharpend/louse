@@ -47,7 +47,7 @@ library
     , aeson-pretty
     , base ==4.8.*
     , bytestring
-    , directory
+    , directory >=1.2
     , editor-open >=0.2
     , MissingH
     , time
