@@ -35,9 +35,10 @@ import           Options.Applicative
 import           Paths_decamp
 import           System.IO
 
-data Args = InitInteractive { bare :: Bool }
-          | Copyright
+data Args = Copyright
+          | InitInteractive { bare :: Bool }
           | License
+          | Readme
           | Schema SchemaAction
           | Tutorial
           | Version
@@ -55,6 +56,7 @@ runArgs (InitInteractive b) = interactiveInit b
 runArgs (Schema ListSchemata) = listSchemata
 runArgs (Schema (ShowSchema s)) = showSchema s
 runArgs Copyright = printOut copyright
+runArgs Readme = printOut readme
 runArgs x = print x
 
 argsParserInfo :: ParserInfo Args
@@ -67,59 +69,25 @@ argsParserInfo = infoHelp argsParser argsHelp
       progDesc "A distributed bug tracker."
     argsParser :: Parser Args
     argsParser =
-      empty <|> copyrightParser <|> licenseParser <|> versionParser <|>
+      empty <|> copyrightParser <|> licenseParser <|> readmeParser <|> tutorialParser <|> versionParser <|>
       hsubparser (command "init" initOptionsInfo) <|>
-      -- hsubparser (command "noninit" noninitOptionsInfo) <|>
       hsubparser (command "schema" schemataInfo) <|>
-      hsubparser (command "schemata" schemataInfo) <|>
-      hsubparser (command "tutorial" tutorialOptionsInfo)
+      hsubparser (command "schemata" schemataInfo)
     copyrightParser :: Parser Args
     copyrightParser = flag' Copyright (help ("Print the copyright.") <>
                                        long "copyright")
     versionParser :: Parser Args
-    versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ")") <>
+    versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ").") <>
                                    long "version")
     licenseParser :: Parser Args
     licenseParser = flag' License (help "Print the license (GPL version 3)." <>
                                    long "license")
-
-
--- noninitOptionsInfo :: ParserInfo Args
--- noninitOptionsInfo =
---   infoHelp initOptions $
---   fullDesc <>
---   progDesc "Initialize decamp (non-interactively)."
---   where initOptions :: Parser Args
---         initOptions =
---           InitNonInteractive <$>
---           switch (long "bare" <>
---                   help "Initialize decamp in this directory. (I.e. don't create a .decamp/ directory).") <*>
---           strOption (short 'n' <>
---                      long "name" <>
---                      help "The name of the project" <>
---                      metavar "NAME") <*>
---           strOption (short 'm' <>
---                      long "maintainer-name" <>
---                      help "The name of the maintainer" <>
---                      showDefault <>
---                      metavar "NAME" <>
---                      value mempty) <*>
---           strOption (short 'e' <>
---                      long "maintainer-email" <>
---                      help "The email of the maintainer" <>
---                      showDefault <>
---                      metavar "ADDRESS" <>
---                      value mempty) <*>
---           strOption (short 'u' <>
---                      long "url" <>
---                      showDefault <>
---                      help "The home page of the project" <>
---                      metavar "URL" <>
---                      value mempty) <*>
---           strOption (short 'd' <>
---                      long "description" <>
---                      help "A description of the project" <>
---                      metavar "STRING")
+    tutorialParser :: Parser Args
+    tutorialParser = flag' Tutorial (help "Print the tutorial." <>
+                                     long "tutorial")
+    readmeParser :: Parser Args
+    readmeParser = flag' Readme (help "Print the README." <>
+                                 long "readme")
 
 initOptionsInfo :: ParserInfo Args
 initOptionsInfo =
@@ -133,15 +101,6 @@ initOptionsInfo =
                             (long "bare" <>
                              help
                                "Initialize decamp in this directory. (I.e. don't create a .decamp/ directory).")
-
-tutorialOptionsInfo :: ParserInfo Args
-tutorialOptionsInfo =
-  infoHelp tutorialOptions tutorialHelp
-  where tutorialHelp =
-          fullDesc <>
-          progDesc "Print the tutorial."
-        tutorialOptions :: Parser Args
-        tutorialOptions = pure Tutorial
 
 
 infoHelp :: Parser a -> InfoMod a -> ParserInfo a

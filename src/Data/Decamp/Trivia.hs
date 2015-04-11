@@ -46,12 +46,16 @@ tutorial =  readDataFile "TUTORIAL.md"
 license :: IO ByteString
 license = readDataFile "LICENSE"
 
+-- |The readme
+readme :: IO ByteString
+readme = readDataFile "README.md"
+
 -- |The version
 decampVersion :: String
 decampVersion = showVersion version
 
 -- |Print one of the 'ByteString's from above
-printOut:: IO ByteString -> IO ()
+printOut :: IO ByteString -> IO ()
 printOut b = do
   hSetBinaryMode stdout True
   B.hPut stdout =<< b

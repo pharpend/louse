@@ -78,7 +78,7 @@ cabal install
 ```
 
 For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run `decamp
-tutorial`. For a brief listing of the available commands, you can run `decamp
+--tutorial`. For a brief listing of the available commands, you can run `decamp
 --help`.
 
 ## Inspiration
