@@ -63,10 +63,13 @@ argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp
   where
     argsHelp :: InfoMod Args
-    argsHelp =
-      fullDesc <>
-      header ("decamp v." <> showVersion version) <>
-      progDesc "A distributed bug tracker."
+    argsHelp = mconcat
+                 [ fullDesc
+                 , header ("decamp v." <> showVersion version)
+                 , progDesc "A distributed bug tracker."
+                 , footer
+                     "For information on a specific command, run `decamp COMMAND --help`, where COMMAND is one of the commands listed above."
+                 ]
     argsParser :: Parser Args
     argsParser = altConcat
                    [ copyrightParser
