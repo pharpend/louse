@@ -28,13 +28,33 @@
 
 module Data.Decamp.Bug.Add where
 
+import           Crypto.Hash.Whirlpool
+import qualified Data.ByteString.Char8 as B
+import           Data.ByteString.Base16 (encode)
+import           Data.Decamp.Internal
+import           Data.Decamp.Project
 import           Data.Decamp.Types
+import           Data.Monoid
+import qualified Data.Text as T
+import           Data.Text.Encoding (encodeUtf8, decodeUtf8)
+import           Data.Time
+import           Data.Yaml hiding (encode)
 
 -- |If you are running an executable, this is probably what you want to use.
 -- 
 addBugToCurrentProject :: IO ()
-addBugToCurrentProject = pure ()
+addBugToCurrentProject = 
+  writeProject =<< 
+  addBug <$> getCurrentProjectErr <*> mkBug
 
 -- |Pure function to add a 'Bug' to a 'Project'
 addBug :: Project -> Bug -> Project
 addBug p b = p { projectBugs = b : (projectBugs p) }
+
+-- |Make a bug with @$EDITOR@
+mkBug :: IO Bug
+mkBug =
+  editTemplate _templ_bug_path >>=
+  \bugBytes -> case decodeEither bugBytes of
+    Left err  -> fail err
+    Right nbg -> parseNewBug nbg

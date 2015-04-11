@@ -41,17 +41,6 @@ import           System.Directory
 import           System.IO
 import           Text.Editor
 
-data NewProject =
-       NewProject
-         { prjName :: Text
-         , prjMaintainer :: Mtnr
-         , prjHomePage :: Maybe Text
-         , prjDescr :: Maybe Text
-         }
-  deriving (Show, Eq)
-
-data Mtnr = Mtnr { mtnrName :: Text, mtnrEmail :: Text } | Anon
-  deriving (Show, Eq)
 
 -- |Get the project from the user, and then write it
 -- 
@@ -77,35 +66,14 @@ getProject =
       pure $ Project newNom newMtr hp descr []
 
 -- |Get the YAML representation of the project from the user
+-- 
+-- @
+-- getProjectBS =
+--   editTemplate _templ_prj_path >>=
+--   runUserEditorDWIM yamlTemplate
+-- @
 getProjectBS :: IO ByteString
 getProjectBS =
-  getDataFileName _templ_prj_path >>=
-  B.readFile >>=
+  editTemplate _templ_prj_path >>=
   runUserEditorDWIM yamlTemplate
-
--- |Write the project to @$(pwd)\/.decamp\/project.json@
-writeProject :: Project -> IO ()
-writeProject p = do
-    hSetBinaryMode stdout True
-    cwd <- getCurrentDirectory
-    let decampDir = cwd <> "/.decamp"
-        populate dir = do
-          let prjpth = dir <> "/project.json"
-          encodeProjectFile prjpth p
-    createDirectory decampDir
-    populate decampDir
-
--- = Internal things =
-
-instance FromJSON NewProject where
-  parseJSON (Object v) = NewProject <$> v .:? "name" .!= _repl_working_dir
-                                    <*> v .: "maintainer"
-                                    <*> v .: "homepage"
-                                    <*> v .: "description"
-  parseJSON _ = mzero
-
-instance FromJSON Mtnr where
-  parseJSON (Object v) = Mtnr <$> v .: "name" <*> v .: "email"
-  parseJSON Null = pure Anon
-  parseJSON _ = mzero
 

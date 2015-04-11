@@ -29,9 +29,10 @@ extra-source-files:
 
 library
   default-extensions:
-    OverloadedStrings
-    MultiWayIf
     LambdaCase
+    MultiWayIf
+    OverloadedStrings
+    ScopedTypeVariables
   other-modules:
     Paths_decamp
   exposed-modules:     
@@ -47,7 +48,10 @@ library
       aeson
     , aeson-pretty
     , base ==4.8.*
+    , base16-bytestring
     , bytestring
+    , cryptohash
+    , crypto-random
     , directory >=1.2
     , editor-open >=0.2
     , MissingH
