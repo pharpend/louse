@@ -76,4 +76,4 @@ executable decamp
 
 source-repository head
   type: git
-  location: https://github.com/pharpend/decamp.git
+  location: https://notabug.org/pharpend/decamp.git

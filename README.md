@@ -71,7 +71,7 @@ I haven't published a version on Hackage (the Haskell package repository) yet,
 so you'll have to use the git version. To download and compile decamp, run:
 
 ```
-git clone ssh://git@github.com/pharpend/decamp.git
+git clone https://notabug.org/pharpend/decamp.git
 cd decamp
 cabal update
 cabal install
