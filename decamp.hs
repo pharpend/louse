@@ -35,7 +35,19 @@ import           Options.Applicative
 import           Paths_decamp
 import           System.IO
 
-data Args = Copyright
+
+main :: IO ()
+main = execParser argsParserInfo >>= runArgs
+
+altConcat :: Alternative f => [f a] -> f a
+altConcat [] = empty
+altConcat (x:xs) = x <|> altConcat xs
+
+infoHelp :: Parser a -> InfoMod a -> ParserInfo a
+infoHelp a = info (helper <*> a)
+
+data Args = DBug BugAction
+          | Copyright
           | InitInteractive
           | License
           | Readme
@@ -44,21 +56,25 @@ data Args = Copyright
           | Version
   deriving Show
 
+data BugAction = AddBug
+  deriving Show
+
 data SchemaAction = ListSchemata
                   | Path
                   | ShowSchema String
   deriving Show
 
 runArgs :: Args -> IO ()
-runArgs Tutorial = printOut decampTutorial
-runArgs License = printOut decampLicense
-runArgs Version = printVersion
+runArgs (DBug AddBug) = addBugToCurrentProject
+runArgs Copyright = printOut decampCopyright
 runArgs InitInteractive = initialize
+runArgs License = printOut decampLicense
+runArgs Readme = printOut decampReadme
 runArgs (Schema ListSchemata) = listSchemata
 runArgs (Schema Path) = showSchemaDir
 runArgs (Schema (ShowSchema s)) = showSchema s
-runArgs Copyright = printOut decampCopyright
-runArgs Readme = printOut decampReadme
+runArgs Tutorial = printOut decampTutorial
+runArgs Version = printVersion
 runArgs x = print x
 
 argsParserInfo :: ParserInfo Args
@@ -79,7 +95,8 @@ argsParserInfo = infoHelp argsParser argsHelp
                    , readmeParser
                    , tutorialParser
                    , versionParser
-                   , hsubparser (command "init" initOptionsInfo)
+                   , hsubparser (command "bug" bugInfo)
+                   , hsubparser (command "init" initInfo)
                    , hsubparser (command "schema" schemataInfo)
                    , hsubparser (command "schemata" schemataInfo)
                    ]
@@ -99,18 +116,12 @@ argsParserInfo = infoHelp argsParser argsHelp
     readmeParser = flag' Readme (help "Print the README." <>
                                  long "readme")
 
-initOptionsInfo :: ParserInfo Args
-initOptionsInfo = infoHelp theOptions theHelp
+initInfo :: ParserInfo Args
+initInfo = infoHelp theOptions theHelp
   where
     theOptions = pure InitInteractive
     theHelp = fullDesc <> progDesc "Initialize decamp using $EDITOR."
 
-altConcat :: Alternative f => [f a] -> f a
-altConcat [] = empty
-altConcat (x:xs) = x <|> altConcat xs
-
-infoHelp :: Parser a -> InfoMod a -> ParserInfo a
-infoHelp a = info (helper <*> a)
 
 schemataInfo :: ParserInfo Args
 schemataInfo = infoHelp schemataOptions schemataHelp
@@ -123,7 +134,6 @@ schemataInfo = infoHelp schemataOptions schemataHelp
                         , subparser (command "path" pathSchemaInfo)
                         , subparser (command "show" showSchemaInfo)
                         ]
-
 showSchemaInfo :: ParserInfo Args
 showSchemaInfo = infoHelp theOptions theHelp
   where
@@ -142,5 +152,13 @@ pathSchemaInfo = infoHelp theOptions theHelp
     theHelp = fullDesc <> progDesc "Show the directory in which the schemata are stored"
     theOptions = pure $ Schema Path
 
-main :: IO ()
-main = execParser argsParserInfo >>= runArgs
+bugInfo :: ParserInfo Args
+bugInfo = infoHelp theOptions theHelp
+  where
+    theHelp = fullDesc <> progDesc "Do stuff with bugs."
+    theOptions = altConcat
+                        [ subparser (command "add" addBugInfo)
+                        ]
+    addBugInfo = infoHelp abopts abhelp
+    abhelp = fullDesc <> progDesc "Add a bug"
+    abopts = pure $ DBug AddBug
