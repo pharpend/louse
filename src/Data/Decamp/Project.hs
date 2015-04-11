@@ -27,15 +27,44 @@
 module Data.Decamp.Project where
 
 import           Data.Decamp.Internal
+import           Data.Decamp.Types
+import           Data.Monoid
 import           Data.List.Utils
 import           System.Directory
 
--- | Try to @./.decamp/project.json@
--- 
+-- |Try to parse @./.decamp/project.json@. Returns @Left "error
+-- message"@ if it fails, and @Right Project@ if it succeeds.
 getCurrentProject :: IO (Either String Project)
 getCurrentProject =
   doesFileExist _project_json >>=
   \case
     True -> decodeProjectFileEither _project_json
-    False -> Left $ "File not found: " <> _project_json
+    False -> pure . Left $ "File not found: " <> _project_json
 
+-- |Try parse to @./.decamp/project.json@. Fails if there is an error.
+-- 
+-- @
+-- getCurrentProjectErr =
+--   getCurrentProject >>= \case
+--     Left err  -> fail err
+--     Right prj -> pure prj
+-- @
+getCurrentProjectErr :: IO Project
+getCurrentProjectErr =
+  getCurrentProject >>= \case
+    Left err  -> fail err
+    Right prj -> pure prj
+
+-- |Try parse to @./.decamp/project.json@.
+-- 
+-- @
+-- getCurrentProjectMaybe =
+--   flip fmap getCurrentProject $ \case
+--     Left err  -> Nothing
+--     Right prj -> Just prj
+-- @
+getCurrentProjectMaybe :: IO (Maybe Project)
+getCurrentProjectMaybe =
+  flip fmap getCurrentProject $ \case
+    Left err  -> Nothing
+    Right prj -> Just prj
