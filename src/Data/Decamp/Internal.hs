@@ -33,11 +33,15 @@ import           Data.Aeson.Encode.Pretty
 import           Data.Aeson.Types (Pair)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as Bc8
+import           Data.ByteString.Base16 as Bs16
 import           Data.ByteString.Lazy (toStrict)
 import           Data.Decamp.Types
 import           Data.Maybe
 import           Data.Monoid
 import           Data.Text (Text)
+import           Data.Text.Encoding (decodeUtf8)
+import           Data.Time
 import           Paths_decamp
 import           System.Directory
 import           System.IO
@@ -221,7 +225,7 @@ parseNewBug :: NewBug -> IO Bug
 parseNewBug (NewBug reporter synopsis description) = do
   currentTime <- getCurrentTime
   -- The id should be a base16 encoding of 512 random bytes
-  bugid <- decodeUtf8 . encode <$> createRandomBytes 512
+  bugid <- decodeUtf8 . Bs16.encode <$> createRandomBytes 512
   pure $ Bug bugid (mtnrToPerson reporter) currentTime synopsis description True []
 
 instance FromJSON NewProject where

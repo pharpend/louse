@@ -30,7 +30,6 @@ module Data.Decamp.Bug.Add where
 
 import           Crypto.Hash.Whirlpool
 import qualified Data.ByteString.Char8 as B
-import           Data.ByteString.Base16 (encode)
 import           Data.Decamp.Internal
 import           Data.Decamp.Project
 import           Data.Decamp.Types
