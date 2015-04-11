@@ -45,6 +45,7 @@ data Args = Copyright
   deriving Show
 
 data SchemaAction = ListSchemata
+                  | Path
                   | ShowSchema String
   deriving Show
 
@@ -54,6 +55,7 @@ runArgs License = printOut license
 runArgs Version = printVersion
 runArgs InitInteractive = interactiveInit
 runArgs (Schema ListSchemata) = listSchemata
+runArgs (Schema Path) = showSchemaDir
 runArgs (Schema (ShowSchema s)) = showSchema s
 runArgs Copyright = printOut copyright
 runArgs Readme = printOut readme
@@ -116,7 +118,9 @@ schemataInfo = infoHelp schemataOptions schemataHelp
     schemataHelp = fullDesc <> progDesc "Do stuff with schemata."
     schemataOptions :: Parser Args
     schemataOptions = altConcat
-                        [ subparser (command "list" listSchemataInfo)
+                        [ subparser (command "dir" pathSchemaInfo)
+                        , subparser (command "list" listSchemataInfo)
+                        , subparser (command "path" pathSchemaInfo)
                         , subparser (command "show" showSchemaInfo)
                         ]
 
@@ -131,6 +135,12 @@ listSchemataInfo = infoHelp theOptions theHelp
   where
     theHelp = fullDesc <> progDesc "List the available schemata"
     theOptions = pure $ Schema ListSchemata
+
+pathSchemaInfo :: ParserInfo Args
+pathSchemaInfo = infoHelp theOptions theHelp
+  where
+    theHelp = fullDesc <> progDesc "Show the directory in which the schemata are stored"
+    theOptions = pure $ Schema Path
 
 main :: IO ()
 main = execParser argsParserInfo >>= runArgs

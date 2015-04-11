@@ -88,6 +88,14 @@ showSchema = getSchema >=> B.hPut stdout
 schemataDir :: IO FilePath
 schemataDir = (<> "/res/schemata") <$> getDataDir
 
+-- |Print 'schemataDir' to the console
+-- 
+-- @
+-- showSchemaDir = putStrLn =<< schemataDir
+-- @
+showSchemaDir :: IO ()
+showSchemaDir = putStrLn =<< schemataDir
+
 -- |The list of schemata files
 -- 
 -- @
