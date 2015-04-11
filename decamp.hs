@@ -27,7 +27,6 @@
 module Main where
 
 import           Control.Applicative
--- import qualified Data.ByteString as Bs
 import           Data.Decamp
 import           Data.Decamp.Trivia
 import           Data.Monoid
