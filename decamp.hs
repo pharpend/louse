@@ -68,11 +68,16 @@ argsParserInfo = infoHelp argsParser argsHelp
       header ("decamp v." <> showVersion version) <>
       progDesc "A distributed bug tracker."
     argsParser :: Parser Args
-    argsParser =
-      empty <|> copyrightParser <|> licenseParser <|> readmeParser <|> tutorialParser <|> versionParser <|>
-      hsubparser (command "init" initOptionsInfo) <|>
-      hsubparser (command "schema" schemataInfo) <|>
-      hsubparser (command "schemata" schemataInfo)
+    argsParser = altConcat
+                   [ copyrightParser
+                   , licenseParser
+                   , readmeParser
+                   , tutorialParser
+                   , versionParser
+                   , hsubparser (command "init" initOptionsInfo)
+                   , hsubparser (command "schema" schemataInfo)
+                   , hsubparser (command "schemata" schemataInfo)
+                   ]
     copyrightParser :: Parser Args
     copyrightParser = flag' Copyright (help ("Print the copyright.") <>
                                        long "copyright")
@@ -102,6 +107,9 @@ initOptionsInfo =
                              help
                                "Initialize decamp in this directory. (I.e. don't create a .decamp/ directory).")
 
+altConcat :: Alternative f => [f a] -> f a
+altConcat [] = empty
+altConcat (x:xs) = x <|> altConcat xs
 
 infoHelp :: Parser a -> InfoMod a -> ParserInfo a
 infoHelp a = info (helper <*> a)
@@ -111,7 +119,10 @@ schemataInfo = infoHelp schemataOptions schemataHelp
   where
     schemataHelp = fullDesc <> progDesc "Do stuff with schemata."
     schemataOptions :: Parser Args
-    schemataOptions = subparser (command "list" listSchemataInfo) <|> subparser (command "show" showSchemaInfo)
+    schemataOptions = altConcat
+                        [ subparser (command "list" listSchemataInfo)
+                        , subparser (command "show" showSchemaInfo)
+                        ]
 
 showSchemaInfo :: ParserInfo Args
 showSchemaInfo = infoHelp theOptions theHelp
