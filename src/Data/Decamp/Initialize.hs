@@ -35,8 +35,6 @@ import           Data.List.Utils
 import           Data.Monoid
 import           Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text as T
-import qualified Data.Text.IO as Tio
 import           Data.Yaml
 import           Paths_decamp
 import           System.Directory
@@ -98,7 +96,6 @@ writeProject p = do
     populate decampDir
 
 -- = Internal things =
-
 
 instance FromJSON NewProject where
   parseJSON (Object v) = NewProject <$> v .:? "name" .!= _repl_working_dir
