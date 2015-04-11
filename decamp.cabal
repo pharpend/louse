@@ -42,16 +42,16 @@ library
     Data.Decamp.Trivia
     Data.Decamp.Types
   build-depends:
-      aeson             >=0.7
-    , aeson-pretty      >=0.7
-    , base              ==4.8.*
-    , base16-bytestring ==0.1.*
-    , bytestring        ==0.10.*
+      aeson
+    , aeson-pretty
+    , base ==4.8.*
+    , bytestring
     , directory
     , editor-open >=0.2
     , MissingH
-    , time              >=1.2
-    , text              >=1.1    && <1.3
+    , time
+    , text
+    , yaml
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall -fno-warn-orphans
@@ -62,10 +62,10 @@ executable decamp
   other-modules:
     Paths_decamp
   build-depends:
-      base                  ==4.8.*
+      base ==4.8.*
     , bytestring
     , decamp
-    , optparse-applicative  ==0.11.*
+    , optparse-applicative ==0.11.*
   default-extensions:
     LambdaCase
     MultiWayIf
