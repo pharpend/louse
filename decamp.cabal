@@ -39,6 +39,7 @@ library
     Data.Decamp.Bug.Add
     Data.Decamp.Internal
     Data.Decamp.Initialize
+    Data.Decamp.Project
     Data.Decamp.Schemata
     Data.Decamp.Trivia
     Data.Decamp.Types

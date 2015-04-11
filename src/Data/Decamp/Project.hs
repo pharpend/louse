@@ -15,28 +15,27 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp
--- Description : Umbrella module for decamp library
+-- Module      : Data.Decamp.Project
+-- Description : Decamp Projects
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- This is an umbrella module for the decamp library
 
-module Data.Decamp (
-    module Data.Decamp,
-    module Data.Decamp.Bug.Add,
-    module Data.Decamp.Initialize,
-    module Data.Decamp.Project,
-    module Data.Decamp.Schemata,
-    module Data.Decamp.Types
-    ) where
+module Data.Decamp.Project where
 
-import           Data.Decamp.Bug.Add
-import           Data.Decamp.Initialize
-import           Data.Decamp.Project
-import           Data.Decamp.Schemata
-import           Data.Decamp.Trivia
-import           Data.Decamp.Types
+import           Data.Decamp.Internal
+import           Data.List.Utils
+import           System.Directory
+
+-- | Try to @./.decamp/project.json@
+-- 
+getCurrentProject :: IO (Either String Project)
+getCurrentProject =
+  doesFileExist _project_json >>=
+  \case
+    True -> decodeProjectFileEither _project_json
+    False -> Left $ "File not found: " <> _project_json
+
