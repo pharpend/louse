@@ -27,7 +27,7 @@
 module Main where
 
 import           Control.Applicative
-import qualified Data.ByteString as Bs
+-- import qualified Data.ByteString as Bs
 import           Data.Decamp
 import           Data.Monoid
 import           Data.Version hiding (Version)
@@ -53,7 +53,7 @@ runArgs :: Args -> IO ()
 runArgs Tutorial = printOut tutorial
 runArgs License = printOut license
 runArgs Version = printVersion
-runArgs InitInteractive = interactiveInit
+runArgs InitInteractive = initialize
 runArgs (Schema ListSchemata) = listSchemata
 runArgs (Schema Path) = showSchemaDir
 runArgs (Schema (ShowSchema s)) = showSchema s
@@ -103,7 +103,7 @@ initOptionsInfo :: ParserInfo Args
 initOptionsInfo = infoHelp theOptions theHelp
   where
     theOptions = pure InitInteractive
-    theHelp = fullDesc <> progDesc "Initialize decamp (interactively)"
+    theHelp = fullDesc <> progDesc "Initialize decamp using $EDITOR."
 
 altConcat :: Alternative f => [f a] -> f a
 altConcat [] = empty

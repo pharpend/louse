@@ -21,76 +21,69 @@
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
--- Portability : UNIX/GHC
+-- Portability : POSIX
 -- 
 
 module Data.Decamp.Initialize where
 
+import           Control.Monad (mzero)
+import           Data.ByteString (ByteString)
+import qualified Data.ByteString as B
 import           Data.Decamp.Aeson
 import           Data.Decamp.Types
 import           Data.List.Utils
 import           Data.Monoid
+import           Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text as T
 import qualified Data.Text.IO as Tio
-import           Data.Text (Text)
+import           Data.Yaml
+import           Paths_decamp
 import           System.Directory
 import           System.IO
+import           Text.Editor
 
--- |This constructs a 'Project' value out of various values.
+data NewProject =
+       NewProject
+         { prjName :: Text
+         , prjMaintainer :: Mtnr
+         , prjHomePage :: Maybe Text
+         , prjDescr :: Maybe Text
+         }
+  deriving (Show, Eq)
+
+data Mtnr = Mtnr { mtnrName :: Text, mtnrEmail :: Text } | Anon
+  deriving (Show, Eq)
+
+-- |Get the project from the user, and then write it
 -- 
 -- @
--- mkProject nom mtrn mtre hp descr = Project mtr hp descr []
---   where
---     mtr =
---       case (mtrn, mtre) of
---         (_, Nothing)      -> Nothing
---         (Nothing, Just e) -> Just . Person "Anonymous" e
---         (Just n, Just e)  -> Just $ Person n e
+-- initialize = getProject >>= writeProject
 -- @
--- 
--- Note that if the maintainer email is 'Nothing', then the resulting
--- value of 'projectMaintainer' will be 'Nothing'. If an email is
--- given with no name, the assigned name is @"Anonymous"@.
+initialize :: IO ()
+initialize = getProject >>= writeProject
 
-mkProject :: Text -- ^Project Name
-          -> Maybe Text -- ^Maintainer name
-          -> Maybe Text -- ^Maintainer email
-          -> Maybe Text -- ^Project home page
-          -> Maybe Text -- ^Description
-          -> Project -- ^ Resulting @Project@
-mkProject nom mtrn mtre hp descr = Project nom mtr hp descr []
-  where
-    mtr =
-      case (mtrn, mtre) of
-        (_, Nothing)      -> Nothing
-        (Nothing, Just e) -> Just $ Person "Anonymous" e
-        (Just n, Just e)  -> Just $ Person n e
+-- |Get the project from the user
+getProject :: IO Project
+getProject =
+  getProjectBS >>=
+  \pbs -> case decodeEither pbs of
+    Left err -> fail err
+    Right (NewProject nom mtr hp descr) -> do
+      newNom <- if | nom == _repl_working_dir -> T.pack . last . split "/" <$> getCurrentDirectory
+                   | otherwise -> pure nom
+      let newMtr =
+            case mtr of
+              Anon     -> Nothing
+              Mtnr n e -> Just $ Person n e
+      pure $ Project newNom newMtr hp descr []
 
--- |Initialize a decamp project interacitively
-interactiveInit :: IO ()
-interactiveInit = do
-  hSetBuffering stdout NoBuffering
-  putStrLn
-    "Alright, I'm going to ask you some questions about your project. If you make a mistake, type C-c C-c to cancel and run this command again."
-  dirnom <- T.pack . last . split "/" <$> getCurrentDirectory
-  let getPrjName = rdline
-                     ("1. What is this project's name? (Will default to " <> dirnom <> ") ") >>=
-                   \case
-                     Nothing  -> pure dirnom
-                     Just nom -> pure nom
-  nom <- getPrjName
-  mtnrNom <- rdline "2. What's the name of the project maintainer? (Leave empty for anonymous) "
-  mtnrEml <- rdline "3. What's the email of the project maintainer? (Leave empty for anonymous) "
-  homepg <- rdline "4. If the project has a home page, what is it? (Leave empty for no home page) "
-  desc <- rdline "5. Give a one-line description of the project (Leave empty for no description): "
-  writeProject $ mkProject nom mtnrNom mtnrEml homepg desc
-
-  where
-    rdline s = do
-      Tio.putStr s
-      x <- Tio.getLine
-      if | T.words x == [] -> pure Nothing
-         | otherwise -> pure $ Just x
+-- |Get the YAML representation of the project from the user
+getProjectBS :: IO ByteString
+getProjectBS =
+  getDataFileName _templ_prj_path >>=
+  B.readFile >>=
+  runUserEditorDWIM yamlTemplate
 
 -- |Write the project to @$(pwd)\/.decamp\/project.json@
 writeProject :: Project -> IO ()
@@ -103,3 +96,25 @@ writeProject p = do
           encodeProjectFile prjpth p
     createDirectory decampDir
     populate decampDir
+
+-- = Internal things =
+
+
+instance FromJSON NewProject where
+  parseJSON (Object v) = NewProject <$> v .:? "name" .!= _repl_working_dir
+                                    <*> v .: "maintainer"
+                                    <*> v .: "homepage"
+                                    <*> v .: "description"
+  parseJSON _ = mzero
+
+instance FromJSON Mtnr where
+  parseJSON (Object v) = Mtnr <$> v .: "name" <*> v .: "email"
+  parseJSON Null = pure Anon
+  parseJSON _ = mzero
+
+-- |Magic value for "replace with working directory"
+_repl_working_dir :: Text
+_repl_working_dir = "REPL_WORKING_DIR"
+
+_templ_prj_path :: FilePath
+_templ_prj_path = "res/templates/new-project.yaml"
