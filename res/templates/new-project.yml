@@ -1,0 +1,77 @@
+# I see you're creating a new project!
+# 
+# This is the "init" file. It uses YAML syntax:
+# https://en.wikipedia.org/wiki/YAML . This file will be used to create the
+# .decamp/project.json file.
+# 
+# This is a comment. Lines starting with '#' will be ignored. Likewise, you can
+# do stuff like this:
+# 
+# foo: bar  # this here is also ignored.
+# 
+# If you have a # in the middle of some text, you should put quotations around
+# the text if you don't want the stuff following the # to be ignored:
+# 
+# foo: "bar  # this is no longer ignored."
+
+name: null
+# This is the name of the project. It will default to the name of your working
+# directory if you leave it as null.
+# 
+# If the name uses any weird characters, you should surround it with quotations.
+# 
+# This is okay: 
+# 
+# name: my-project
+# 
+# This might give you some trouble though:
+# 
+# name: my:project
+# 
+# The ':' has a special meaning in YAML, so the parser might get
+# confused. Instead, do this:
+# 
+# name: "my:project"
+# 
+
+description: null
+# This is an optional description of your project
+# 
+# If it's a long description, you can use this syntax:
+# 
+# description: >-
+#   Your description goes here.
+# 
+#   You can keep going down here.
+# 
+# If it's a short (one line) description, then this would probably be better:
+#  
+# description: "my description"
+# 
+
+homepage: null
+# This is the homepage of your project. You should probably surround it with
+# quotation marks. That is, this entry should read
+# 
+# homepage: "http://mysite.com/foo/bar/baz"
+# 
+# instead of
+# 
+# homepage: http://mysite.com/foo/bar/baz
+# 
+
+maintainer: null
+# This is the information for the project maintainer. If the maintainer is
+# anonymous, you can leave this blank. I haven't yet written support for
+# multiple maintainers, so just pick the most important one.
+# 
+# By default, this is null. However, if you want to add a maintainer, it should
+# look like this:
+# 
+# maintainer:
+#   name: Peter Harpending
+#   email: "peter@harpending.org"
+# 
+# My YAML parser will get angry if you try to do 
+# 
+# maintainer: "Peter Harpending <peter@harpending.org>"
