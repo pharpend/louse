@@ -3,12 +3,12 @@
   "type": "object",
   "description": "A person",
   "properties": {
-    "email": {
+    "person-email": {
       "required": true,
       "type": "string",
       "description": "The email of the person who reported the bug"
     },
-    "name": {
+    "person-name": {
       "required": true,
       "type": "string",
       "description": "The name of the person who reported the bug."
