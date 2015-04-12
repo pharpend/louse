@@ -38,8 +38,12 @@ library
   exposed-modules:     
     Data.Decamp
     Data.Decamp.Bug.Add
-    Data.Decamp.Internal
     Data.Decamp.Initialize
+    Data.Decamp.Internal
+    Data.Decamp.Internal.Aeson
+    Data.Decamp.Internal.DataFiles
+    Data.Decamp.Internal.MagicValues
+    Data.Decamp.Internal.Types
     Data.Decamp.Project
     Data.Decamp.Schemata
     Data.Decamp.Trivia
