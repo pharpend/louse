@@ -23,10 +23,13 @@
       "type": "array",
       "description": "List of bugs, not in any particular order. Should fit the bug schema."
     },
-    "project-maintainer": {
+    "project-maintainers": {
       "required": false,
-      "type": "object",
-      "description": "The maintainer. Should match the person schema."
+      "type": "array",
+      "description": "The maintainers. Should match the person schema.",
+      "items": {
+        "type": "object"
+      }
     }
   },
   "name": "project",
