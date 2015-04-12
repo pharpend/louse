@@ -17,12 +17,12 @@
     "bug-id": {
       "required": true,
       "type": "string",
-      "description": "Unique identifier for this bug. Should be a whirlpool hash of the title concat the time at which it was created."
+      "description": "Unique identifier for this bug. Should be randomly generated, 20 bytes in length."
     },
     "bug-description": {
       "required": false,
       "type": "string",
-      "description": "An optional description of the bug."
+      "description": "An optional longer description of the bug."
     },
     "bug-open": {
       "required": true,
@@ -34,10 +34,10 @@
       "type": "object",
       "description": "The person who reported the bug. Object should fit the person schema."
     },
-    "bug-title": {
+    "bug-synopsis": {
       "required": true,
       "type": "string",
-      "description": "The title of the bug."
+      "description": "A one-line synopsis of the bug."
     }
   }
 }
