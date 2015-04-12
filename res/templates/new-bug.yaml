@@ -1,0 +1,22 @@
+# I see you're creating a new bug!
+# 
+# If you don't remember the syntax, consult https://en.wikipedia.org/wiki/YAML
+
+# Optional author field
+# 
+# If you prefer to remain anonymous, delete the 'name' and 'email' lines, and
+# change 'author:' to 'author: null'
+author:
+  name: My name
+  email: My email
+
+# This is a short (one line) synopsis of the bug. This is required
+synopsis: My synopsis
+
+# Optional further description
+description: >-
+  More description goes here.
+
+  This is usually parsed with [Markdown syntax][1].
+
+  [1]: https://daringfireball.net/projects/markdown/
