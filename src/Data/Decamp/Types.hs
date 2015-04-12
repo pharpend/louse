@@ -34,16 +34,10 @@ import           Data.Time
 -- |The most important data type: the data type for projects.
 data Project =
        Project
-         {
-         -- |The project's name
-         projectName :: Text
-         -- |The 'Person' who maintains the project. (Can be anonymous).
-         , projectMaintainer :: Maybe Person
-         -- |Optional project home page
+         { projectName :: Text
+         , projectMaintainers :: [Person]
          , projectHomepage :: Maybe Text
-         -- |Optional project description
          , projectDescription :: Maybe Text
-         -- |List of 'Bug's associated with this project
          , projectBugs :: [Bug]
          }
   deriving Show
@@ -51,40 +45,28 @@ data Project =
 -- |Type for bugs
 data Bug =
        Bug
-         {
-         -- |A unique id for the bug. I haven't decided how this is to be created.
-         bugId :: Text
-         -- |The person who reported the bug
+         { bugId :: Text
          , bugReporter :: Maybe Person
-         -- |The non-optional time at which the bug was created.
          , bugCreationDate :: UTCTime
-         -- |The title of the bug
          , bugTitle :: Text
-         -- |An optional description of the bug
          , bugDescription :: Maybe Text
-         -- |Whether or not the bug is open
          , bugOpen :: Bool
-         -- |'Comment's on the bug
          , bugComments :: [Comment]
          }
   deriving Show
 
 -- |Type for a Person
-data Person = Person { personName :: Text -- ^The person's name
-                     , personEmail :: Text -- ^Their email
-                     }
+data Person =
+       Person
+         { personName :: Text -- ^The person's name
+         , personEmail :: Text -- ^Their email
+         }
   deriving Show
 
 -- |This is the type for a comment, usually on a 'Bug'. It can really
 -- be a comment on anything.
-data Comment = Comment {
--- |The person who made the comment (it can be anonymous)
-commentPerson :: Maybe Person 
--- |The actual comment itself
-                       , commentText :: Text           
-                       }
+data Comment = Comment { commentPerson :: Maybe Person, commentText :: Text }
   deriving Show
-
 
 -- |Synonym for 'bugReporter'
 bugPerson :: Bug -> Maybe Person
@@ -96,7 +78,7 @@ bugPerson = bugReporter
 
 instance FromJSON Project where
   parseJSON (Object v) = Project <$> v .: "project-name"
-                                 <*> v .:? "project-maintainer"
+                                 <*> v .: "project-maintainers"
                                  <*> v .:? "project-homepage"
                                  <*> v .:? "project-description"
                                  <*> v .: "project-bugs"
@@ -105,7 +87,7 @@ instance FromJSON Project where
 instance ToJSON Project where
   toJSON p = object
                [ "project-name" .= projectName p
-               , "project-maintainer" .= projectMaintainer p
+               , "project-maintainers" .= projectMaintainers p
                , "project-homepage" .= projectHomepage p
                , "project-description" .= projectDescription p
                , "project-bugs" .= projectBugs p

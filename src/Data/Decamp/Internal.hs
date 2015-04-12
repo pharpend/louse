@@ -33,7 +33,6 @@ import           Data.Aeson.Encode.Pretty
 import           Data.Aeson.Types (Pair)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as Bc8
 import           Data.ByteString.Base16 as Bs16
 import           Data.ByteString.Lazy (toStrict)
 import           Data.Decamp.Types
@@ -208,39 +207,51 @@ editTemplate fp =
 data NewProject =
        NewProject
          { prjName :: Text
-         , prjMaintainer :: Mtnr
+         , prjMaintainer :: [Mtnr]
          , prjHomePage :: Maybe Text
          , prjDescr :: Maybe Text
          }
   deriving (Show, Eq)
 
-data Mtnr = Mtnr { mtnrName :: Text, mtnrEmail :: Text } | Anon
+data Mtnr = Mtnr { mtnrName :: Text, mtnrEmail :: Text }
   deriving (Show, Eq)
 
-mtnrToPerson :: Mtnr -> Maybe Person
-mtnrToPerson Anon = Nothing
-mtnrToPerson (Mtnr n e) = Just $ Person n e
+data Reporter = Reporter { repName :: Text, repEmail :: Text } | Anon
+  deriving (Show, Eq)
+
+data NewBug = NewBug { nbReporter :: Reporter, nbSynopsis :: Text, nbDescr :: Maybe Text }
+  deriving (Show, Eq)
+
+mtnrToPerson :: Mtnr -> Person
+mtnrToPerson (Mtnr n e) = Person n e
+
+repToPerson :: Reporter -> Maybe Person
+repToPerson Anon = Nothing
+repToPerson (Reporter n e) = Just $ Person n e
 
 parseNewBug :: NewBug -> IO Bug
 parseNewBug (NewBug reporter synopsis description) = do
   currentTime <- getCurrentTime
   -- The id should be a base16 encoding of 512 random bytes
   bugid <- decodeUtf8 . Bs16.encode <$> createRandomBytes 512
-  pure $ Bug bugid (mtnrToPerson reporter) currentTime synopsis description True []
+  pure $ Bug bugid (repToPerson reporter) currentTime synopsis description True []
 
 instance FromJSON NewProject where
   parseJSON (Object v) = NewProject <$> v .:? "name" .!= _repl_working_dir
-                                    <*> v .: "maintainer"
+                                    <*> v .: "maintainers"
                                     <*> v .: "homepage"
                                     <*> v .: "description"
   parseJSON _ = mzero
 
 instance FromJSON Mtnr where
   parseJSON (Object v) = Mtnr <$> v .: "name" <*> v .: "email"
+  parseJSON _ = mzero
+
+instance FromJSON Reporter where
+  parseJSON (Object v) = Reporter <$> v .: "name" <*> v .: "email"
   parseJSON Null = pure Anon
   parseJSON _ = mzero
 
-data NewBug = NewBug { nbrptr :: Mtnr, nbttl :: Text, nbdescr :: Maybe Text }
 
 instance FromJSON NewBug where
   parseJSON (Object v) =

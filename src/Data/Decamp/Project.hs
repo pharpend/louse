@@ -29,7 +29,6 @@ module Data.Decamp.Project where
 import           Data.Decamp.Internal
 import           Data.Decamp.Types
 import           Data.Monoid
-import           Data.List.Utils
 import           System.Directory
 
 -- |Try to parse @./.decamp/project.json@. Returns @Left "error
@@ -60,11 +59,11 @@ getCurrentProjectErr =
 -- @
 -- getCurrentProjectMaybe =
 --   flip fmap getCurrentProject $ \case
---     Left err  -> Nothing
+--     Left _    -> Nothing
 --     Right prj -> Just prj
 -- @
 getCurrentProjectMaybe :: IO (Maybe Project)
 getCurrentProjectMaybe =
   flip fmap getCurrentProject $ \case
-    Left err  -> Nothing
+    Left _    -> Nothing
     Right prj -> Just prj

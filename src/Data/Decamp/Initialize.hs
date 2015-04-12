@@ -56,14 +56,10 @@ getProject =
   getProjectBS >>=
   \pbs -> case decodeEither pbs of
     Left err -> fail err
-    Right (NewProject nom mtr hp descr) -> do
+    Right (NewProject nom mtrs hp descr) -> do
       newNom <- if | nom == _repl_working_dir -> T.pack . last . split "/" <$> getCurrentDirectory
                    | otherwise -> pure nom
-      let newMtr =
-            case mtr of
-              Anon     -> Nothing
-              Mtnr n e -> Just $ Person n e
-      pure $ Project newNom newMtr hp descr []
+      pure $ Project newNom (mtnrToPerson <$> mtrs) hp descr []
 
 -- |Get the YAML representation of the project from the user
 -- 
