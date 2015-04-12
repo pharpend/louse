@@ -54,7 +54,7 @@ randomIdent :: IO ByteString
 randomIdent =
   cprgCreate <$> createEntropyPool >>=
   \(rng :: SystemRNG) -> let (bs, _) = cprgGenerate _ident_length rng
-                         in pure bs
+                         in pure $ Bs16.encode bs
 
 -- |Convert a 'Mtnr' to a 'Person'
 -- 
