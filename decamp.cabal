@@ -1,5 +1,5 @@
 name:                decamp
-version:             0.0.0
+version:             0.1.0.0
 synopsis:            Distributed bug tracker
 description:         
   decamp is a very simple distributed bug-tracking system. It literally stores
