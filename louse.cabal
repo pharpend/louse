@@ -32,6 +32,7 @@ flag dev
   default: False
 
 library
+  default-language:    Haskell2010
   default-extensions:
     LambdaCase
     MultiWayIf
@@ -66,14 +67,14 @@ library
     , time
     , text
     , yaml
-  hs-source-dirs:      src
-  default-language:    Haskell2010
   if flag(dev)
     ghc-options: -O0 -Wall
   else
     ghc-options: -O2
 
 executable louse
+  hs-source-dirs:
+    bin
   other-modules:
     Paths_louse
   build-depends:
