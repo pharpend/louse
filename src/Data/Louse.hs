@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,28 +15,28 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp
--- Description : Umbrella module for decamp library
+-- Module      : Data.Louse
+-- Description : Umbrella module for louse library
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- This is an umbrella module for the decamp library
+-- This is an umbrella module for the louse library
 
-module Data.Decamp (
-    module Data.Decamp,
-    module Data.Decamp.Bug.Add,
-    module Data.Decamp.Initialize,
-    module Data.Decamp.Project,
-    module Data.Decamp.Schemata,
-    module Data.Decamp.Types
+module Data.Louse (
+    module Data.Louse,
+    module Data.Louse.Bug.Add,
+    module Data.Louse.Initialize,
+    module Data.Louse.Project,
+    module Data.Louse.Schemata,
+    module Data.Louse.Types
     ) where
 
-import           Data.Decamp.Bug.Add
-import           Data.Decamp.Initialize
-import           Data.Decamp.Project
-import           Data.Decamp.Schemata
-import           Data.Decamp.Trivia
-import           Data.Decamp.Types
+import           Data.Louse.Bug.Add
+import           Data.Louse.Initialize
+import           Data.Louse.Project
+import           Data.Louse.Schemata
+import           Data.Louse.Trivia
+import           Data.Louse.Types
