@@ -31,6 +31,17 @@ flag dev
   description: Enable development mode settings (such as disabling optimizations).
   default: False
 
+source-repository head
+  type: git
+  location: https://notabug.org/pharpend/louse.git
+  branch: master
+
+source-repository this
+  type: git
+  location: https://notabug.org/pharpend/louse.git
+  branch: master
+  tag: 0.1.0.0
+
 library
   default-language:    Haskell2010
   default-extensions:
@@ -82,14 +93,7 @@ executable louse
     , bytestring
     , louse
     , optparse-applicative ==0.11.*
-  default-extensions:
-    LambdaCase
-    MultiWayIf
-    OverloadedStrings
   default-language:    Haskell2010
   main-is:             louse.hs
   ghc-options:         -Wall
 
-source-repository head
-  type: git
-  location: https://notabug.org/pharpend/louse.git
