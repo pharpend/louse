@@ -1,4 +1,4 @@
--- decamp-bugtrack - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Initialize
--- Description : Module to initialize Decamp in directory.
+-- Module      : Data.Louse.Initialize
+-- Description : Module to initialize Louse in directory.
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -24,19 +24,19 @@
 -- Portability : POSIX
 -- 
 
-module Data.Decamp.Initialize where
+module Data.Louse.Initialize where
 
 import           Control.Monad (mzero)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import           Data.Decamp.Internal
-import           Data.Decamp.Types
+import           Data.Louse.Internal
+import           Data.Louse.Types
 import           Data.List.Utils
 import           Data.Monoid
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Yaml
-import           Paths_decamp
+import           Paths_louse
 import           System.Directory
 import           System.IO
 import           Text.Editor

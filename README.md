@@ -1,21 +1,21 @@
-# decamp
+# louse
 
-decamp is a very simple distributed bug-tracking system. It literally stores
-bugs in a JSON file. The idea is pretty portable, although this implementation
-is written in Haskell.
+louse is a very simple distributed bug-tracking system. It literally
+stores bugs in a JSON file. The idea is pretty portable, although this
+implementation is written in Haskell.
 
-The schema for the JSON file is stored in the `res/schemata/project.json`. The
-other schemata (for people, comments, individual bugs, etc) are stored in the
-`res/schemata/` directory.
+The schema for the JSON file is stored in the
+`res/schemata/project.json`. The other schemata (for people, comments,
+individual bugs, etc) are stored in the `res/schemata/` directory.
 
-You can also access the schemata with the `decamp` tool.
+You can also access the schemata with the `louse` tool.
 
-    $ decamp schemata list
+    $ louse schemata list
     bug
     comment
     person
     project
-    $ decamp schemata show comment
+    $ louse schemata show comment
     {
       "name": "comment",
       "type": "object",
@@ -62,23 +62,23 @@ of the license can be found in the LICENSE file.
 
 ## Installation and Usage
 
-You need to install the Haskell platform before installing decamp. Chris Allen
+You need to install the Haskell platform before installing louse. Chris Allen
 maintains an
 [exhaustive guide](https://github.com/bitemyapp/learnhaskell#getting-set-up) on
 installing the Haskell platform.
 
 I haven't published a version on Hackage (the Haskell package repository) yet,
-so you'll have to use the git version. To download and compile decamp, run:
+so you'll have to use the git version. To download and compile louse, run:
 
 ```
-git clone https://notabug.org/pharpend/decamp.git
-cd decamp
+git clone https://notabug.org/pharpend/louse.git
+cd louse
 cabal update
 cabal install
 ```
 
-For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run `decamp
---tutorial`. For a brief listing of the available commands, you can run `decamp
+For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run `louse
+--tutorial`. For a brief listing of the available commands, you can run `louse
 --help`.
 
 ## Directory structure
@@ -86,11 +86,11 @@ For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run `decamp
 The current directory structure looks like this:
 
     project/
-        .decamp/
+        .louse/
             project.json
 
 It occurs to me though, that just one JSON file is a bit hard to version
-control. If two decamp branches make different changes, they'll
+control. If two louse branches make different changes, they'll
 inevitably conflict.
 
 That is, if two separate people add bugs, they'll likely add them to the
@@ -98,14 +98,14 @@ same spot in the JSON file, which means a merge conflict. With this new
 system, if two people add two files with different names, there is
 unlikely to be a merge conflict.
 
-Even though decamp doesn't interface with version control, projects that
-will use decamp probably also use version control, so I have to keep
+Even though louse doesn't interface with version control, projects that
+will use louse probably also use version control, so I have to keep
 version control in mind during the design process.
 
 Thus, I'm probably going to switch to a directory structure more like this:
 
     project/
-        .decamp/
+        .louse/
             project.json
             people/
                 58ec25555613cfced0171391bc483ee77a2fd317.json
@@ -150,10 +150,11 @@ to someone else.
 
 ## Nomenclature
 
-The SFC has a trademark on the term "Git", so I can't use it in the name of my
-program without their permission. I looked in the thesaurus for synonyms to
-"git", and "decamp" came up. It seems appropriate, because camping is vaguely
-reminiscent of free/open-source developers collaborating.
+The SFC has a trademark on the term "Git", so I can't use it in the name
+of my program without their permission. I looked in the thesaurus for
+synonyms to "git", and "louse" came up. It seems appropriate, because
+camping is vaguely reminiscent of free/open-source developers
+collaborating.
 
 ## Contact
 

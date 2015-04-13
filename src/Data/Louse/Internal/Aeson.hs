@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Internal.Aeson
--- Description : Aeson stuff in Decamp
+-- Module      : Data.Louse.Internal.Aeson
+-- Description : Aeson stuff in Louse
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -27,7 +27,7 @@
 -- 
 -- Note that instances are not here, because orphan instances are bad.
 
-module Data.Decamp.Internal.Aeson where
+module Data.Louse.Internal.Aeson where
 
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
@@ -35,7 +35,7 @@ import           Data.Aeson.Types (Pair)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import           Data.ByteString.Lazy (toStrict)
-import           Data.Decamp.Types
+import           Data.Louse.Types
 import           Data.Maybe
 import           Data.Text (Text)
 

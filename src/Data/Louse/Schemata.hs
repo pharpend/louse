@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Schemata
+-- Module      : Data.Louse.Schemata
 -- Description : Print schemata of the JSON files.
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -23,10 +23,10 @@
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- Decamp stores its data in JSON files. This file contains functions
+-- Louse stores its data in JSON files. This file contains functions
 -- to access the schemata of said files.
 
-module Data.Decamp.Schemata where
+module Data.Louse.Schemata where
 
 import           Control.Exception (try)
 import           Control.Monad ((>=>))
@@ -35,7 +35,7 @@ import qualified Data.ByteString as B
 import           Data.Monoid ((<>))
 import           Data.List (sort)
 import           Data.List.Utils (endswith)
-import           Paths_decamp (getDataDir)
+import           Paths_louse (getDataDir)
 import           System.Directory (getDirectoryContents)
 import           System.IO (stdout)
 import           System.IO.Error (isDoesNotExistError)
@@ -67,7 +67,7 @@ getSchema s = do
       if | isDoesNotExistError err -> fail $ mconcat
                                                [ "Invalid schema: "
                                                , s
-                                               , ". Run `decamp list-schema' for a list of valid schema."
+                                               , ". Run `louse list-schema' for a list of valid schema."
                                                ]
          | otherwise -> ioError err
     Right txt -> pure txt

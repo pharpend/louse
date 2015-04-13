@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,18 +15,18 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Internal.Types
--- Description : Internal types for Decamp
+-- Module      : Data.Louse.Internal.Types
+-- Description : Internal types for Louse
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- Types that are really only of use internally in 'Decamp'
+-- Types that are really only of use internally in 'Louse'
 -- 
 
-module Data.Decamp.Internal.Types where
+module Data.Louse.Internal.Types where
 
 import           Crypto.Random
 import           Control.Monad
@@ -37,14 +37,14 @@ import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import           Data.ByteString.Base16 as Bs16
 import           Data.ByteString.Lazy (toStrict)
-import           Data.Decamp.Internal.MagicValues
-import           Data.Decamp.Types
+import           Data.Louse.Internal.MagicValues
+import           Data.Louse.Types
 import           Data.Maybe
 import           Data.Monoid
 import           Data.Text (Text)
 import           Data.Text.Encoding (decodeUtf8)
 import           Data.Time
-import           Paths_decamp
+import           Paths_louse
 import           System.Directory
 import           System.IO
 import           Text.Editor

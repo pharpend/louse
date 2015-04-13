@@ -1,4 +1,4 @@
--- decamp-bugtrack - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 
 -- | 
 -- Module      : Main
--- Description : Runs decamp-bugtrack
+-- Description : Runs louse program
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -27,12 +27,12 @@
 module Main where
 
 import           Control.Applicative
-import           Data.Decamp
-import           Data.Decamp.Trivia
+import           Data.Louse
+import           Data.Louse.Trivia
 import           Data.Monoid
 import           Data.Version hiding (Version)
 import           Options.Applicative
-import           Paths_decamp
+import           Paths_louse
 import           System.IO
 
 
@@ -66,14 +66,14 @@ data SchemaAction = ListSchemata
 
 runArgs :: Args -> IO ()
 runArgs (DBug AddBug) = addBugToCurrentProject
-runArgs Copyright = printOut decampCopyright
+runArgs Copyright = printOut louseCopyright
 runArgs InitInteractive = initialize
-runArgs License = printOut decampLicense
-runArgs Readme = printOut decampReadme
+runArgs License = printOut louseLicense
+runArgs Readme = printOut louseReadme
 runArgs (Schema ListSchemata) = listSchemata
 runArgs (Schema Path) = showSchemaDir
 runArgs (Schema (ShowSchema s)) = showSchema s
-runArgs Tutorial = printOut decampTutorial
+runArgs Tutorial = printOut louseTutorial
 runArgs Version = printVersion
 runArgs x = print x
 
@@ -83,10 +83,10 @@ argsParserInfo = infoHelp argsParser argsHelp
     argsHelp :: InfoMod Args
     argsHelp = mconcat
                  [ fullDesc
-                 , header ("decamp v." <> showVersion version)
+                 , header ("louse v." <> showVersion version)
                  , progDesc "A distributed bug tracker."
                  , footer
-                     "For information on a specific command, run `decamp COMMAND --help`, where COMMAND is one of the commands listed above."
+                     "For information on a specific command, run `louse COMMAND --help`, where COMMAND is one of the commands listed above."
                  ]
     argsParser :: Parser Args
     argsParser = altConcat
@@ -120,7 +120,7 @@ initInfo :: ParserInfo Args
 initInfo = infoHelp theOptions theHelp
   where
     theOptions = pure InitInteractive
-    theHelp = fullDesc <> progDesc "Initialize decamp using $EDITOR."
+    theHelp = fullDesc <> progDesc "Initialize louse using $EDITOR."
 
 
 schemataInfo :: ParserInfo Args

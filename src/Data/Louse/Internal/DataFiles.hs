@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Internal.DataFiles
--- Description : Using Decamp's data files
+-- Module      : Data.Louse.Internal.DataFiles
+-- Description : Using Louse's data files
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -24,15 +24,15 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Decamp.Internal.DataFiles where
+module Data.Louse.Internal.DataFiles where
 
 import           Control.Monad
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import           Data.Decamp.Internal.Aeson
-import           Data.Decamp.Internal.MagicValues
-import           Data.Decamp.Types
-import           Paths_decamp
+import           Data.Louse.Internal.Aeson
+import           Data.Louse.Internal.MagicValues
+import           Data.Louse.Types
+import           Paths_louse
 import           System.Directory
 import           System.IO
 import           Text.Editor
@@ -60,9 +60,9 @@ editTemplate fp =
   runUserEditorDWIM yamlTemplate
 
 
--- |Write the project to @$(pwd)\/.decamp\/project.json@
+-- |Write the project to @$(pwd)\/.louse\/project.json@
 writeProject :: Project -> IO ()
 writeProject p = do
   hSetBinaryMode stdout True
-  createDirectory _decamp_dir
+  createDirectory _louse_dir
   encodeProjectFile _project_json p

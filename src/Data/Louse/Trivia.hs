@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Trivia
--- Description : Trivia about decamp,
+-- Module      : Data.Louse.Trivia
+-- Description : Trivia about louse,
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -25,35 +25,35 @@
 -- 
 -- This has stuff like the license and copyright
 
-module Data.Decamp.Trivia where
+module Data.Louse.Trivia where
 
 import           Control.Monad ((<=<))
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import           Data.Decamp.Internal
+import           Data.Louse.Internal
 import           Data.Version (showVersion)
-import           Paths_decamp (getDataFileName, version)
+import           Paths_louse (getDataFileName, version)
 import           System.IO (hSetBinaryMode, stdout)
 
 -- |The copyright notice
-decampCopyright :: IO ByteString
-decampCopyright =  readDataFile "res/copyright.txt"
+louseCopyright :: IO ByteString
+louseCopyright =  readDataFile "res/copyright.txt"
 
 -- |The tutorial
-decampTutorial :: IO ByteString
-decampTutorial =  readDataFile "TUTORIAL.md"
+louseTutorial :: IO ByteString
+louseTutorial =  readDataFile "TUTORIAL.md"
 
 -- |The license (GPLv3)
-decampLicense :: IO ByteString
-decampLicense = readDataFile "LICENSE"
+louseLicense :: IO ByteString
+louseLicense = readDataFile "LICENSE"
 
 -- |The readme
-decampReadme :: IO ByteString
-decampReadme = readDataFile "README.md"
+louseReadme :: IO ByteString
+louseReadme = readDataFile "README.md"
 
 -- |The version
-decampVersion :: String
-decampVersion = showVersion version
+louseVersion :: String
+louseVersion = showVersion version
 
 -- |Print one of the 'ByteString's from above
 printOut :: IO ByteString -> IO ()
@@ -63,5 +63,5 @@ printOut b = do
 
 -- |Print the version
 printVersion :: IO ()
-printVersion = putStrLn $ decampVersion
+printVersion = putStrLn $ louseVersion
 

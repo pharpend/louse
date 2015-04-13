@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Bug.Add
+-- Module      : Data.Louse.Bug.Add
 -- Description : Add a bug.
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -26,11 +26,11 @@
 -- This is a module for all things having to do with adding a bug to a
 -- project.
 
-module Data.Decamp.Bug.Add where
+module Data.Louse.Bug.Add where
 
-import           Data.Decamp.Internal
-import           Data.Decamp.Project
-import           Data.Decamp.Types
+import           Data.Louse.Internal
+import           Data.Louse.Project
+import           Data.Louse.Types
 import           Data.Yaml hiding (encode)
 
 -- |If you are running an executable, this is probably what you want to use.

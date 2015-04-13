@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Project
--- Description : Decamp Projects
+-- Module      : Data.Louse.Project
+-- Description : Louse Projects
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -24,14 +24,14 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Decamp.Project where
+module Data.Louse.Project where
 
-import           Data.Decamp.Internal
-import           Data.Decamp.Types
+import           Data.Louse.Internal
+import           Data.Louse.Types
 import           Data.Monoid
 import           System.Directory
 
--- |Try to parse @./.decamp/project.json@. Returns @Left "error
+-- |Try to parse @./.louse/project.json@. Returns @Left "error
 -- message"@ if it fails, and @Right Project@ if it succeeds.
 getCurrentProject :: IO (Either String Project)
 getCurrentProject =
@@ -40,7 +40,7 @@ getCurrentProject =
     True -> decodeProjectFileEither _project_json
     False -> pure . Left $ "File not found: " <> _project_json
 
--- |Try parse to @./.decamp/project.json@. Fails if there is an error.
+-- |Try parse to @./.louse/project.json@. Fails if there is an error.
 -- 
 -- @
 -- getCurrentProjectErr =
@@ -54,7 +54,7 @@ getCurrentProjectErr =
     Left err  -> fail err
     Right prj -> pure prj
 
--- |Try parse to @./.decamp/project.json@.
+-- |Try parse to @./.louse/project.json@.
 -- 
 -- @
 -- getCurrentProjectMaybe =

@@ -1,6 +1,6 @@
 -- -*- hindent-style: chris-done -*-
 
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -17,25 +17,25 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Internal
--- Description : Internal variables for Decamp
+-- Module      : Data.Louse.Internal
+-- Description : Internal variables for Louse
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- Stuff that's really only of use inside Decamp. You are welcome to
+-- Stuff that's really only of use inside Louse. You are welcome to
 -- use this stuff, but I can't see why you would want to.
 
-module Data.Decamp.Internal
-       (module Data.Decamp.Internal.Aeson,
-        module Data.Decamp.Internal.DataFiles,
-        module Data.Decamp.Internal.MagicValues,
-        module Data.Decamp.Internal.Types)
+module Data.Louse.Internal
+       (module Data.Louse.Internal.Aeson,
+        module Data.Louse.Internal.DataFiles,
+        module Data.Louse.Internal.MagicValues,
+        module Data.Louse.Internal.Types)
        where
 
-import Data.Decamp.Internal.Aeson
-import Data.Decamp.Internal.DataFiles
-import Data.Decamp.Internal.MagicValues
-import Data.Decamp.Internal.Types
+import Data.Louse.Internal.Aeson
+import Data.Louse.Internal.DataFiles
+import Data.Louse.Internal.MagicValues
+import Data.Louse.Internal.Types

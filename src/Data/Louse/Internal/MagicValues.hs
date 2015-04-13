@@ -1,4 +1,4 @@
--- decamp - distributed bugtracker
+-- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
 -- This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Decamp.Internal.MagicValues
--- Description : Magic values for Decamp
+-- Module      : Data.Louse.Internal.MagicValues
+-- Description : Magic values for Louse
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -28,18 +28,18 @@
 -- a pain in the ass to debug. Instead, I just put variables in this
 -- module, and use the variables throughout.
 
-module Data.Decamp.Internal.MagicValues where
+module Data.Louse.Internal.MagicValues where
 
 import           Data.Monoid
 import           Data.Text (Text)
 
--- |The path to ".decamp"
-_decamp_dir :: FilePath
-_decamp_dir = ".decamp"
+-- |The path to ".louse"
+_louse_dir :: FilePath
+_louse_dir = ".louse"
 
 -- |The path to the project.json file
 _project_json :: FilePath
-_project_json = _decamp_dir <> "/project.json"
+_project_json = _louse_dir <> "/project.json"
 
 -- |Magic value for "replace with working directory"
 _repl_working_dir :: Text

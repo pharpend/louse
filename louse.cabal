@@ -1,8 +1,8 @@
-name:                decamp
+name:                louse
 version:             0.1.0.0
 synopsis:            Distributed bug tracker
 description:         
-  decamp is a very simple distributed bug-tracking system. It literally stores
+  louse is a very simple distributed bug-tracking system. It literally stores
   bugs in a JSON file. The idea is pretty portable, although this implementation
   is written in Haskell.
 license:             GPL-3
@@ -38,20 +38,20 @@ library
     OverloadedStrings
     ScopedTypeVariables
   other-modules:
-    Paths_decamp
+    Paths_louse
   exposed-modules:     
-    Data.Decamp
-    Data.Decamp.Bug.Add
-    Data.Decamp.Initialize
-    Data.Decamp.Internal
-    Data.Decamp.Internal.Aeson
-    Data.Decamp.Internal.DataFiles
-    Data.Decamp.Internal.MagicValues
-    Data.Decamp.Internal.Types
-    Data.Decamp.Project
-    Data.Decamp.Schemata
-    Data.Decamp.Trivia
-    Data.Decamp.Types
+    Data.Louse
+    Data.Louse.Bug.Add
+    Data.Louse.Initialize
+    Data.Louse.Internal
+    Data.Louse.Internal.Aeson
+    Data.Louse.Internal.DataFiles
+    Data.Louse.Internal.MagicValues
+    Data.Louse.Internal.Types
+    Data.Louse.Project
+    Data.Louse.Schemata
+    Data.Louse.Trivia
+    Data.Louse.Types
   build-depends:
       aeson
     , aeson-pretty
@@ -73,22 +73,22 @@ library
   else
     ghc-options: -O2
 
-executable decamp
+executable louse
   other-modules:
-    Paths_decamp
+    Paths_louse
   build-depends:
       base ==4.8.*
     , bytestring
-    , decamp
+    , louse
     , optparse-applicative ==0.11.*
   default-extensions:
     LambdaCase
     MultiWayIf
     OverloadedStrings
   default-language:    Haskell2010
-  main-is:             decamp.hs
+  main-is:             louse.hs
   ghc-options:         -Wall
 
 source-repository head
   type: git
-  location: https://notabug.org/pharpend/decamp.git
+  location: https://notabug.org/pharpend/louse.git
