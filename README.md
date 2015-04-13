@@ -81,6 +81,52 @@ For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run `decamp
 --tutorial`. For a brief listing of the available commands, you can run `decamp
 --help`.
 
+## Directory structure
+
+The current directory structure looks like this:
+
+    project/
+        .decamp/
+            project.json
+
+It occurs to me though, that just one JSON file is a bit hard to version
+control. If two decamp branches make different changes, they'll
+inevitably conflict.
+
+That is, if two separate people add bugs, they'll likely add them to the
+same spot in the JSON file, which means a merge conflict. With this new
+system, if two people add two files with different names, there is
+unlikely to be a merge conflict.
+
+Even though decamp doesn't interface with version control, projects that
+will use decamp probably also use version control, so I have to keep
+version control in mind during the design process.
+
+Thus, I'm probably going to switch to a directory structure more like this:
+
+    project/
+        .decamp/
+            project.json
+            people/
+                58ec25555613cfced0171391bc483ee77a2fd317.json
+                74a2c0d30d1125a4952a92a0d5b534546d4967ba.json
+                d787eed545773f27b23622e8ade69bf1ecd90528.json
+                f19cec87632be50bffb463314ea0c7a76ec4aca6.json
+                ...
+            bugs/
+                43d66424f5d84470aabedc2cc369ab8cf0ba19ee.json
+                8c36dd07c13861be9d8634eeb97b0024785b541a.json
+                92de71a16a94012f53c0f09de214a2235ee32fa0.json
+                a97816ef1d66507695698fb41dd6887cc8869c2d.json
+                ...
+
+which is much more VCS-friendly. 
+
+This also has the added benefit of "factoring out" individual people.
+
+At the moment, the identifiers are randomly generated. In the future, I'll
+probably add some sort of hashing system.
+
 ## Inspiration
 
 If you're developing software with Git, there are, in broad terms, 4 components:
