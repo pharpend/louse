@@ -27,6 +27,10 @@ extra-source-files:
   TUTORIAL.md
   res/schemata/*.json
 
+flag dev
+  description: Enable development mode settings (such as disabling optimizations).
+  default: False
+
 library
   default-extensions:
     LambdaCase
@@ -64,9 +68,10 @@ library
     , yaml
   hs-source-dirs:      src
   default-language:    Haskell2010
-  ghc-options:         -Wall -fno-warn-orphans
-  -- other-modules:       
-  -- other-extensions:    
+  if flag(dev)
+    ghc-options: -O0 -Wall
+  else
+    ghc-options: -O2
 
 executable decamp
   other-modules:
