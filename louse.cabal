@@ -33,12 +33,12 @@ flag dev
 
 source-repository head
   type: git
-  location: https://notabug.org/pharpend/louse.git
+  location: https://github.com/pharpend/louse.git
   branch: master
 
 source-repository this
   type: git
-  location: https://notabug.org/pharpend/louse.git
+  location: https://github.com/pharpend/louse.git
   branch: master
   tag: 0.1.0.0
 
