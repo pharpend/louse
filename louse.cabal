@@ -31,6 +31,10 @@ flag dev
   description: Enable development mode settings (such as disabling optimizations).
   default: False
 
+flag lib_only
+  description: Don't compile the louse executable
+  default: False
+
 source-repository head
   type: git
   location: https://github.com/pharpend/louse.git
@@ -53,17 +57,6 @@ library
     Paths_louse
   exposed-modules:     
     Data.Louse
-    Data.Louse.Bug.Add
-    Data.Louse.Initialize
-    Data.Louse.Internal
-    Data.Louse.Internal.Aeson
-    Data.Louse.Internal.DataFiles
-    Data.Louse.Internal.MagicValues
-    Data.Louse.Internal.Types
-    Data.Louse.Project
-    Data.Louse.Schemata
-    Data.Louse.Trivia
-    Data.Louse.Types
   build-depends:
       aeson
     , aeson-pretty
@@ -75,8 +68,10 @@ library
     , directory >=1.2
     , editor-open >=0.2
     , MissingH
+    , safe
     , time
     , text
+    , unordered-containers
     , yaml
   if flag(dev)
     ghc-options: -O0 -Wall
@@ -84,16 +79,19 @@ library
     ghc-options: -O2
 
 executable louse
-  hs-source-dirs:
-    bin
-  other-modules:
-    Paths_louse
-  build-depends:
-      base ==4.8.*
-    , bytestring
-    , louse
-    , optparse-applicative ==0.11.*
-  default-language:    Haskell2010
-  main-is:             louse.hs
-  ghc-options:         -Wall
-
+    if flag(lib_only)
+      buildable: False
+    else
+      buildable: True
+    hs-source-dirs:
+      bin
+    other-modules:
+      Paths_louse
+    build-depends:
+        base ==4.8.*
+      , bytestring
+      , louse
+      , optparse-applicative ==0.11.*
+    default-language:    Haskell2010
+    main-is:             louse.hs
+    ghc-options:         -Wall
