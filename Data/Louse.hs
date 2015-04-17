@@ -48,75 +48,62 @@ import Data.Louse.Types
 -- 
 -- = How to use this library =
 -- 
+-- This document is split in 3 sections:
+-- 
+-- * Louse's types
+-- * Reading an existing louse project
+-- * Initializing a new louse project
+-- * Interacting with the pure data
+-- 
+-- == Louse's types ==
+-- 
 -- This library centers around the 'Louse' data type.
 -- 
--- @
--- data Louse =
---   Louse {louseProjectInfo :: Maybe ProjectInfo
---         ,louseBugs :: HashMap ByteString Bug
---         ,lousePeople :: HashMap ByteString Person}
---   deriving (Eq, Show)
--- @
+-- > data Louse =
+-- >   Louse {louseProjectInfo :: Maybe ProjectInfo
+-- >         ,louseBugs :: HashMap ByteString Bug
+-- >         ,lousePeople :: HashMap ByteString Person}
+-- >   deriving (Eq, Show)
 -- 
 -- which in turn relies on 3 other data types:
 -- 
--- @
--- data ProjectInfo =
---   ProjectInfo {projectName :: Maybe Text
---               ,projectMaintainers :: Maybe (Vector Person)
---               ,projectHomepage :: Maybe Text
---               ,projectDescription :: Maybe Text}
---   deriving (Eq,Show)
---   
--- data Bug =
---   Bug {bugReporter :: Maybe Person
---       ,bugCreationDate :: UTCTime
---       ,bugTitle :: Text
---       ,bugDescription :: Text
---       ,bugOpen :: Bool
---       ,bugComments :: [Comment]}
---   deriving (Eq,Show)
---   
--- data Person =
---   Person {personName :: Text -- ^The person's name
---          ,personEmail :: Text -- ^Their email
---          }
---   deriving (Eq, Show)
+-- > data ProjectInfo =
+-- >   ProjectInfo {projectName :: Maybe Text
+-- >               ,projectMaintainers :: Maybe (Vector Person)
+-- >               ,projectHomepage :: Maybe Text
+-- >               ,projectDescription :: Maybe Text}
+-- >   deriving (Eq,Show)
+-- >   
+-- > data Bug =
+-- >   Bug {bugReporter :: Maybe Person
+-- >       ,bugCreationDate :: UTCTime
+-- >       ,bugTitle :: Text
+-- >       ,bugDescription :: Text
+-- >       ,bugOpen :: Bool
+-- >       ,bugComments :: [Comment]}
+-- >   deriving (Eq,Show)
+-- >   
+-- > data Person =
+-- >   Person {personName :: Text -- ^The person's name
+-- >          ,personEmail :: Text -- ^Their email
+-- >          }
+-- >   deriving (Eq, Show)
+-- > 
+-- > data Comment =
+-- >   Comment {commentPerson :: Maybe Person
+-- >           ,commentDate :: UTCTime
+-- >           ,commentText :: Text}
+-- >   deriving (Eq,Show)
 -- 
--- data Comment =
---   Comment {commentPerson :: Maybe Person
---           ,commentDate :: UTCTime
---           ,commentText :: Text}
---   deriving (Eq,Show)
--- @
--- 
--- This document is split in 3 sections:
--- 
--- * Initializing a new louse project
--- * Reading an existing louse project
--- * Interacting with the pure data
--- 
--- == Initializing a new louse project ==
--- 
--- If you don't already have a louse project to work with, you'll want to
--- call 'newLouse' from "Data.Louse.Initialize".
--- 
--- @
--- newLouse :: Louse
--- newLouse = Louse Nothing mempty mempty
--- @
--- 
--- This creates a pure 'Louse' instance of no value to anyone. If you
--- want to update the 'Louse' purely, use 
+-- The rest of the types you'll encounter are ordinary @ByteString@s,
+-- @Text@s, @FilePath@s, and the like.
 -- 
 -- == Reading an existing louse project ==
 -- 
 -- The first function you'll want to call is 'getLouse', from
 -- "Data.Louse.Initialize". 
 -- 
--- @
--- getLouse :: IO (Either String Louse)
--- @
+-- > getLouse :: IO (Either String Louse)
 -- 
 -- This tries to read a 'Louse' from the current directory. If it
 -- succeeds, it returns @Right Louse@. If it fails, it returns @Left
@@ -129,40 +116,40 @@ import Data.Louse.Types
 -- 
 -- And here's a slightly less minimal example
 -- 
--- @
--- {-# LANGUAGE LambdaCase #-}
--- 
--- module Main where
--- 
--- import Data.Louse
--- import System.IO (hPut, stderr)
--- 
--- main :: IO ()
--- main =
---   getLouse >>=
---   \case
---     Left err -> hPut stderr err
---     Right lse -> print lse
--- @
+-- > {-# LANGUAGE LambdaCase #-}
+-- > 
+-- > module Main where
+-- > 
+-- > import Data.Louse
+-- > import System.IO (hPut, stderr)
+-- > 
+-- > main :: IO ()
+-- > main =
+-- >   getLouse >>=
+-- >   \case
+-- >     Left err -> hPut stderr err
+-- >     Right lse -> print lse
 -- 
 -- If you want to get the 'Louse' from a different directory, use
 -- 'getLouseFrom'
 -- 
--- @
--- getLouseFrom :: FilePath -> IO (Either String Louse)
--- @
+-- > getLouseFrom :: FilePath -> IO (Either String Louse)
 -- 
 -- There are many variants of 'getLouse':
 -- 
--- @
--- getLouseMaybe:: IO (Maybe Louse)
--- getLouseErr:: IO Louse
--- getLouseFromMaybe:: FilePath -> IO (Maybe Louse)
--- getLouseFromErr:: FilePath -> IO Louse
--- @
+-- > getLouseMaybe:: IO (Maybe Louse)
+-- > getLouseErr:: IO Louse
+-- > getLouseFromMaybe:: FilePath -> IO (Maybe Louse)
+-- > getLouseFromErr:: FilePath -> IO Louse
 -- 
 -- Their name and data type should give a good indication of what they
 -- do. If you're still unsure, see the documentation in
 -- "Data.Louse.Initialize"
 -- 
+-- == Initializing a new louse project ==
 -- 
+-- If you don't already have a louse project to work with, you'll want
+-- to call 'newLouse' from "Data.Louse.Initialize".
+-- 
+-- > newLouse :: Louse
+-- > newLouse = Louse Nothing mempty mempty
