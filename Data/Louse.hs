@@ -100,10 +100,10 @@ import Data.Louse.Types
 -- 
 -- == Reading an existing louse project ==
 -- 
--- The first function you'll want to call is 'getLouse', from
+-- The first function you'll want to call is 'readLouse', from
 -- "Data.Louse.Initialize". 
 -- 
--- > getLouse :: IO (Either String Louse)
+-- > readLouse :: IO (Either String Louse)
 -- 
 -- This tries to read a 'Louse' from the current directory. If it
 -- succeeds, it returns @Right Louse@. If it fails, it returns @Left
@@ -112,7 +112,7 @@ import Data.Louse.Types
 -- Here's a simple minimal example:
 -- 
 -- >>> import Data.Louse
--- >>> getLouse >>= print
+-- >>> readLouse >>= print
 -- 
 -- And here's a slightly less minimal example
 -- 
@@ -125,22 +125,22 @@ import Data.Louse.Types
 -- > 
 -- > main :: IO ()
 -- > main =
--- >   getLouse >>=
+-- >   readLouse >>=
 -- >   \case
 -- >     Left err -> hPut stderr err
 -- >     Right lse -> print lse
 -- 
 -- If you want to get the 'Louse' from a different directory, use
--- 'getLouseFrom'
+-- 'readLouseFrom'
 -- 
--- > getLouseFrom :: FilePath -> IO (Either String Louse)
+-- > readLouseFrom :: FilePath -> IO (Either String Louse)
 -- 
--- There are many variants of 'getLouse':
+-- There are many variants of 'readLouse':
 -- 
--- > getLouseMaybe:: IO (Maybe Louse)
--- > getLouseErr:: IO Louse
--- > getLouseFromMaybe:: FilePath -> IO (Maybe Louse)
--- > getLouseFromErr:: FilePath -> IO Louse
+-- > readLouseMaybe:: IO (Maybe Louse)
+-- > readLouseErr:: IO Louse
+-- > readLouseFromMaybe:: FilePath -> IO (Maybe Louse)
+-- > readLouseFromErr:: FilePath -> IO Louse
 -- 
 -- Their name and data type should give a good indication of what they
 -- do. If you're still unsure, see the documentation in
