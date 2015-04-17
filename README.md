@@ -55,31 +55,32 @@ Or, with highlighting:
 ```
 
 
-I can't really copyright an idea, but this particular implementation of it is
-Copyright (C) 2015 Peter Harpending, and licensed under the
-[GNU General Public License, version >=3](https://gnu.org/licenses/gpl). A copy
-of the license can be found in the LICENSE file.
+I can't really copyright an idea, but this particular implementation of
+it is Copyright (C) 2015 Peter Harpending, and licensed under the
+[GNU General Public License, version >=3](https://gnu.org/licenses/gpl). A
+copy of the license can be found in the LICENSE file.
 
 ## Installation and Usage
 
-You need to install the Haskell platform before installing louse. Chris Allen
-maintains an
-[exhaustive guide](https://github.com/bitemyapp/learnhaskell#getting-set-up) on
-installing the Haskell platform.
+You need to install the Haskell platform before installing louse. Chris
+Allen maintains an
+[exhaustive guide](https://github.com/bitemyapp/learnhaskell#getting-set-up)
+on installing the Haskell platform.
 
-I haven't published a version on Hackage (the Haskell package repository) yet,
-so you'll have to use the git version. To download and compile louse, run:
+I haven't published a version on Hackage (the Haskell package
+repository) yet, so you'll have to use the git version. To download and
+compile louse, run:
 
 ```
-git clone https://notabug.org/pharpend/louse.git
+git clone https://github.com/pharpend/louse.git
 cd louse
 cabal update
 cabal install
 ```
 
-For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run `louse
---tutorial`. For a brief listing of the available commands, you can run `louse
---help`.
+For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run
+`louse --tutorial`. For a brief listing of the available commands, you
+can run `louse --help`.
 
 ## Directory structure
 
@@ -124,8 +125,8 @@ which is much more VCS-friendly.
 
 This also has the added benefit of "factoring out" individual people.
 
-At the moment, the identifiers are randomly generated. In the future, I'll
-probably add some sort of hashing system.
+At the moment, the identifiers are randomly generated. In the future,
+I'll probably add some sort of hashing system.
 
 ## Inspiration
 
