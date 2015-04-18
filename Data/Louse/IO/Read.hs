@@ -95,15 +95,15 @@ readLouseFromErr fp =
 
 -- |Lazily reads the bugs.
 readBugsFromErr 
-  :: FilePath       -- ^The path to the project directory
-  -> IO (FPMap Bug) -- ^The resulting Map
+  :: FilePath             -- ^The path to the project directory
+  -> IO (M.Map BugId Bug) -- ^The resulting Map
 readBugsFromErr fp = 
   readFilesFromErr $ mappend fp _bugs_dir
 
 -- |Lazily reads the bugs.
 readPeopleFromErr 
   :: FilePath          -- ^The path to the project directory
-  -> IO (FPMap Person) -- ^The resulting Map
+  -> IO (M.Map PersonId Person) -- ^The resulting Map
 readPeopleFromErr fp = 
   readFilesFromErr $ mappend fp _people_dir
 
@@ -112,7 +112,7 @@ readPeopleFromErr fp =
 readFilesFromErr 
   :: FromJSON t 
   => FilePath     -- ^The directory holding the files
-  -> IO (FPMap t) -- ^The resulting Map
+  -> IO (IdMap t) -- ^The resulting Map
 readFilesFromErr directoryPath =
   M.fromList <$> (mapM mkMapMember =<< files)
   where
@@ -120,13 +120,13 @@ readFilesFromErr directoryPath =
     files = getDirectoryContents directoryPath
 
     -- This function constructs an individual element of the Map
-    mkMapMember :: FromJSON t => FilePath -> IO (FilePath, t)
+    mkMapMember :: FromJSON t => FilePath -> IO (T.Text, t)
     mkMapMember filePath = do
       fcontents <- Bl.readFile filePath
       decodedValue <- case eitherDecode fcontents of
                         Left err -> fail err
                         Right x  -> pure x
-      pure (deCanonicalize filePath, decodedValue)
+      pure (T.pack (deCanonicalize filePath), decodedValue)
     -- quux.yaml -> quux
     removeDot :: FilePath -> FilePath
     removeDot = reverse . drop 5 . reverse

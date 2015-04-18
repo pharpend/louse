@@ -30,23 +30,26 @@ import           Control.Monad
 import           Data.Aeson
 import qualified Data.Map.Lazy as M
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as Tse
 import           Data.Time
 
-type FPMap = M.Map FilePath
+type BugId = T.Text
+type IdMap = M.Map T.Text
+type PersonId = T.Text
 
 -- |Sort of an umbrella type for the various types.
 data Louse =
        Louse
          { workingDirectory :: FilePath
          , louseProjectInfo :: !(Maybe ProjectInfo)
-         , louseBugs :: FPMap Bug
-         , lousePeople :: FPMap Person
+         , louseBugs :: IdMap Bug
+         , lousePeople :: IdMap Person
          }
   deriving (Eq, Show)
 
 -- |Information about the project.
 data ProjectInfo = ProjectInfo { projectName :: Maybe T.Text
-                               , projectMaintainers :: Maybe [Person]
+                               , projectMaintainers :: Maybe [PersonId]
                                , projectHomepage :: Maybe T.Text
                                , projectDescription :: Maybe T.Text
                                }
@@ -57,13 +60,13 @@ instance FromJSON ProjectInfo where
                                      <*> v .:? _project_maintainers
                                      <*> v .:? _project_homepage
                                      <*> v .:? _project_description
-  parseJSON _ = 
+  parseJSON _ =
     fail "Project information must be in the form of a JSON object"
 
 instance ToJSON ProjectInfo where
   toJSON (ProjectInfo nom mtrs hp dscr) = object
                                             [ _project_name .= nom
-                                            , _project_maintainers .= mtrs
+                                            , _project_maintainers .=  mtrs
                                             , _project_homepage .= hp
                                             , _project_description .= dscr
                                             ]
@@ -114,7 +117,7 @@ instance ToJSON Person where
 
 data Comment =
        Comment
-         { commentPerson :: Maybe Person
+         { commentPerson :: Maybe PersonId
          , commentDate :: UTCTime
          , commentText :: T.Text
          }
@@ -123,10 +126,9 @@ data Comment =
 instance FromJSON Comment where
   parseJSON (Object v) = do
     person <- v .:? _comment_person
-    date   <- v .:  _comment_date
-    txt    <- v .:  _comment_text
-    if | T.length txt > 512 -> fail 
-          "Comment length may not be longer than 512 characters."
+    date <- v .: _comment_date
+    txt <- v .: _comment_text
+    if | T.length txt > 512 -> fail "Comment length may not be longer than 512 characters."
     pure $ Comment person date txt
   parseJSON _ = mzero
 
