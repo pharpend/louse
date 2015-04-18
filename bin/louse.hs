@@ -64,17 +64,16 @@ data SchemaAction = ListSchemata
   deriving Show
 
 runArgs :: Args -> IO ()
-runArgs (DBug AddBug) = fail "FIXME: Feature not yet implemented"
-runArgs Copyright = printOut louseCopyright
-runArgs InitInteractive = fail "FIXME: Feature not yet implemented"
-runArgs License = printOut louseLicense
-runArgs Readme = printOut louseReadme
-runArgs (Schema ListSchemata) = listSchemata
-runArgs (Schema Path) = showSchemaDir
+runArgs Copyright               = printOut louseCopyright
+runArgs (DBug AddBug)           = fail "FIXME: Feature not yet implemented"
+runArgs InitInteractive         = fail "FIXME: Feature not yet implemented"
+runArgs License                 = printOut louseLicense
+runArgs Readme                  = printOut louseReadme
+runArgs (Schema ListSchemata)   = listSchemata
+runArgs (Schema Path)           = showSchemaDir
 runArgs (Schema (ShowSchema s)) = showSchema s
-runArgs Tutorial = printOut louseTutorial
-runArgs Version = printVersion
-runArgs x = print x
+runArgs Tutorial                = printOut louseTutorial
+runArgs Version                 = printVersion
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp
