@@ -1,27 +1,28 @@
 # I see you're creating a new project!
 # 
 # This file uses YAML syntax: https://en.wikipedia.org/wiki/YAML .
+# 
+# All of these fields are optional. If you don't want the field included, you
+# can delete it, or put a '#' at the beginning of the line.
 
-# This is the name of the project, which is required
+# Name of your project. It can only contain the 26 English letters, - and _ . It
+# can be at most 64 characters long.
 name: my-stupid-project
-
-# A required one-line synopsis of your project
+# One line synopsis. Can be at most 64 characters long.
 synopsis: A program for X and Y.
-
-# An optional further description of your project.
+homepage: "http://mysite.com/foo/bar/baz"
 description: >-
-  This is an optional further description of your project.
+  This is the place for further description of your project. It can be at most
+  512 characters.
 
   It's usually parsed with [Markdown syntax][1].
 
   [1]: https://daringfireball.net/projects/markdown/
   
-# Optional home page for your project
-homepage: "http://mysite.com/foo/bar/baz"
+# Maintainers. You can have at most 10.
+maintainers:
+  - name: Joe Q. Smith
+    email: "joe@foo.bar"
 
-# Optional maintainer
-maintainer:
-  name: Joe Q. Smith
-  email: "joe@foo.bar"
-  # If you choose to have a non-anonymous maintainer, the fields 'name' and
-  # 'email' are required.
+  - name: Timothy G. Public
+    email: "timothy@baz.quux"
