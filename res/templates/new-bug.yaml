@@ -4,16 +4,16 @@
 
 # Optional author field
 # 
-# If you prefer to remain anonymous, delete the 'name' and 'email' lines, and
-# change 'author:' to 'author: null'
+# To report a bug anonymously, delete these lines.
 author:
   name: My name
   email: My email
 
-# This is a short (one line) synopsis of the bug. This is required
+# This is a short (one line) synopsis of the bug. This is required. It can be at
+# most 64 characters
 synopsis: My synopsis
 
-# Optional further description
+# Further description, required. 512 characters at most.
 description: >-
   More description goes here.
 
