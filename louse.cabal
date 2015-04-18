@@ -57,6 +57,12 @@ library
     Paths_louse
   exposed-modules:     
     Data.Louse
+    Data.Louse.IO
+    Data.Louse.IO.DataFiles
+    Data.Louse.IO.Read
+    Data.Louse.Schemata
+    Data.Louse.Trivia
+    Data.Louse.Types
   build-depends:
       aeson
     , aeson-pretty
