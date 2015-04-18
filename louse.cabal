@@ -87,19 +87,20 @@ executable relouse
     main-is:            relouse.hs
     default-language:   Haskell2010
     default-extensions:
+      FlexibleInstances
       LambdaCase
       MultiWayIf
       OverloadedStrings
-      TemplateHaskell
+      ScopedTypeVariables
     other-modules:
       Paths_louse
     build-depends:
         base >=4.8 && <5
       , bytestring
+      , directory
       , data-default
-      , lens
       , louse
-      , mtl
+      , safe
 
     if os(windows) {
       build-depends:

@@ -28,31 +28,60 @@
 
 module Main where
 
+import           Control.Monad
+import qualified Data.ByteString as Bs
 import           Data.Default
 import           Data.Foldable
 import           Data.IORef
 import           Data.Monoid
+import           Data.Louse
 import           Data.Traversable
+import           Safe
+import           System.Directory
 import           System.Posix.Env.ByteString
 
-data ReLouse = ReLouse { _quiet :: Bool, _to :: String }
+data ReLouse = ReLouse { _working_directory :: FilePath, _mode :: Mode }
+  deriving (Eq, Show)
 
-instance Default HelloOptions where
-  def = HelloOptions False False
+data Mode = Help (Maybe Bs.ByteString)
+          | Init
+          | Add Thing
+          | Comment BugId
+  deriving (Eq, Show)
 
-type OptionPart a = [ByteString] -> (IORef a) -> IO ()
-type OptionMorph a = (a -> a)
+data Thing = Bug | Person
+  deriving (Eq, Show)
 
-runArgs :: OptionPart -> IO ()
+defaultReLouse :: IO ReLouse
+defaultReLouse = ReLouse <$> getCurrentDirectory <*> pure (Help Nothing)
 
-matchAny :: [ByteString] -> OptionMorph a -> OptionPart a
-matchAny 
+getReLouse :: [Bs.ByteString] -> IO ReLouse
+getReLouse args = do
+  let (fstCommand :: Maybe Bs.ByteString) = headMay args
+      (sndCommand :: Maybe Bs.ByteString) = headMay =<< tailMay args
+  relouse <- newIORef =<< defaultReLouse
+  if | or (fmap (==fstCommand) (fmap Just ["-h", "help", "--help"])) ->
+          modifyIORef' relouse (\o -> o {_mode = Help sndCommand})
+     | otherwise -> pure ()
+  readIORef relouse
 
 main :: IO ()
-main = runArgs $ do 
-  on anyOf ["-q", "--quiet"] $ switch quiet
-  on anyOf ["-t", "--to"] $ _to `setTo` theMetavar
-  -- matchAny ["-t", "--to"] $ do
-  --   with aMetavar $ set _to
-  --   without aMetavar $ fail mzero
-  
+main = runLouse =<< getReLouse =<< getArgs
+
+runLouse :: ReLouse -> IO ()
+runLouse l =
+  case l of
+    ReLouse _ (Help Nothing) -> fixme notImplemented
+    ReLouse _ (Help (Just x)) ->
+      case x of
+        _ -> fixme notImplemented
+    _ -> fixme notImplemented
+
+fixme :: String -> IO ()
+fixme = fail . mappend "FIXME: "
+
+notImplemented :: String
+notImplemented = "Feature not yet implemented."
+
+_program_name :: Bs.ByteString
+_program_name = "louse"
