@@ -1,103 +1,90 @@
-name:                louse
-version:             0.1.0.0
-synopsis:            Distributed bug tracker
-description:         
-  louse is a very simple distributed bug-tracking system. It literally stores
-  bugs in a JSON file. The idea is pretty portable, although this implementation
-  is written in Haskell.
-license:             GPL-3
-license-file:        LICENSE
-author:              Peter Harpending
-maintainer:          peter@harpending.org
-copyright:           Copyright (C) 2015 Peter Harpending
-category:            Data, Development, Git
-build-type:          Simple
-cabal-version:       >=1.10
-data-files:
-  README.md
-  LICENSE
-  TUTORIAL.md
-  res/copyright.txt
-  res/schemata/*.json
-  res/templates/*.yaml
-
-extra-source-files:
-  README.md
-  LICENSE
-  TUTORIAL.md
-  res/schemata/*.json
-
+name:                   louse
+version:                0.1.0.0
+synopsis:               Distributed bug tracker
+description:            louse is a very simple distributed bug-tracking
+                        system. It literally stores bugs in a JSON file. The
+                        idea is pretty portable, although this implementation is
+                        written in Haskell.
+license:                GPL-3
+license-file:           LICENSE
+author:                 Peter Harpending
+maintainer:             peter@harpending.org
+copyright:              Copyright (C) 2015 Peter Harpending
+category:               Data, Development, Git
+build-type:             Simple
+cabal-version:          >=1.10
+data-files:             README.md
+                        LICENSE
+                        TUTORIAL.md
+                        res/copyright.txt
+                        res/schemata/*.json
+                        res/templates/*.yaml
+extra-source-files:     README.md
+                        LICENSE
+                        TUTORIAL.md
+                        res/schemata/*.json
 flag dev
-  description: Enable development mode settings (such as disabling optimizations).
-  default: False
-
+  description:          Enable development mode settings (such as disabling optimizations).
+  default:              False
 flag lib_only
-  description: Don't compile the louse executable
-  default: False
-
+  description:          Don't compile the louse executable
+  default:              False
+library
+  default-language:     Haskell2010
+  default-extensions:   LambdaCase
+                        MultiWayIf
+                        OverloadedStrings
+                        ScopedTypeVariables
+  other-modules:        Paths_louse
+  exposed-modules:      Data.Louse
+                        Data.Louse.IO
+                        Data.Louse.IO.DataFiles
+                        Data.Louse.IO.Read
+                        Data.Louse.Schemata
+                        Data.Louse.Trivia
+                        Data.Louse.Types
+  build-depends:        aeson              
+                      , aeson-pretty
+                      , base ==4.8.*
+                      , base16-bytestring
+                      , bytestring
+                      , containers
+                      , cryptohash
+                      , crypto-random
+                      , directory >=1.2
+                      , editor-open >=0.2
+                      , MissingH
+                      , safe
+                      , time
+                      , text
+                      , yaml
+  if flag(dev)
+    ghc-options:        -O0 -Wall
+  else
+    ghc-options:        -O2
+executable louse
+    hs-source-dirs:     bin
+    other-modules:      Paths_louse
+    build-depends:      base ==4.8.*
+                      , bytestring
+                      , louse
+                      , optparse-applicative ==0.11.*
+    default-language:   Haskell2010
+    main-is:            louse.hs
+    ghc-options:        -Wall
+    if flag(lib_only)
+      buildable:        False
+    if flag(dev)
+      ghc-options:      -O0 -Wall
+    else
+      ghc-options:      -O2
 source-repository head
-  type: git
-  location: https://github.com/pharpend/louse.git
-  branch: master
+  type:                 git
+  location:             https://github.com/pharpend/louse.git
+  branch:               master
 
 source-repository this
-  type: git
-  location: https://github.com/pharpend/louse.git
-  branch: master
-  tag: 0.1.0.0
-
-library
-  default-language:    Haskell2010
-  default-extensions:
-    LambdaCase
-    MultiWayIf
-    OverloadedStrings
-    ScopedTypeVariables
-  other-modules:
-    Paths_louse
-  exposed-modules:     
-    Data.Louse
-    Data.Louse.IO
-    Data.Louse.IO.DataFiles
-    Data.Louse.IO.Read
-    Data.Louse.Schemata
-    Data.Louse.Trivia
-    Data.Louse.Types
-  build-depends:
-      aeson
-    , aeson-pretty
-    , base ==4.8.*
-    , base16-bytestring
-    , bytestring
-    , containers
-    , cryptohash
-    , crypto-random
-    , directory >=1.2
-    , editor-open >=0.2
-    , MissingH
-    , safe
-    , time
-    , text
-    , yaml
-  if flag(dev)
-    ghc-options: -O0 -Wall
-  else
-    ghc-options: -O2
-
-executable louse
-    if flag(lib_only)
-      buildable: False
-    else
-      buildable: True
-    hs-source-dirs:
-      bin
-    other-modules:
-      Paths_louse
-    build-depends:
-        base ==4.8.*
-      , bytestring
-      , louse
-      , optparse-applicative ==0.11.*
-    default-language:    Haskell2010
-    main-is:             louse.hs
-    ghc-options:         -Wall
+  type:                 git
+  location:             https://github.com/pharpend/louse.git
+  branch:               master
+  tag:                  0.1.0.0
