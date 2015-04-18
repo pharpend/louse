@@ -142,3 +142,11 @@ readFilesFromErr directoryPath =
       case removeDot <$> lastMay (splitSlashes fp) of
         Just x  -> x
         Nothing -> fp
+
+-- |Look up a bug by its 'BugId'
+lookupBug :: Louse -> BugId -> Maybe Bug
+lookupBug louse bugid = M.lookup bugid $ louseBugs louse
+
+-- |Look up a person by their 'PersonId'
+lookupPerson :: Louse -> PersonId -> Maybe Person
+lookupPerson louse personid = M.lookup personid $ lousePeople louse
