@@ -89,10 +89,9 @@ readLouseFromErr fp =
                   >>= \x -> case eitherDecode x of
                               Left err -> fail err
                               Right pi -> pure pi
-  in Louse <$> getCurrentDirectory 
-           <*> prjInfo 
-           <*> readBugsFromErr fp 
-           <*> readPeopleFromErr fp
+  in Louse fp <$> prjInfo 
+              <*> readBugsFromErr fp 
+              <*> readPeopleFromErr fp
 
 -- |Lazily reads the bugs.
 readBugsFromErr 
