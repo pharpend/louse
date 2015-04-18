@@ -16,7 +16,7 @@
 
 -- | 
 -- Module      : Data.Louse.Types
--- Description : Louse's bug tracker
+-- Description : The types for Louse's bug tracker
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -26,106 +26,135 @@
 
 module Data.Louse.Types where
 
-import           Control.Monad (mzero)
+import           Control.Monad
 import           Data.Aeson
-import           Data.Text (Text)
+import qualified Data.Map.Lazy as M
+import qualified Data.Text as T
 import           Data.Time
 
--- |The most important data type: the data type for projects.
-data Project =
-       Project
-         { projectName :: Text
-         , projectMaintainers :: [Person]
-         , projectHomepage :: Maybe Text
-         , projectDescription :: Maybe Text
-         , projectBugs :: [Bug]
+type FPMap = M.Map FilePath
+
+-- |Sort of an umbrella type for the various types.
+data Louse =
+       Louse
+         { workingDirectory :: FilePath
+         , louseProjectInfo :: !(Maybe ProjectInfo)
+         , louseBugs :: FPMap Bug
+         , lousePeople :: FPMap Person
          }
-  deriving Show
+  deriving (Eq, Show)
 
--- |Type for bugs
-data Bug =
-       Bug
-         { bugId :: Text
-         , bugReporter :: Maybe Person
-         , bugCreationDate :: UTCTime
-         , bugTitle :: Text
-         , bugDescription :: Maybe Text
-         , bugOpen :: Bool
-         , bugComments :: [Comment]
-         }
-  deriving Show
+-- |Information about the project.
+data ProjectInfo = ProjectInfo { projectName :: Maybe T.Text
+                               , projectMaintainers :: Maybe [Person]
+                               , projectHomepage :: Maybe T.Text
+                               , projectDescription :: Maybe T.Text
+                               }
+  deriving (Eq, Show)
 
--- |Type for a Person
-data Person =
-       Person
-         { personName :: Text -- ^The person's name
-         , personEmail :: Text -- ^Their email
-         }
-  deriving Show
+instance FromJSON ProjectInfo where
+  parseJSON (Object v) = ProjectInfo <$> v .:? _project_name
+                                     <*> v .:? _project_maintainers
+                                     <*> v .:? _project_homepage
+                                     <*> v .:? _project_description
+  parseJSON _ = 
+    fail "Project information must be in the form of a JSON object"
 
--- |This is the type for a comment, usually on a 'Bug'. It can really
--- be a comment on anything.
-data Comment = Comment { commentPerson :: Maybe Person, commentText :: Text }
-  deriving Show
+instance ToJSON ProjectInfo where
+  toJSON (ProjectInfo nom mtrs hp dscr) = object
+                                            [ _project_name .= nom
+                                            , _project_maintainers .= mtrs
+                                            , _project_homepage .= hp
+                                            , _project_description .= dscr
+                                            ]
+  
+-- |A bug.
+data Bug = Bug { bugReporter :: Maybe Person
+               , bugCreationDate :: UTCTime
+               , bugTitle :: T.Text
+               , bugDescription :: T.Text
+               , bugOpen :: Bool
+               , bugComments :: [Comment]
+               }
+  deriving (Eq, Show)
 
--- |Synonym for 'bugReporter'
-bugPerson :: Bug -> Maybe Person
-bugPerson = bugReporter
+instance FromJSON Bug where
+  parseJSON (Object v) = Bug <$> v .:? _bug_reporter
+                             <*> v .: _bug_creation_date
+                             <*> v .: _bug_title
+                             <*> v .: _bug_description
+                             <*> v .: _bug_open
+                             <*> v .: _bug_comments
+  parseJSON _ = fail "Bug information must be in the form of a JSON object"
 
-
--- The rest of the file contains orphan instances of 'Project',
--- 'Person', 'Comment', and 'Bug'.
-
-instance FromJSON Project where
-  parseJSON (Object v) = Project <$> v .: "project-name"
-                                 <*> v .: "project-maintainers"
-                                 <*> v .:? "project-homepage"
-                                 <*> v .:? "project-description"
-                                 <*> v .: "project-bugs"
-  parseJSON _ = mzero
-
-instance ToJSON Project where
-  toJSON p = object
-               [ "project-name" .= projectName p
-               , "project-maintainers" .= projectMaintainers p
-               , "project-homepage" .= projectHomepage p
-               , "project-description" .= projectDescription p
-               , "project-bugs" .= projectBugs p
-               ]
-               
+instance ToJSON Bug where
+  toJSON bg = object
+                [ _bug_reporter .= bugReporter bg
+                , _bug_creation_date .= bugCreationDate bg
+                , _bug_title .= bugTitle bg
+                , _bug_description .= bugDescription bg
+                , _bug_open .= bugOpen bg
+                , _bug_comments .= bugComments bg
+                ]
+  
+-- |This is a person.
+data Person = Person { personName  :: T.Text -- ^The person's name
+                     , personEmail :: T.Text -- ^Their email
+                     }
+  deriving (Eq,Show)
 
 instance FromJSON Person where
-  parseJSON (Object v) = Person <$> v .: "person-name" <*> v .: "person-email"
+  parseJSON (Object v) = Person <$> v .: _person_name 
+                                <*> v .: _person_email
   parseJSON _ = mzero
 
 instance ToJSON Person where
-  toJSON (Person nom em) = object ["person-name" .= nom, "person-email" .= em]
+  toJSON (Person n e) = 
+    object [_person_name .= n,_person_email .= e]
+
+data Comment =
+       Comment
+         { commentPerson :: Maybe Person
+         , commentDate :: UTCTime
+         , commentText :: T.Text
+         }
+  deriving (Eq, Show)
 
 instance FromJSON Comment where
-  parseJSON (Object v) = Comment <$> v .:? "comment-person" <*> v .: "comment-text"
-  parseJSON (String v) = pure $ Comment Nothing v
+  parseJSON (Object v) = do
+    person <- v .:? _comment_person
+    date   <- v .:  _comment_date
+    txt    <- v .:  _comment_text
+    if | T.length txt > 512 -> fail 
+          "Comment length may not be longer than 512 characters."
+    pure $ Comment person date txt
   parseJSON _ = mzero
 
 instance ToJSON Comment where
-  toJSON (Comment ps txt) = object ["comment-person" .= ps, "comment-text" .= txt]
+  toJSON (Comment p d t) = object
+    [ _comment_person .= p
+    , _comment_date   .= d
+    , _comment_text   .= t
+    ]
 
-instance FromJSON Bug where
-  parseJSON (Object v) = Bug <$> v .: "bug-id"
-                             <*> v .:? "bug-reporter"
-                             <*> v .: "bug-creation-date"
-                             <*> v .: "bug-title"
-                             <*> v .: "bug-description"
-                             <*> v .: "bug-open"
-                             <*> v .: "bug-comments"
-  parseJSON _ = mzero
-
-instance ToJSON Bug where
-  toJSON bug = object
-                 [ "bug-id" .= bugId bug
-                 , "bug-reporter" .= bugReporter bug
-                 , "bug-creation-date" .= bugCreationDate bug
-                 , "bug-title" .= bugTitle bug
-                 , "bug-description" .= bugDescription bug
-                 , "bug-open" .= bugOpen bug
-                 , "bug-comments" .= bugComments bug
-                 ]
+-- |These are all magic values used in JSON serialization.
+-- 
+-- > _bug_title = "bug-title"
+-- 
+-- It's to prevent mistakes. (Or rather, it's so GHC catches the
+-- mistakes)
+_bug_reporter        = "bug-reporter"
+_bug_creation_date   = "bug-creation-date"
+_bug_title           = "bug-title"
+_bug_description     = "bug-description"
+_bug_open            = "bug-open"
+_bug_comments        = "bug-comments"
+_comment_person      = "comment-person"
+_comment_date        = "comment-date"
+_comment_text        = "comment-text"
+_person_name         = "person-name"
+_person_email        = "person-email"
+_project_name        = "project-name"
+_project_maintainers = "project-maintainers"
+_project_homepage    = "project-homepage"
+_project_description = "project-description"
