@@ -65,7 +65,7 @@ data BugAction = AddBug
                | ShowBug String
   deriving Show
 
-data PersonAction = AddPerson String
+data PersonAction = AddPerson
                   | DeletePerson String
                   | ListPeople
                   | ShowPerson String
@@ -87,7 +87,7 @@ runArgs (DBug ListBugs) = fail "FIXME: Feature not yet implemented"
 runArgs (DBug (ShowBug _)) = fail "FIXME: Feature not yet implemented"
 runArgs InitInteractive = fail "FIXME: Feature not yet implemented"
 runArgs License = printOut louseLicense
-runArgs (People (AddPerson _)) = fail "FIXME: Feature not yet implemented"
+runArgs (People AddPerson) = fail "FIXME: Feature not yet implemented"
 runArgs (People (DeletePerson _)) = fail "FIXME: Feature not yet implemented"
 runArgs (People ListPeople) = fail "FIXME: Feature not yet implemented"
 runArgs (People (ShowPerson _)) = fail "FIXME: Feature not yet implemented"
