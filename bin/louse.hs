@@ -118,7 +118,7 @@ argsParserInfo = infoHelp argsParser argsHelp
                    , versionParser
                    , hsubparser (command "bug" bugInfo)
                    , hsubparser (command "init" initInfo)
-                   , hsubparser (command "ppl" bugInfo)
+                   , hsubparser (command "ppl" pplInfo)
                    , hsubparser (command "schema" schemataInfo)
                    , hsubparser (command "schemata" schemataInfo)
                    ]
@@ -187,4 +187,18 @@ bugInfo = infoHelp theOptions theHelp
     addBugInfo = infoHelp abopts abhelp
     abhelp = fullDesc <> progDesc "Add a bug"
     abopts = pure $ DBug AddBug
+
+pplInfo :: ParserInfo Args
+pplInfo = infoHelp theOptions theHelp
+  where
+    theHelp = fullDesc <> progDesc "Do stuff with people."
+    theOptions = altConcat
+                        [ subparser (command "add" addPplInfo)
+                        , subparser (command "delete" addPplInfo)
+                        , subparser (command "list" addPplInfo)
+                        , subparser (command "show" addPplInfo)
+                        ]
+    addPplInfo = infoHelp abopts abhelp
+    abhelp = fullDesc <> progDesc "Add a person"
+    abopts = pure $ People AddPerson
 
