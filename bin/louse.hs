@@ -28,7 +28,6 @@ module Main where
 
 import           Control.Applicative
 import           Data.Louse
-import           Data.Louse.Trivia
 import           Data.Monoid
 import           Data.Version hiding (Version)
 import           Options.Applicative
@@ -65,9 +64,9 @@ data SchemaAction = ListSchemata
   deriving Show
 
 runArgs :: Args -> IO ()
-runArgs (DBug AddBug) = addBugToCurrentProject
+runArgs (DBug AddBug) = fail "FIXME: Feature not yet implemented"
 runArgs Copyright = printOut louseCopyright
-runArgs InitInteractive = initialize
+runArgs InitInteractive = fail "FIXME: Feature not yet implemented"
 runArgs License = printOut louseLicense
 runArgs Readme = printOut louseReadme
 runArgs (Schema ListSchemata) = listSchemata
