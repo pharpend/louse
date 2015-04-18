@@ -180,7 +180,9 @@ bugInfo = infoHelp theOptions theHelp
     theHelp = fullDesc <> progDesc "Do stuff with bugs."
     theOptions = altConcat
                         [ subparser (command "add" addBugInfo)
+                        , subparser (command "close" addBugInfo)
                         , subparser (command "comment" addBugInfo)
+                        , subparser (command "delete" addBugInfo)
                         , subparser (command "list" addBugInfo)
                         , subparser (command "show" addBugInfo)
                         ]
