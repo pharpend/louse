@@ -78,6 +78,42 @@ executable louse
       ghc-options:      -O0 -Wall
     else
       ghc-options:      -O2
+
+executable relouse
+    hs-source-dirs:     bin
+    main-is:            relouse.hs
+    default-language:   Haskell2010
+    default-extensions:
+      LambdaCase
+      MultiWayIf
+      OverloadedStrings
+      TemplateHaskell
+    other-modules:
+      Paths_louse
+    build-depends:
+        base >=4.8 && <5
+      , bytestring
+      , data-default
+      , lens
+      , louse
+      , mtl
+
+    if os(windows) {
+      build-depends:
+          regex-compat
+        , unix-compat
+    } else {
+      build-depends:
+          regex-posix
+        , unix
+    } if flag(lib_only) {
+      buildable: False
+    } if flag(dev) {
+      ghc-options: -O0 -Wall
+    } else {
+      ghc-options: -O2
+    }
+
 source-repository head
   type:                 git
   location:             https://github.com/pharpend/louse.git
