@@ -1,35 +1,27 @@
 {
   "items": {
     "project-name": {
-      "required": true,
+      "required": false,
       "type": "string",
       "description": "The name of the project."
     },
-    "project-description": {
+    "project-maintainers": {
       "required": false,
-      "type": "string",
-      "description": "A description of the project"
+      "type": "array",
+      "description": "The maintainers. Each maintainer should match the person schema.",
+      "items": {
+        "type": "object"
+      }
     },
     "project-homepage": {
       "required": false,
       "type": "string",
       "description": "A URL for the home page of the project"
     },
-    "project-bugs": {
-      "items": {
-        "type": "object"
-      },
-      "required": true,
-      "type": "array",
-      "description": "List of bugs, not in any particular order. Should fit the bug schema."
-    },
-    "project-maintainers": {
+    "project-description": {
       "required": false,
-      "type": "array",
-      "description": "The maintainers. Should match the person schema.",
-      "items": {
-        "type": "object"
-      }
+      "type": "string",
+      "description": "A description of the project"
     }
   },
   "name": "project",

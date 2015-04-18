@@ -4,8 +4,8 @@
   "properties": {
     "comment-person": {
       "required": false,
-      "type": "object",
-      "description": "The person associated with this comment. Should fit the person schema."
+      "type": "string",
+      "description": "The id of the person associated with this comment."
     },
     "comment-text": {
       "required": true,

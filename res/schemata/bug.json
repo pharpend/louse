@@ -2,10 +2,30 @@
   "name": "bug",
   "type": "object",
   "properties": {
+    "bug-title": {
+      "required": true,
+      "type": "string",
+      "description": "A short (<=64 chars) synopsis of the bug."
+    },
+    "bug-reporter": {
+      "required": false,
+      "type": "string",
+      "description": "The id of the person who reported the bug."
+    },
     "bug-creation-date": {
       "required": true,
       "type": "string",
       "description": "The ISO 8601 date at which the bug was created."
+    },
+    "bug-description": {
+      "required": true,
+      "type": "string",
+      "description": "An longer (<=512 chars) description of the bug."
+    },
+    "bug-open": {
+      "required": true,
+      "type": "boolean",
+      "description": "Whether or not the bug is open"
     },
     "bug-comments": {
       "items": {
@@ -13,31 +33,6 @@
       },
       "type": "array",
       "description": "Comments on the bug. Each item should fit the comment schema."
-    },
-    "bug-id": {
-      "required": true,
-      "type": "string",
-      "description": "Unique identifier for this bug. Should be randomly generated, 20 bytes in length."
-    },
-    "bug-description": {
-      "required": false,
-      "type": "string",
-      "description": "An optional longer description of the bug."
-    },
-    "bug-open": {
-      "required": true,
-      "type": "boolean",
-      "description": "Whether or not the bug is open"
-    },
-    "bug-reporter": {
-      "required": false,
-      "type": "object",
-      "description": "The person who reported the bug. Object should fit the person schema."
-    },
-    "bug-synopsis": {
-      "required": true,
-      "type": "string",
-      "description": "A one-line synopsis of the bug."
     }
   }
 }
