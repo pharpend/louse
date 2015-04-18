@@ -26,18 +26,18 @@
 
 module Data.Louse.IO.Read where
 
+import           Control.Exception
+import           Control.Monad
 import           Data.Aeson
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Lazy as Bl
+import           Data.Louse.IO.DataFiles
 import           Data.Monoid
 import qualified Data.Map as M
-import Control.Exception
-import Control.Monad
-import Safe
-import Data.Louse.IO.DataFiles
 import           Data.List.Utils (split)
 import           Data.Louse.Types
 import qualified Data.Text as T
+import           Safe
 import           System.Directory
 import           Text.Editor
 
