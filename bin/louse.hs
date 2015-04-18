@@ -27,11 +27,13 @@
 module Main where
 
 import           Control.Applicative
+import           Control.Monad
 import           Data.Louse
 import           Data.Monoid
 import           Data.Version hiding (Version)
 import           Options.Applicative
 import           Paths_louse
+import           System.Directory
 import           System.IO
 
 
@@ -46,14 +48,18 @@ infoHelp :: Parser a -> InfoMod a -> ParserInfo a
 infoHelp a = info (helper <*> a)
 
 data Args = DBug BugAction
-          | Copyright
-          | InitInteractive
-          | License
+          | Init (Maybe FilePath)
           | People PersonAction
-          | Readme
           | Schema SchemaAction
-          | Tutorial
-          | Version
+          | Trivia TriviaAction
+
+  deriving Show
+
+data TriviaAction = Copyright
+                  | License
+                  | Readme
+                  | Tutorial
+                  | Version
   deriving Show
 
 data BugAction = AddBug
@@ -76,28 +82,46 @@ data SchemaAction = ListSchemata
                   | ShowSchema String
   deriving Show
 
-runArgs :: Args -> IO ()
-runArgs Copyright = printOut louseCopyright
-runArgs (DBug AddBug) = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (CloseBug _)) = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (CommentOnBug _)) = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (DeleteBug _)) = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (EditBug _)) = fail "FIXME: Feature not yet implemented"
-runArgs (DBug ListBugs) = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (ShowBug _)) = fail "FIXME: Feature not yet implemented"
-runArgs InitInteractive = fail "FIXME: Feature not yet implemented"
-runArgs License = printOut louseLicense
-runArgs (People AddPerson) = fail "FIXME: Feature not yet implemented"
-runArgs (People (DeletePerson _)) = fail "FIXME: Feature not yet implemented"
-runArgs (People ListPeople) = fail "FIXME: Feature not yet implemented"
-runArgs (People (ShowPerson _)) = fail "FIXME: Feature not yet implemented"
-runArgs Readme = printOut louseReadme
-runArgs (Schema ListSchemata) = listSchemata
-runArgs (Schema Path) = showSchemaDir
-runArgs (Schema (ShowSchema s)) = showSchema s
-runArgs Tutorial = printOut louseTutorial
 
-runArgs Version = printVersion
+runArgs :: Args -> IO ()
+runArgs x =
+  case x of
+    DBug y ->
+      case y of
+        AddBug         -> failNotImplemented
+        CloseBug _     -> failNotImplemented
+        CommentOnBug _ -> failNotImplemented
+        DeleteBug _    -> failNotImplemented
+        EditBug _      -> failNotImplemented
+        ListBugs       -> failNotImplemented
+        ShowBug _      -> failNotImplemented
+    Init dir -> do
+      workdir <- case dir of
+                   Nothing -> getCurrentDirectory
+                   Just x  -> makeAbsolute x
+      putStrLn workdir
+      failNotImplemented
+    People y ->
+      case y of
+        AddPerson      -> failNotImplemented
+        DeletePerson _ -> failNotImplemented
+        ListPeople     -> failNotImplemented
+        ShowPerson _   -> failNotImplemented
+    Schema y ->
+      case y of
+        ListSchemata -> listSchemata
+        Path         -> showSchemaDir
+        ShowSchema s -> showSchema s
+    Trivia y ->
+      case y of
+        Copyright -> printOut louseCopyright
+        License   -> printOut louseLicense
+        Readme    -> printOut louseReadme
+        Tutorial  -> printOut louseTutorial
+        Version   -> printVersion
+  where
+    failNotImplemented = fail "FIXME: Feature not yet implemented"
+
 argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp
   where
@@ -111,38 +135,40 @@ argsParserInfo = infoHelp argsParser argsHelp
                  ]
     argsParser :: Parser Args
     argsParser = altConcat
-                   [ copyrightParser
-                   , licenseParser
-                   , readmeParser
-                   , tutorialParser
-                   , versionParser
-                   , hsubparser (command "bug" bugInfo)
+                   [ hsubparser (command "bug" bugInfo)
                    , hsubparser (command "init" initInfo)
                    , hsubparser (command "ppl" pplInfo)
                    , hsubparser (command "schema" schemataInfo)
                    , hsubparser (command "schemata" schemataInfo)
                    ]
-    copyrightParser :: Parser Args
-    copyrightParser = flag' Copyright (help ("Print the copyright.") <>
-                                       long "copyright")
-    versionParser :: Parser Args
-    versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ").") <>
-                                   long "version")
-    licenseParser :: Parser Args
-    licenseParser = flag' License (help "Print the license (GPL version 3)." <>
-                                   long "license")
-    tutorialParser :: Parser Args
-    tutorialParser = flag' Tutorial (help "Print the tutorial." <>
-                                     long "tutorial")
-    readmeParser :: Parser Args
-    readmeParser = flag' Readme (help "Print the README." <>
-                                 long "readme")
+    -- copyrightParser :: Parser Args
+    -- copyrightParser = flag' Copyright (help ("Print the copyright.") <>
+    --                                    long "copyright")
+    -- versionParser :: Parser Args
+    -- versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ").") <>
+    --                                long "version")
+    -- licenseParser :: Parser Args
+    -- licenseParser = flag' License (help "Print the license (GPL version 3)." <>
+    --                                long "license")
+    -- tutorialParser :: Parser Args
+    -- tutorialParser = flag' Tutorial (help "Print the tutorial." <>
+    --                                  long "tutorial")
+    -- readmeParser :: Parser Args
+    -- readmeParser = flag' Readme (help "Print the README." <>
+    --                              long "readme")
 
 initInfo :: ParserInfo Args
 initInfo = infoHelp theOptions theHelp
   where
-    theOptions = pure InitInteractive
-    theHelp = fullDesc <> progDesc "Initialize louse using $EDITOR."
+    theHelp = fullDesc <> progDesc "Initialize louse."
+    theOptions = Init <$> option (Just <$> str)
+                            (mconcat
+                               [ long "workdir"
+                               , short 'w'
+                               , short 'd'
+                               , help "Working directory. Defaults to the current working directory."
+                               , value Nothing
+                               ])
 
 
 schemataInfo :: ParserInfo Args
