@@ -30,7 +30,7 @@ module Data.Louse.Trivia where
 import           Control.Monad ((<=<))
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import           Data.Louse.Internal
+import           Data.Louse.IO.DataFiles
 import           Data.Version (showVersion)
 import           Paths_louse (getDataFileName, version)
 import           System.IO (hSetBinaryMode, stdout)
