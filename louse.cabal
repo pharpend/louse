@@ -63,6 +63,7 @@ library
     , base ==4.8.*
     , base16-bytestring
     , bytestring
+    , containers
     , cryptohash
     , crypto-random
     , directory >=1.2
@@ -71,7 +72,6 @@ library
     , safe
     , time
     , text
-    , unordered-containers
     , yaml
   if flag(dev)
     ghc-options: -O0 -Wall
