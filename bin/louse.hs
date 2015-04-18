@@ -77,27 +77,27 @@ data SchemaAction = ListSchemata
   deriving Show
 
 runArgs :: Args -> IO ()
-runArgs Copyright                 = printOut louseCopyright
-runArgs (DBug AddBug)             = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (CloseBug _))       = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (CommentOnBug _))   = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (DeleteBug _))      = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (EditBug _))        = fail "FIXME: Feature not yet implemented"
-runArgs (DBug ListBugs)           = fail "FIXME: Feature not yet implemented"
-runArgs (DBug (ShowBug _))        = fail "FIXME: Feature not yet implemented"
-runArgs InitInteractive           = fail "FIXME: Feature not yet implemented"
-runArgs License                   = printOut louseLicense
-runArgs (People (AddPerson _))    = fail "FIXME: Feature not yet implemented"
+runArgs Copyright = printOut louseCopyright
+runArgs (DBug AddBug) = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (CloseBug _)) = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (CommentOnBug _)) = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (DeleteBug _)) = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (EditBug _)) = fail "FIXME: Feature not yet implemented"
+runArgs (DBug ListBugs) = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (ShowBug _)) = fail "FIXME: Feature not yet implemented"
+runArgs InitInteractive = fail "FIXME: Feature not yet implemented"
+runArgs License = printOut louseLicense
+runArgs (People (AddPerson _)) = fail "FIXME: Feature not yet implemented"
 runArgs (People (DeletePerson _)) = fail "FIXME: Feature not yet implemented"
-runArgs (People ListPeople)       = fail "FIXME: Feature not yet implemented"
-runArgs (People (ShowPerson _))   = fail "FIXME: Feature not yet implemented"
-runArgs Readme                    = printOut louseReadme
-runArgs (Schema ListSchemata)     = listSchemata
-runArgs (Schema Path)             = showSchemaDir
-runArgs (Schema (ShowSchema s))   = showSchema s
-runArgs Tutorial                  = printOut louseTutorial
-runArgs Version                   = printVersion
+runArgs (People ListPeople) = fail "FIXME: Feature not yet implemented"
+runArgs (People (ShowPerson _)) = fail "FIXME: Feature not yet implemented"
+runArgs Readme = printOut louseReadme
+runArgs (Schema ListSchemata) = listSchemata
+runArgs (Schema Path) = showSchemaDir
+runArgs (Schema (ShowSchema s)) = showSchema s
+runArgs Tutorial = printOut louseTutorial
 
+runArgs Version = printVersion
 argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp
   where
