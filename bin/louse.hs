@@ -49,6 +49,7 @@ data Args = DBug BugAction
           | Copyright
           | InitInteractive
           | License
+          | People PersonAction
           | Readme
           | Schema SchemaAction
           | Tutorial
@@ -56,6 +57,15 @@ data Args = DBug BugAction
   deriving Show
 
 data BugAction = AddBug
+               | CommentOnBug String
+               | EditBug String
+               | ListBugs
+               | ShowBug String
+  deriving Show
+
+data PersonAction = AddPerson String
+                  | ListPeople
+                  | ShowPerson String
   deriving Show
 
 data SchemaAction = ListSchemata
@@ -66,8 +76,15 @@ data SchemaAction = ListSchemata
 runArgs :: Args -> IO ()
 runArgs Copyright               = printOut louseCopyright
 runArgs (DBug AddBug)           = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (CommentOnBug _)) = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (EditBug _))      = fail "FIXME: Feature not yet implemented"
+runArgs (DBug ListBugs)         = fail "FIXME: Feature not yet implemented"
+runArgs (DBug (ShowBug _))      = fail "FIXME: Feature not yet implemented"
 runArgs InitInteractive         = fail "FIXME: Feature not yet implemented"
 runArgs License                 = printOut louseLicense
+runArgs (People (AddPerson _))  = fail "FIXME: Feature not yet implemented"
+runArgs (People ListPeople)     = fail "FIXME: Feature not yet implemented"
+runArgs (People (ShowPerson _)) = fail "FIXME: Feature not yet implemented"
 runArgs Readme                  = printOut louseReadme
 runArgs (Schema ListSchemata)   = listSchemata
 runArgs (Schema Path)           = showSchemaDir
@@ -95,6 +112,7 @@ argsParserInfo = infoHelp argsParser argsHelp
                    , versionParser
                    , hsubparser (command "bug" bugInfo)
                    , hsubparser (command "init" initInfo)
+                   , hsubparser (command "ppl" bugInfo)
                    , hsubparser (command "schema" schemataInfo)
                    , hsubparser (command "schemata" schemataInfo)
                    ]
@@ -156,7 +174,11 @@ bugInfo = infoHelp theOptions theHelp
     theHelp = fullDesc <> progDesc "Do stuff with bugs."
     theOptions = altConcat
                         [ subparser (command "add" addBugInfo)
+                        , subparser (command "comment" addBugInfo)
+                        , subparser (command "list" addBugInfo)
+                        , subparser (command "show" addBugInfo)
                         ]
     addBugInfo = infoHelp abopts abhelp
     abhelp = fullDesc <> progDesc "Add a bug"
     abopts = pure $ DBug AddBug
+
