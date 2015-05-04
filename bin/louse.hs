@@ -48,9 +48,10 @@ infoHelp :: Parser a -> InfoMod a -> ParserInfo a
 infoHelp a = info (helper <*> a)
 
 data Args = DBug BugAction
-          | Init (Maybe FilePath)
+          | Init (Maybe FilePath) Bool
           | People PersonAction
           | Schema SchemaAction
+          | Status
           | Trivia TriviaAction
 
   deriving Show
@@ -71,7 +72,7 @@ data BugAction = AddBug
                | ShowBug String
   deriving Show
 
-data PersonAction = AddPerson
+data PersonAction = AddPerson String String
                   | DeletePerson String
                   | ListPeople
                   | ShowPerson String
@@ -95,15 +96,14 @@ runArgs x =
         EditBug _      -> failNotImplemented
         ListBugs       -> failNotImplemented
         ShowBug _      -> failNotImplemented
-    Init dir -> do
+    Init dir force -> do
       workdir <- case dir of
                    Nothing -> getCurrentDirectory
                    Just x  -> makeAbsolute x
-      putStrLn workdir
-      failNotImplemented
+      initInDir workdir force
     People y ->
       case y of
-        AddPerson      -> failNotImplemented
+        AddPerson n e  -> failNotImplemented
         DeletePerson _ -> failNotImplemented
         ListPeople     -> failNotImplemented
         ShowPerson _   -> failNotImplemented
@@ -135,41 +135,61 @@ argsParserInfo = infoHelp argsParser argsHelp
                  ]
     argsParser :: Parser Args
     argsParser = altConcat
-                   [ hsubparser (command "bug" bugInfo)
+                   [ Trivia <$> altConcat
+                                  [ copyrightParser
+                                  , licenseParser
+                                  , readmeParser
+                                  , tutorialParser
+                                  , versionParser
+                                  ]
+                   , hsubparser (command "bug" bugInfo)
                    , hsubparser (command "init" initInfo)
                    , hsubparser (command "ppl" pplInfo)
                    , hsubparser (command "schema" schemataInfo)
                    , hsubparser (command "schemata" schemataInfo)
                    ]
-    -- copyrightParser :: Parser Args
-    -- copyrightParser = flag' Copyright (help ("Print the copyright.") <>
-    --                                    long "copyright")
-    -- versionParser :: Parser Args
-    -- versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ").") <>
-    --                                long "version")
-    -- licenseParser :: Parser Args
-    -- licenseParser = flag' License (help "Print the license (GPL version 3)." <>
-    --                                long "license")
-    -- tutorialParser :: Parser Args
-    -- tutorialParser = flag' Tutorial (help "Print the tutorial." <>
-    --                                  long "tutorial")
-    -- readmeParser :: Parser Args
-    -- readmeParser = flag' Readme (help "Print the README." <>
-    --                              long "readme")
+    copyrightParser :: Parser TriviaAction
+    copyrightParser = flag' Copyright (help ("Print the copyright.") <>
+                                       long "copyright")
+    versionParser :: Parser TriviaAction
+    versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ").") <>
+                                   long "version")
+    licenseParser :: Parser TriviaAction
+    licenseParser = flag' License (help "Print the license (GPL version 3)." <>
+                                   long "license")
+    tutorialParser :: Parser TriviaAction
+    tutorialParser = flag' Tutorial (help "Print the tutorial." <>
+                                     long "tutorial")
+    readmeParser :: Parser TriviaAction
+    readmeParser = flag' Readme (help "Print the README." <>
+                                 long "readme")
 
 initInfo :: ParserInfo Args
 initInfo = infoHelp theOptions theHelp
   where
     theHelp = fullDesc <> progDesc "Initialize louse."
-    theOptions = Init <$> option (Just <$> str)
+    theOptions = 
+      Init <$> option (Just <$> str)
                             (mconcat
                                [ long "workdir"
                                , short 'w'
                                , short 'd'
-                               , help "Working directory. Defaults to the current working directory."
+                               , help
+                                   "Working directory. Defaults to the current working directory."
                                , value Nothing
                                ])
+                      <*> switch
+                            (mconcat
+                               [ long "force"
+                               , short 'f'
+                               , help "Initialize louse even if there is an existing louse project."
+                               ])
 
+statusInfo :: ParserInfo Args
+statusInfo = infoHelp theOptions theHelp
+  where
+    theHelp = fullDesc <> progDesc "Initialize louse."
+    theOptions = pure status
 
 schemataInfo :: ParserInfo Args
 schemataInfo = infoHelp schemataOptions schemataHelp
@@ -221,12 +241,20 @@ pplInfo = infoHelp theOptions theHelp
   where
     theHelp = fullDesc <> progDesc "Do stuff with people."
     theOptions = altConcat
-                        [ subparser (command "add" addPplInfo)
-                        , subparser (command "delete" addPplInfo)
-                        , subparser (command "list" addPplInfo)
-                        , subparser (command "show" addPplInfo)
-                        ]
+                   [ subparser (command "add" addPplInfo)
+                   , subparser (command "delete" addPplInfo)
+                   , subparser (command "list" addPplInfo)
+                   , subparser (command "show" addPplInfo)
+                   ]
     addPplInfo = infoHelp abopts abhelp
     abhelp = fullDesc <> progDesc "Add a person"
-    abopts = pure $ People AddPerson
-
+    abopts = fmap People $ AddPerson <$> strArgument
+                                           (mconcat
+                                              [ metavar "NAME"
+                                              , help "The full name of the person"
+                                              ])
+                                     <*> strArgument
+                                           (mconcat
+                                              [ metavar "EMAIL"
+                                              , help "The email address of the person."
+                                              ])

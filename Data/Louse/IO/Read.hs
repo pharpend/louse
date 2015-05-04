@@ -84,14 +84,17 @@ readLouseFromMay = readLouseFrom >=> \case
 readLouseFromErr 
   :: FilePath -- ^The path to the project directory (i.e. NOT .louse)
   -> IO Louse -- ^The resulting 'Louse'
-readLouseFromErr fp =
-  let prjInfo = Bl.readFile (fp <> _project_json)
-                  >>= \x -> case eitherDecode x of
-                              Left err -> fail err
-                              Right pi -> pure pi
-  in Louse fp <$> prjInfo 
-              <*> readBugsFromErr fp 
-              <*> readPeopleFromErr fp
+readLouseFromErr fp = do
+  prjInfoExists <- doesFileExist (fp <> _project_json)
+  prjInfoBS <- if | prjInfoExists -> Just <$> Bl.readFile (fp <> _project_json)
+                  | otherwise -> pure Nothing
+  prjInfo <- case eitherDecode <$> prjInfoBS of
+               Nothing -> pure Nothing
+               Just x ->
+                 case x of
+                   Left err -> fail err
+                   Right pi -> pure $ Just pi
+  Louse fp prjInfo <$> readBugsFromErr fp <*> readPeopleFromErr fp
 
 -- |Lazily reads the bugs.
 readBugsFromErr 
@@ -113,20 +116,24 @@ readFilesFromErr
   :: FromJSON t 
   => FilePath     -- ^The directory holding the files
   -> IO (IdMap t) -- ^The resulting Map
-readFilesFromErr directoryPath =
-  M.fromList <$> (mapM mkMapMember =<< files)
+readFilesFromErr directoryPath = do
+  fs <- drop 2 <$> files
+  mconcat <$> mapM mkMapMember fs
   where
     files :: IO [FilePath]
     files = getDirectoryContents directoryPath
 
     -- This function constructs an individual element of the Map
-    mkMapMember :: FromJSON t => FilePath -> IO (T.Text, t)
+    mkMapMember :: FromJSON t => FilePath -> IO (IdMap t)
     mkMapMember filePath = do
-      fcontents <- Bl.readFile filePath
-      decodedValue <- case eitherDecode fcontents of
-                        Left err -> fail err
-                        Right x  -> pure x
-      pure (T.pack (deCanonicalize filePath), decodedValue)
+      fexists <- doesFileExist filePath
+      if | fexists -> pure M.empty
+         | otherwise -> do
+            fcontents <- Bl.readFile filePath
+            decodedValue <- case eitherDecode fcontents of
+                              Left err -> fail err
+                              Right x  -> pure x
+            pure $ M.singleton (T.pack (deCanonicalize filePath)) decodedValue
     -- quux.yaml -> quux
     removeDot :: FilePath -> FilePath
     removeDot = reverse . drop 5 . reverse

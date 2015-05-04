@@ -1,5 +1,3 @@
--- -*- hindent-style: "chris-done" -*-
-
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -26,17 +24,44 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Louse.IO
-       (module Data.Louse.IO, module Data.Louse.IO.DataFiles,
-        module Data.Louse.IO.Read, randomIdent)
-       where
+module Data.Louse.IO (module Data.Louse.IO, module Data.Louse.IO.DataFiles, module Data.Louse.IO.Read, randomIdent) where
 
-import Crypto.Random
+import           Control.Monad
+import           Crypto.Random
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Base16 as Bs16
-import Data.Louse.IO.DataFiles
-import Data.Louse.IO.Read
+import           Data.Louse.IO.DataFiles
+import           Data.Louse.IO.Read
+import qualified Data.Map as M
+import           Data.Monoid
+import           System.Directory
+import           System.IO.Error
 
+status :: FilePath -> IO ()
+status = do
+  l <- readLouseFromErr dir
+  let numberOpenBugs = M.
+
+initInDir :: FilePath -> Bool -> IO ()
+initInDir dr force = do
+  let dir = dr <> "/"
+      rpath = mappend dir
+  louseDirExists <- doesDirectoryExist $ rpath _louse_dir
+  -- Try to read a louse
+  tryIOError (readLouseFromErr dir) >>= \case
+    -- If we can read one, something has gone terribly wrong
+    Right louse -> unless force . fail $ "Louse is already initialized in " <> dir <> "."
+    Left err
+      -- If we can't read one, that's good
+      | isDoesNotExistError err -> pure ()
+      -- Otherwise, bad user!
+      | otherwise -> ioError err
+
+  -- If all is well, carry on
+  createDirectoryIfMissing True $ rpath _louse_dir
+  readDataFile _templ_new_project >>= Bs.writeFile (rpath _project_json <> ".sample")
+  createDirectoryIfMissing True $ rpath _bugs_dir
+  createDirectoryIfMissing True $ rpath _people_dir
 
 -- |Create a random 20-byte-long indentifier
 randomIdent :: IO Bs.ByteString

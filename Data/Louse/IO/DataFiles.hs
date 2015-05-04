@@ -41,6 +41,8 @@ _project_json = _louse_dir <> "project.yaml"
 _bugs_dir     = _louse_dir <> "bugs/"
 _people_dir   = _louse_dir <> "people/"
 
+_templ_new_project = "res/templates/new-project.yaml"
+
 -- |Read a data file
 readDataFile :: FilePath -> IO Bs.ByteString
 readDataFile = Bs.readFile <=< getDataFileName
