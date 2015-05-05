@@ -33,14 +33,16 @@ import qualified Data.ByteString.Base16 as Bs16
 import           Data.Louse.IO.DataFiles
 import           Data.Louse.IO.Read
 import qualified Data.Map as M
-import           Data.Monoid
+import           Data.Monoid ((<>))
 import           System.Directory
 import           System.IO.Error
 
+-- |Print the status to the screen
+-- 
+-- > status = putStr <=< statusStr
+-- 
 status :: FilePath -> IO ()
-status = do
-  l <- readLouseFromErr dir
-  let numberOpenBugs = M.
+status = putStr <=< statusStr
 
 initInDir :: FilePath -> Bool -> IO ()
 initInDir dr force = do
@@ -48,26 +50,28 @@ initInDir dr force = do
       rpath = mappend dir
   louseDirExists <- doesDirectoryExist $ rpath _louse_dir
   -- Try to read a louse
-  tryIOError (readLouseFromErr dir) >>= \case
-    -- If we can read one, something has gone terribly wrong
-    Right louse -> unless force . fail $ "Louse is already initialized in " <> dir <> "."
-    Left err
-      -- If we can't read one, that's good
-      | isDoesNotExistError err -> pure ()
-      -- Otherwise, bad user!
-      | otherwise -> ioError err
+  _ <- tryIOError (readLouseFromErr dir) >>= \case
+         -- If we can read one, something has gone terribly wrong
+         Right louse -> unless force (fail (mconcat ["Louse is already initialized in ", dir, "."]))
+         Left err
+           -- If we can't read one, that's good
+           | isDoesNotExistError err -> pure ()
+           -- Otherwise, something is horribly wrong, and the user can deal with it.
+           | otherwise -> ioError err
 
   -- If all is well, carry on
+  -- 
+  -- Create the louse directory
   createDirectoryIfMissing True $ rpath _louse_dir
+  -- Write the "new project" template
   readDataFile _templ_new_project >>= Bs.writeFile (rpath _project_json <> ".sample")
+  -- Create the bugs directory and the people directory
   createDirectoryIfMissing True $ rpath _bugs_dir
   createDirectoryIfMissing True $ rpath _people_dir
 
 -- |Create a random 20-byte-long indentifier
 randomIdent :: IO Bs.ByteString
 randomIdent =
-  cprgCreate <$> createEntropyPool >>=
-  \(rng :: SystemRNG) ->
-    let (bs,_) = cprgGenerate _ident_length rng
-    in pure $ Bs16.encode bs
-  where _ident_length = 20
+  let _ident_length = 20
+  in fmap cprgCreate createEntropyPool >>= \(rng :: SystemRNG) -> let (bs, _) = cprgGenerate _ident_length rng
+                                                                  in pure (Bs16.encode bs)

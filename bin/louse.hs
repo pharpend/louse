@@ -112,6 +112,7 @@ runArgs x =
         ListSchemata -> listSchemata
         Path         -> showSchemaDir
         ShowSchema s -> showSchema s
+    Status -> status =<< getCurrentDirectory
     Trivia y ->
       case y of
         Copyright -> printOut louseCopyright
@@ -147,6 +148,7 @@ argsParserInfo = infoHelp argsParser argsHelp
                    , hsubparser (command "ppl" pplInfo)
                    , hsubparser (command "schema" schemataInfo)
                    , hsubparser (command "schemata" schemataInfo)
+                   , hsubparser (command "status" statusInfo)
                    ]
     copyrightParser :: Parser TriviaAction
     copyrightParser = flag' Copyright (help ("Print the copyright.") <>
@@ -189,7 +191,7 @@ statusInfo :: ParserInfo Args
 statusInfo = infoHelp theOptions theHelp
   where
     theHelp = fullDesc <> progDesc "Initialize louse."
-    theOptions = pure status
+    theOptions = pure Status
 
 schemataInfo :: ParserInfo Args
 schemataInfo = infoHelp schemataOptions schemataHelp

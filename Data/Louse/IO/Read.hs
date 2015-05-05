@@ -36,9 +36,13 @@ import           Data.Monoid
 import qualified Data.Map as M
 import           Data.List.Utils (split)
 import           Data.Louse.Types
+import           Data.Ratio ((%))
 import qualified Data.Text as T
 import           Safe
 import           System.Directory
+import           System.Exit (exitFailure)
+import           System.IO (hPutStrLn, stderr)
+import           System.IO.Error
 import           Text.Editor
 
 -- |Read the 'Louse' from the current directory
@@ -157,3 +161,35 @@ lookupBug louse bugid = M.lookup bugid $ louseBugs louse
 -- |Look up a person by their 'PersonId'
 lookupPerson :: Louse -> PersonId -> Maybe Person
 lookupPerson louse personid = M.lookup personid $ lousePeople louse
+
+-- |Get the status
+statusStr :: FilePath -> IO String
+statusStr dir = do
+  let errprint = hPutStrLn stderr
+  louse <- tryIOError (readLouseFromErr dir)
+           >>= \case
+             Left err
+               | isDoesNotExistError err -> do
+                   errprint $ "Oops! You don't appear to have a louse repository in " <> dir
+                   errprint "Hint: Try running `louse init`."
+                   exitFailure
+               | isPermissionError err -> do
+                   errprint $ "I got a permission error when trying to read the louse repo in " <> dir
+                   errprint "Do you have permission to read this directory?"
+                   exitFailure
+               | isAlreadyInUseError err -> do
+                   errprint $ "Another process is using the louse repo in " <> dir
+                   errprint "I don't know what to do about that, so I'm just going to quit."
+                   exitFailure
+               | otherwise -> ioError err
+             Right l -> pure l
+
+  let bugs = louseBugs louse
+      nTotalBugs = M.size bugs
+      nOpenBugs = length $ M.filter bugOpen bugs
+      closureRate = (`mappend` "%") . show . round . (* 100) $ nOpenBugs % nTotalBugs
+  pure $ unlines
+           [ "Louse directory: " <> dir
+           , "Open bugs: " <> show nOpenBugs
+           , "Closure rate: " <> closureRate
+           ]
