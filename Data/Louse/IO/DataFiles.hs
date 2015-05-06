@@ -30,7 +30,11 @@ module Data.Louse.IO.DataFiles where
 
 import           Control.Monad
 import qualified Data.ByteString as Bs
+import           Data.ByteString.Char8 (pack)
 import qualified Data.ByteString.Lazy as Bl
+import           Data.Conduit
+import           Data.Conduit.Binary
+import           Data.Conduit.Text
 import           Data.Monoid
 import           Paths_louse
 import           Text.Editor
@@ -43,16 +47,30 @@ _people_dir        = _louse_dir <> "people/"
 _templ_new_project = "res/templates/new-project.yaml"
 
 -- |Read a data file
-readDataFile :: FilePath -> IO Bs.ByteString
-readDataFile = Bs.readFile <=< getDataFileName
+-- 
+-- > readDataFile = getDataFileName >=> sourceFile
+-- 
+readDataFile :: FilePath -> Producer IO Bs.ByteString
+readDataFile = getDataFileName >=> sourceFile
 
--- |Read a data file lazily
-readDataFileLazy :: FilePath -> IO Bl.ByteString
-readDataFileLazy = Bl.readFile <=< getDataFileName
+-- |Read a data file entirely into memory.
+-- 
+-- > consumeDataFile = getDataFileName >=> readFile
+-- 
+consumeDataFile :: FilePath -> IO Bs.ByteString
+consumeDataFile = getDataFileName >=> Bs.readFile
+
+-- |Read a data file entirely into memory, return a string.
+-- 
+-- > consumeDataFileStr = getDataFileName >=> readFile
+-- 
+consumeDataFileStr :: FilePath -> IO String
+consumeDataFileStr = getDataFileName >=> readFile
 
 -- |Given the path to a template, give the template to the user, allow
 -- him to edit it, and then return the edited template
+-- 
+-- > editTemplate = readDataFile >=> runUserEditorDWIM yamlTemplate
+-- 
 editTemplate :: FilePath -> IO Bs.ByteString
-editTemplate fp =
-  readDataFile fp >>=
-  runUserEditorDWIM yamlTemplate
+editTemplate = readDataFile >=> runUserEditorDWIM yamlTemplate

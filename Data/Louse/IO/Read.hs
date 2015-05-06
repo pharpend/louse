@@ -31,6 +31,8 @@ import           Control.Monad
 import           Data.Aeson
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Lazy as Bl
+import           Data.Conduit
+import           Data.Conduit.Binary
 import           Data.Louse.IO.DataFiles
 import           Data.Monoid
 import qualified Data.Map as M
@@ -89,15 +91,13 @@ readLouseFromErr
   :: FilePath -- ^The path to the project directory (i.e. NOT .louse)
   -> IO Louse -- ^The resulting 'Louse'
 readLouseFromErr fp = do
-  prjInfoExists <- doesFileExist (fp <> _project_json)
-  prjInfoBS <- if | prjInfoExists -> Just <$> Bl.readFile (fp <> _project_json)
-                  | otherwise -> pure Nothing
-  prjInfo <- case eitherDecode <$> prjInfoBS of
-               Nothing -> pure Nothing
-               Just x ->
-                 case x of
-                   Left err -> fail err
-                   Right pi -> pure $ Just pi
+  let prjson = fp <> _project_json
+  prjInfoExists <- doesFileExist prjson
+  prjInfoBS <- if | prjInfoExists -> connect (sourceFile prjson) sinkLbs
+                  | otherwise -> fail $ "File does not exist: " <> prjson
+  prjInfo <- case eitherDecode prjInfoBS of
+               Left err -> fail $ mconcat ["JSON decoding of ", prjson, " failed with: ", "\n", err]
+               Right pi -> pure $ Just pi
   Louse fp prjInfo <$> readBugsFromErr fp <*> readPeopleFromErr fp
 
 -- |Lazily reads the bugs.
