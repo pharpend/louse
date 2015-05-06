@@ -50,7 +50,7 @@ library
                       , base ==4.8.*
                       , base16-bytestring
                       , bytestring
-                      , conduit
+                      , conduit >=0.4
                       , conduit-extra
                       , containers
                       , cryptohash
@@ -58,6 +58,8 @@ library
                       , directory >=1.2
                       , editor-open >=0.2
                       , MissingH
+                      , mtl
+                      , resourcet
                       , safe
                       , time
                       , text

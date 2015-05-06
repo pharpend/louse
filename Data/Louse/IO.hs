@@ -27,9 +27,12 @@
 module Data.Louse.IO (module Data.Louse.IO, module Data.Louse.IO.DataFiles, module Data.Louse.IO.Read, randomIdent) where
 
 import           Control.Monad
+import           Control.Monad.Trans.Resource (runResourceT)
 import           Crypto.Random
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Base16 as Bs16
+import           Data.Conduit (connect)
+import           Data.Conduit.Binary (sinkFile)
 import           Data.Louse.IO.DataFiles
 import           Data.Louse.IO.Read
 import qualified Data.Map as M
@@ -64,7 +67,9 @@ initInDir dr force = do
   -- Create the louse directory
   createDirectoryIfMissing True $ rpath _louse_dir
   -- Write the "new project" template
-  readDataFile _templ_new_project >>= Bs.writeFile (rpath _project_json <> ".sample")
+  runResourceT (connect (readDataFile _templ_new_project)
+                        (sinkFile (mappend (rpath _project_json)
+                                           ".sample")))
   -- Create the bugs directory and the people directory
   createDirectoryIfMissing True $ rpath _bugs_dir
   createDirectoryIfMissing True $ rpath _people_dir

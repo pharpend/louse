@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -28,27 +30,30 @@
 module Data.Louse.Trivia where
 
 import           Control.Monad ((<=<))
+import           Control.Monad.Trans.Resource (ResourceT, runResourceT)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import           Data.Conduit
+import           Data.Conduit.Binary
 import           Data.Louse.IO.DataFiles
 import           Data.Version (showVersion)
 import           Paths_louse (getDataFileName, version)
 import           System.IO (hSetBinaryMode, stdout)
 
--- |The copyright notice
-louseCopyright :: IO ByteString
+-- |Print out the copyright notice
+louseCopyright :: Producer (ResourceT IO) ByteString
 louseCopyright =  readDataFile "res/copyright.txt"
 
 -- |The tutorial
-louseTutorial :: IO ByteString
+louseTutorial :: Producer (ResourceT IO) ByteString
 louseTutorial =  readDataFile "TUTORIAL.md"
 
 -- |The license (GPLv3)
-louseLicense :: IO ByteString
+louseLicense :: Producer (ResourceT IO) ByteString
 louseLicense = readDataFile "LICENSE"
 
 -- |The readme
-louseReadme :: IO ByteString
+louseReadme :: Producer (ResourceT IO) ByteString
 louseReadme = readDataFile "README.md"
 
 -- |The version
@@ -56,12 +61,11 @@ louseVersion :: String
 louseVersion = showVersion version
 
 -- |Print one of the 'ByteString's from above
-printOut :: IO ByteString -> IO ()
-printOut b = do
-  hSetBinaryMode stdout True
-  B.hPut stdout =<< b
+printOut :: Producer (ResourceT IO) ByteString -> IO ()
+printOut prod = runResourceT (connect prod
+                                      (sinkHandle stdout))
 
 -- |Print the version
 printVersion :: IO ()
-printVersion = putStrLn $ louseVersion
+printVersion = putStrLn louseVersion
 

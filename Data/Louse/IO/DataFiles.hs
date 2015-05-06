@@ -1,4 +1,5 @@
 {-# LANGUAGE NoOverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
@@ -29,6 +30,8 @@
 module Data.Louse.IO.DataFiles where
 
 import           Control.Monad
+import           Control.Monad.Trans (lift)
+import           Control.Monad.Trans.Resource (ResourceT(..))
 import qualified Data.ByteString as Bs
 import           Data.ByteString.Char8 (pack)
 import qualified Data.ByteString.Lazy as Bl
@@ -47,11 +50,10 @@ _people_dir        = _louse_dir <> "people/"
 _templ_new_project = "res/templates/new-project.yaml"
 
 -- |Read a data file
--- 
--- > readDataFile = getDataFileName >=> sourceFile
--- 
-readDataFile :: FilePath -> Producer IO Bs.ByteString
-readDataFile = getDataFileName >=> sourceFile
+readDataFile :: FilePath -> Producer (ResourceT IO) Bs.ByteString
+readDataFile fp = do
+  x <- lift (lift (getDataFileName fp))
+  sourceFile x
 
 -- |Read a data file entirely into memory.
 -- 
@@ -70,7 +72,7 @@ consumeDataFileStr = getDataFileName >=> readFile
 -- |Given the path to a template, give the template to the user, allow
 -- him to edit it, and then return the edited template
 -- 
--- > editTemplate = readDataFile >=> runUserEditorDWIM yamlTemplate
+-- > editTemplate = consumeDataFile >=> runUserEditorDWIM yamlTemplate
 -- 
 editTemplate :: FilePath -> IO Bs.ByteString
-editTemplate = readDataFile >=> runUserEditorDWIM yamlTemplate
+editTemplate = consumeDataFile >=> runUserEditorDWIM yamlTemplate

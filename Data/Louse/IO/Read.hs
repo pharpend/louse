@@ -32,7 +32,7 @@ import           Data.Aeson
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Lazy as Bl
 import           Data.Conduit
-import           Data.Conduit.Binary
+import           Data.Conduit.Binary hiding (drop)
 import           Data.Louse.IO.DataFiles
 import           Data.Monoid
 import qualified Data.Map as M
@@ -93,7 +93,7 @@ readLouseFromErr
 readLouseFromErr fp = do
   let prjson = fp <> _project_json
   prjInfoExists <- doesFileExist prjson
-  prjInfoBS <- if | prjInfoExists -> connect (sourceFile prjson) sinkLbs
+  prjInfoBS <- if | prjInfoExists -> Bl.readFile prjson
                   | otherwise -> fail $ "File does not exist: " <> prjson
   prjInfo <- case eitherDecode prjInfoBS of
                Left err -> fail $ mconcat ["JSON decoding of ", prjson, " failed with: ", "\n", err]
