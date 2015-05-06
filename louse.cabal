@@ -50,6 +50,8 @@ library
                       , base ==4.8.*
                       , base16-bytestring
                       , bytestring
+                      , conduit
+                      , conduit-extra
                       , containers
                       , cryptohash
                       , crypto-random
