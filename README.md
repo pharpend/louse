@@ -83,6 +83,33 @@ though the code itself is distributed, often the bug tracker is hosted
 on a central server, which could go down. This is an effort to further
 distribute the standard development workflow.
 
+## Milestones
+
+The following commands need to be implemented:
+
+* `louse bug add`
+* `louse bug close`
+* `louse bug comment`
+* `louse bug delete`
+* `louse bug list`
+* `louse bug show`
+
+The following commands need to be removed:
+
+* `louse ppl`
+* `louse schemata`
+
+These will probably go in another tool:
+
+* Add support for GitHub issues API
+* Add support for BitBucket issues API
+* Add support for git.gnu.io issues API
+* Add support for GitLab.com issues API
+* Add support for Launchpad issues API
+* Add support for Bugzilla issues API
+* Add support for Custom issue tracker API
+* Add support for Custom issue tracker API
+
 ## Contact
 
 Email: <peter@harpending.org>
