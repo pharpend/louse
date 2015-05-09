@@ -26,6 +26,7 @@
 
 module Data.Louse.Types where
 
+import           Control.Applicative ((<|>))
 import           Control.Monad
 import           Data.Aeson
 import qualified Data.Map.Lazy as M
@@ -35,7 +36,6 @@ import           Data.Time
 
 type BugId = T.Text
 type IdMap = M.Map T.Text
-type PersonId = T.Text
 
 -- |Sort of an umbrella type for the various types.
 data Louse =
@@ -43,17 +43,16 @@ data Louse =
          { workingDirectory :: FilePath
          , louseProjectInfo :: !(Maybe ProjectInfo)
          , louseBugs :: IdMap Bug
-         , lousePeople :: IdMap Person
          }
   deriving (Eq, Show)
 
 -- |Information about the project.
-data ProjectInfo = ProjectInfo { projectName :: Maybe T.Text
-                               , projectMaintainers :: Maybe [PersonId]
-                               , projectHomepage :: Maybe T.Text
-                               , projectDescription :: Maybe T.Text
-                               }
-  deriving (Eq, Show)
+data ProjectInfo =
+  ProjectInfo {projectName :: Maybe T.Text
+              ,projectMaintainers :: Maybe [Person]
+              ,projectHomepage :: Maybe T.Text
+              ,projectDescription :: Maybe T.Text}
+  deriving (Eq,Show)
 
 instance FromJSON ProjectInfo where
   parseJSON (Object v) = ProjectInfo <$> v .:? _project_name
@@ -72,17 +71,17 @@ instance ToJSON ProjectInfo where
                                             ]
   
 -- |A bug.
-data Bug = Bug { bugReporter :: Maybe Person
-               , bugCreationDate :: UTCTime
-               , bugTitle :: T.Text
-               , bugDescription :: T.Text
-               , bugOpen :: Bool
-               , bugComments :: [Comment]
-               }
-  deriving (Eq, Show)
+data Bug =
+  Bug {bugReporter :: Person
+      ,bugCreationDate :: UTCTime
+      ,bugTitle :: T.Text
+      ,bugDescription :: T.Text
+      ,bugOpen :: Bool
+      ,bugComments :: [Comment]}
+  deriving (Eq,Show)
 
 instance FromJSON Bug where
-  parseJSON (Object v) = Bug <$> v .:? _bug_reporter
+  parseJSON (Object v) = Bug <$> v .: _bug_reporter
                              <*> v .: _bug_creation_date
                              <*> v .: _bug_title
                              <*> v .: _bug_description
@@ -101,14 +100,19 @@ instance ToJSON Bug where
                 ]
   
 -- |This is a person.
-data Person = Person { personName  :: T.Text -- ^The person's name
-                     , personEmail :: T.Text -- ^Their email
-                     }
+data Person
+  = Person {personName :: T.Text -- ^The person's name
+           ,personEmail :: T.Text -- ^Their email
+           }
+  | Anonymous
   deriving (Eq,Show)
 
 instance FromJSON Person where
-  parseJSON (Object v) = Person <$> v .: _person_name 
-                                <*> v .: _person_email
+  parseJSON (Object v) =
+    (<|>) (ap (fmap Person (v .: _person_name))
+              (v .: _person_email))
+          (pure Anonymous)
+  parseJSON Null = pure Anonymous
   parseJSON _ = mzero
 
 instance ToJSON Person where
@@ -116,20 +120,17 @@ instance ToJSON Person where
     object [_person_name .= n,_person_email .= e]
 
 data Comment =
-       Comment
-         { commentPerson :: Maybe PersonId
-         , commentDate :: UTCTime
-         , commentText :: T.Text
-         }
-  deriving (Eq, Show)
+  Comment {commentPerson :: Person
+          ,commentDate :: UTCTime
+          ,commentText :: T.Text}
+  deriving (Eq,Show)
 
 instance FromJSON Comment where
-  parseJSON (Object v) = do
-    person <- v .:? _comment_person
-    date <- v .: _comment_date
-    txt <- v .: _comment_text
-    if | T.length txt > 512 -> fail "Comment length may not be longer than 512 characters."
-    pure $ Comment person date txt
+  parseJSON (Object v) =
+    do person <- v .: _comment_person
+       date <- v .: _comment_date
+       txt <- v .: _comment_text
+       pure (Comment person date txt)
   parseJSON _ = mzero
 
 instance ToJSON Comment where

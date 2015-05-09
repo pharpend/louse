@@ -56,7 +56,7 @@ import System.Directory (removeFile)
 -- |Add a bug to the current project. This doesn't return a bug. It
 -- instead writes the bug to a file, and returns the 'BugId' pertaining
 -- to the file.
-addBug :: Maybe Person   -- ^The reporter
+addBug :: Person   -- ^The reporter
        -> T.Text         -- ^Title of the bug
        -> T.Text         -- ^Description of the bug
        -> IO BugId       -- ^Resulting 'BugId'
@@ -91,7 +91,7 @@ closeBug bugid =
 
 -- |Comment on a bug. This actually edits the data files, so be careful!
 commentOnBug :: BugId                      -- ^The bug on which to comment
-             -> Maybe PersonId             -- ^The commenter
+             -> Person             -- ^The commenter
              -> T.Text                     -- ^The actual comment text
              -> IO ()
 commentOnBug bugid personid comment =

@@ -88,19 +88,27 @@ readLouseFromMay = readLouseFrom >=> \case
 readLouseFromErr 
   :: FilePath -- ^The path to the project directory (i.e. NOT .louse)
   -> IO Louse -- ^The resulting 'Louse'
-readLouseFromErr fp = do
-  let prjson = fp <> _project_json
-  prjInfoExists <- doesFileExist prjson
-  prjInfoBS <- if | prjInfoExists -> fmap Just (Bl.readFile prjson)
-                  | otherwise -> pure Nothing
-  prjInfo <- case fmap eitherDecode prjInfoBS of
-               Nothing -> pure Nothing
-               Just x ->
-                 case x of
-                   Left err -> fail
-                                 (mconcat ["JSON decoding of ", prjson, " failed with: ", "\n", err])
-                   Right pi -> pure (Just pi)
-  Louse fp prjInfo <$> readBugsFromErr fp <*> readPeopleFromErr fp
+readLouseFromErr fp =
+  do let prjson = fp <> _project_json
+     prjInfoExists <- doesFileExist prjson
+     prjInfoBS <-
+       if prjInfoExists
+          then fmap Just (Bl.readFile prjson)
+          else pure Nothing
+     prjInfo <-
+       case fmap eitherDecode prjInfoBS of
+         Nothing -> pure Nothing
+         Just x ->
+           case x of
+             Left err ->
+               fail (mconcat ["JSON decoding of "
+                             ,prjson
+                             ," failed with: "
+                             ,"\n"
+                             ,err])
+             Right pi -> pure (Just pi)
+     fmap (Louse fp prjInfo)
+          (readBugsFromErr fp)
 
 -- |Lazily reads the bugs.
 readBugsFromErr 
@@ -108,13 +116,6 @@ readBugsFromErr
   -> IO (M.Map BugId Bug) -- ^The resulting Map
 readBugsFromErr fp = 
   readFilesFromErr $ mappend fp _bugs_dir
-
--- |Lazily reads the bugs.
-readPeopleFromErr 
-  :: FilePath          -- ^The path to the project directory
-  -> IO (M.Map PersonId Person) -- ^The resulting Map
-readPeopleFromErr fp = 
-  readFilesFromErr $ mappend fp _people_dir
 
 -- |Lazily reads files in a directory, returns a 'M.Map' of the name
 -- of the file, along with the decoded value.
@@ -142,11 +143,6 @@ readFilesFromErr directoryPath =
 lookupBug :: Louse -> BugId -> Maybe Bug
 lookupBug louse bugid =
   M.lookup bugid (louseBugs louse)
-
--- |Look up a person by their 'PersonId'
-lookupPerson :: Louse -> PersonId -> Maybe Person
-lookupPerson louse personid =
-  M.lookup personid (lousePeople louse)
 
 -- |Get the status
 statusStr :: FilePath -> IO String
