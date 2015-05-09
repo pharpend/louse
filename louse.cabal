@@ -98,6 +98,7 @@ test-suite tests
     ghc-options:        -Wall
     build-depends:      base ==4.8.*  
                       , louse
+                      , safe
                       , hspec
 
 source-repository head
