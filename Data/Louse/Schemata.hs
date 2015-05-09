@@ -33,7 +33,7 @@ import           Control.Monad ((>=>), forM)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import           Data.List (sort)
-import           Data.List.Utils (endswith)
+import           Data.List.Utils (split, endswith)
 import           Paths_louse (getDataDir)
 import           System.Directory (getDirectoryContents)
 import           System.IO (stdout)
@@ -43,14 +43,11 @@ import           System.IO.Error (isDoesNotExistError)
 --
 schemata :: IO [String]
 schemata =
-  do jsonFiles <-
+  do jsonFilePaths <-
        fmap (filter (endswith ".json")) schemataFiles
-     let jsonFileNames =
-           fmap (reverse .
-                 drop 5 .
-                 reverse)
-                jsonFiles
-     pure (sort jsonFileNames)
+     pure (sort (fmap (\fileName ->
+                         last (split "/" (reverse (drop 5 (reverse fileName)))))
+                      jsonFilePaths))
 
 -- |Print the output of 'schemata' to the console
 -- 

@@ -35,15 +35,19 @@ import Test.Hspec
 
 main :: IO ()
 main =
-  let spec = it
-  in hspec (do describe "schemata"
-                        (do spec "schemata dir should be an absolute path"
+  hspec (do describe "schemata"
+                     (do specify "schemata dir should be an absolute path"
                                  (do sd <- schemataDir
                                      shouldBe (headMay sd)
                                               (Just '/'))
-                            spec "all schemata files should be absolute paths"
+                         specify "all schemata files should be absolute paths"
                                  (do sfs <- schemataFiles
                                      forM_ sfs
                                            (\fp ->
                                               shouldBe (headMay fp)
-                                                       (Just '/')))))
+                                                       (Just '/')))
+                         specify "none of the schemata names should have a '/' in them"
+                                 (do schemas <- schemata
+                                     forM_ schemas
+                                           (\scm ->
+                                              shouldBe False (elem '/' scm)))))
