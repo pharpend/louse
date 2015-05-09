@@ -31,8 +31,10 @@ module Data.Louse.Trivia where
 
 import           Control.Monad ((<=<))
 import           Control.Monad.Trans.Resource (ResourceT, runResourceT)
+import           Crypto.Random
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Base16 as Bs16
 import           Data.Conduit
 import           Data.Conduit.Binary
 import           Data.Louse.IO.DataFiles
@@ -69,3 +71,12 @@ printOut prod = runResourceT (connect prod
 printVersion :: IO ()
 printVersion = putStrLn louseVersion
 
+-- |Create a random 20-byte-long indentifier
+randomIdent :: IO B.ByteString
+randomIdent =
+  let _ident_length = 20
+  in fmap cprgCreate createEntropyPool >>=
+     \(rng :: SystemRNG) ->
+       let (bs,_) =
+             cprgGenerate _ident_length rng
+       in pure (Bs16.encode bs)
