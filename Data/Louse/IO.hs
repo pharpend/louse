@@ -24,7 +24,10 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Louse.IO (module Data.Louse.IO, module Data.Louse.IO.DataFiles, module Data.Louse.IO.Read, randomIdent) where
+module Data.Louse.IO
+       (module Data.Louse.IO, module Data.Louse.IO.Bugs,
+        module Data.Louse.IO.DataFiles, module Data.Louse.IO.Read)
+       where
 
 import           Control.Monad
 import           Control.Monad.Trans.Resource (runResourceT)
@@ -48,35 +51,33 @@ status :: FilePath -> IO ()
 status = putStr <=< statusStr
 
 initInDir :: FilePath -> Bool -> IO ()
-initInDir dr force = do
-  let dir = dr <> "/"
-      rpath = mappend dir
-  louseDirExists <- doesDirectoryExist $ rpath _louse_dir
-  -- Try to read a louse
-  _ <- tryIOError (readLouseFromErr dir) >>= \case
-         -- If we can read one, something has gone terribly wrong
-         Right louse -> unless force (fail (mconcat ["Louse is already initialized in ", dir, "."]))
-         Left err
-           -- If we can't read one, that's good
-           | isDoesNotExistError err -> pure ()
-           -- Otherwise, something is horribly wrong, and the user can deal with it.
-           | otherwise -> ioError err
-
-  -- If all is well, carry on
-  -- 
-  -- Create the louse directory
-  createDirectoryIfMissing True $ rpath _louse_dir
-  -- Write the "new project" template
-  runResourceT (connect (readDataFile _templ_new_project)
-                        (sinkFile (mappend (rpath _project_json)
-                                           ".sample")))
-  -- Create the bugs directory and the people directory
-  createDirectoryIfMissing True $ rpath _bugs_dir
-  createDirectoryIfMissing True $ rpath _people_dir
-
--- |Create a random 20-byte-long indentifier
-randomIdent :: IO Bs.ByteString
-randomIdent =
-  let _ident_length = 20
-  in fmap cprgCreate createEntropyPool >>= \(rng :: SystemRNG) -> let (bs, _) = cprgGenerate _ident_length rng
-                                                                  in pure (Bs16.encode bs)
+initInDir dr force =
+  do let dir = dr <> "/"
+         rpath = mappend dir
+     louseDirExists <- doesDirectoryExist $ rpath _louse_dir
+     -- Try to read a louse
+     eitherLouse <-
+       tryIOError (readLouseFromErr dir)
+     case eitherLouse of
+       -- If we can read one, something has gone terribly wrong
+       Right louse ->
+         unless force
+                (fail (mconcat ["Louse is already initialized in ",dir,"."]))
+       Left err
+       -- If we can't read one, that's good
+         | isDoesNotExistError err -> pure ()
+         | otherwise -> ioError err
+     -- If all is well, carry on
+     --
+     -- Create the louse directory
+     createDirectoryIfMissing True $
+       rpath _louse_dir
+     -- Write the "new project" template
+     runResourceT
+       (connect (readDataFile _templ_new_project)
+                (sinkFile (mappend (rpath _project_json) ".sample")))
+     -- Create the bugs directory and the people directory
+     createDirectoryIfMissing True $
+       rpath _bugs_dir
+     createDirectoryIfMissing True $
+       rpath _people_dir
