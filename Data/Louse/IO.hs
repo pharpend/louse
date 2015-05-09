@@ -36,6 +36,7 @@ import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Base16 as Bs16
 import           Data.Conduit (connect)
 import           Data.Conduit.Binary (sinkFile)
+import           Data.Louse.IO.Bugs
 import           Data.Louse.IO.DataFiles
 import           Data.Louse.IO.Read
 import qualified Data.Map as M

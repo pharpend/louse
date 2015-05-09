@@ -40,6 +40,7 @@ library
   other-modules:        Paths_louse
   exposed-modules:      Data.Louse
                         Data.Louse.IO
+                        Data.Louse.IO.Bugs
                         Data.Louse.IO.DataFiles
                         Data.Louse.IO.Read
                         Data.Louse.Schemata
@@ -50,7 +51,8 @@ library
                       , base ==4.8.*
                       , base16-bytestring
                       , bytestring
-                      , conduit >=0.4
+                      , conduit >=1.0
+                      , conduit-combinators
                       , conduit-extra
                       , containers
                       , cryptohash
