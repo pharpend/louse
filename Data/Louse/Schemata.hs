@@ -29,10 +29,9 @@
 module Data.Louse.Schemata where
 
 import           Control.Exception (try)
-import           Control.Monad ((>=>))
+import           Control.Monad ((>=>), forM)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import           Data.Monoid ((<>))
 import           Data.List (sort)
 import           Data.List.Utils (endswith)
 import           Paths_louse (getDataDir)
@@ -110,4 +109,8 @@ showSchemaDir = putStrLn =<< schemataDir
 -- schemataFiles = getDirectoryContents =<< schemataDir
 -- @
 schemataFiles :: IO [FilePath]
-schemataFiles = getDirectoryContents =<< schemataDir
+schemataFiles =
+  do sd <- schemataDir
+     directoryContents <- getDirectoryContents sd
+     forM directoryContents
+          (\fp -> pure (mconcat [sd,"/",fp]))
