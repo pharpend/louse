@@ -28,5 +28,22 @@
 
 module Main where
 
+import Control.Monad (forM_)
+import Data.Louse.Schemata
+import Safe
+import Test.Hspec
+
 main :: IO ()
-main = return ()
+main =
+  let spec = it
+  in hspec (do describe "schemata"
+                        (do spec "schemata dir should be an absolute path"
+                                 (do sd <- schemataDir
+                                     shouldBe (headMay sd)
+                                              (Just '/'))
+                            spec "all schemata files should be absolute paths"
+                                 (do sfs <- schemataFiles
+                                     forM_ sfs
+                                           (\fp ->
+                                              shouldBe (headMay fp)
+                                                       (Just '/')))))
