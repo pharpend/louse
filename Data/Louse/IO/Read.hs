@@ -31,8 +31,6 @@ import           Control.Monad
 import           Data.Aeson
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Lazy as Bl
-import           Data.Conduit
-import           Data.Conduit.Binary hiding (drop)
 import           Data.Louse.IO.DataFiles
 import           Data.Monoid
 import qualified Data.Map as M
@@ -93,11 +91,15 @@ readLouseFromErr
 readLouseFromErr fp = do
   let prjson = fp <> _project_json
   prjInfoExists <- doesFileExist prjson
-  prjInfoBS <- if | prjInfoExists -> Bl.readFile prjson
-                  | otherwise -> fail $ "File does not exist: " <> prjson
-  prjInfo <- case eitherDecode prjInfoBS of
-               Left err -> fail $ mconcat ["JSON decoding of ", prjson, " failed with: ", "\n", err]
-               Right pi -> pure $ Just pi
+  prjInfoBS <- if | prjInfoExists -> fmap Just (Bl.readFile prjson)
+                  | otherwise -> pure Nothing
+  prjInfo <- case fmap eitherDecode prjInfoBS of
+               Nothing -> pure Nothing
+               Just x ->
+                 case x of
+                   Left err -> fail
+                                 (mconcat ["JSON decoding of ", prjson, " failed with: ", "\n", err])
+                   Right pi -> pure (Just pi)
   Louse fp prjInfo <$> readBugsFromErr fp <*> readPeopleFromErr fp
 
 -- |Lazily reads the bugs.
@@ -116,80 +118,69 @@ readPeopleFromErr fp =
 
 -- |Lazily reads files in a directory, returns a 'M.Map' of the name
 -- of the file, along with the decoded value.
-readFilesFromErr 
-  :: FromJSON t 
-  => FilePath     -- ^The directory holding the files
-  -> IO (IdMap t) -- ^The resulting Map
-readFilesFromErr directoryPath = do
-  fs <- drop 2 <$> files
-  mconcat <$> mapM mkMapMember fs
-  where
-    files :: IO [FilePath]
-    files = getDirectoryContents directoryPath
-
-    -- This function constructs an individual element of the Map
-    mkMapMember :: FromJSON t => FilePath -> IO (IdMap t)
-    mkMapMember filePath = do
-      fexists <- doesFileExist filePath
-      if | fexists -> pure M.empty
-         | otherwise -> do
-            fcontents <- Bl.readFile filePath
-            decodedValue <- case eitherDecode fcontents of
-                              Left err -> fail err
-                              Right x  -> pure x
-            pure $ M.singleton (T.pack (deCanonicalize filePath)) decodedValue
-    -- quux.yaml -> quux
-    removeDot :: FilePath -> FilePath
-    removeDot = reverse . drop 5 . reverse
-
-    -- Split a string on "/"
-    splitSlashes :: FilePath -> [FilePath]
-    splitSlashes fp = split "/" fp
-
-    -- Takes a canonical filename: /foo/bar/baz/quux.yaml -> quux . Also converts to Text while it's at
-    -- it.
-    deCanonicalize :: FilePath -> FilePath
-    deCanonicalize fp =
-      case removeDot <$> lastMay (splitSlashes fp) of
-        Just x  -> x
-        Nothing -> fp
+readFilesFromErr :: FromJSON t
+                 => FilePath -> IO (IdMap t)
+readFilesFromErr directoryPath =
+  -- Get the files in the directory
+  do filePaths <- getDirectoryContents directoryPath
+     -- For each filePath
+     fmap
+       M.fromList
+       (forM filePaths
+             (\fp ->
+                do fileBytes <- Bs.readFile fp
+                   decodedContents <-
+                     case decodeStrict fileBytes of
+                       Nothing ->
+                         fail (mappend "Could not decode contents of: " fp)
+                       Just v -> pure v
+                   let fileName =
+                         T.pack (reverse (drop 5 (reverse fp)))
+                   return (fileName,decodedContents)))
 
 -- |Look up a bug by its 'BugId'
 lookupBug :: Louse -> BugId -> Maybe Bug
-lookupBug louse bugid = M.lookup bugid $ louseBugs louse
+lookupBug louse bugid =
+  M.lookup bugid (louseBugs louse)
 
 -- |Look up a person by their 'PersonId'
 lookupPerson :: Louse -> PersonId -> Maybe Person
-lookupPerson louse personid = M.lookup personid $ lousePeople louse
+lookupPerson louse personid =
+  M.lookup personid (lousePeople louse)
 
 -- |Get the status
 statusStr :: FilePath -> IO String
-statusStr dir = do
-  let errprint = hPutStrLn stderr
-  louse <- tryIOError (readLouseFromErr dir)
-           >>= \case
-             Left err
-               | isDoesNotExistError err -> do
-                   errprint $ "Oops! You don't appear to have a louse repository in " <> dir
-                   errprint "Hint: Try running `louse init`."
-                   exitFailure
-               | isPermissionError err -> do
-                   errprint $ "I got a permission error when trying to read the louse repo in " <> dir
-                   errprint "Do you have permission to read this directory?"
-                   exitFailure
-               | isAlreadyInUseError err -> do
-                   errprint $ "Another process is using the louse repo in " <> dir
-                   errprint "I don't know what to do about that, so I'm just going to quit."
-                   exitFailure
-               | otherwise -> ioError err
-             Right l -> pure l
-
-  let bugs = louseBugs louse
-      nTotalBugs = M.size bugs
-      nOpenBugs = length $ M.filter bugOpen bugs
-      closureRate = (`mappend` "%") . show . round . (* 100) $ nOpenBugs % nTotalBugs
-  pure $ unlines
-           [ "Louse directory: " <> dir
-           , "Open bugs: " <> show nOpenBugs
-           , "Closure rate: " <> closureRate
-           ]
+statusStr dir =
+  do let errprint = hPutStrLn stderr
+         rbind = (>>=)
+     louse <-
+       rbind (tryIOError (readLouseFromErr dir))
+             (\case
+                Left err
+                  | isDoesNotExistError err ->
+                    do errprint (mappend "Oops! You don't appear to have a louse repository in " dir)
+                       errprint "Hint: Try running `louse init`."
+                       exitFailure
+                  | isPermissionError err ->
+                    do errprint (mappend "I got a permission error when trying to read the louse repo in "
+                                         dir)
+                       errprint "Do you have permission to read this directory?"
+                       exitFailure
+                  | isAlreadyInUseError err ->
+                    do fail (mconcat ["Another process is using the louse repo in "
+                                     ,dir
+                                     ,". I don't know what to do about that, so I'm just going to quit."])
+                  | otherwise -> ioError err
+                Right l -> pure l)
+     let bugs = louseBugs louse
+         nTotalBugs = M.size bugs
+         nOpenBugs =
+           length (M.filter bugOpen bugs)
+         ratioOf = (%)
+         closureRateStr
+           | nTotalBugs == 0 = mempty
+           | otherwise =
+             mconcat ["Closure rate: ",show (ratioOf nOpenBugs nTotalBugs),"%."]
+     pure (unlines [mappend "Louse directory: " dir
+                   ,mappend "Open bugs: " (show nOpenBugs)
+                   ,closureRateStr])
