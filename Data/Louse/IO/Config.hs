@@ -23,6 +23,6 @@
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- This loads louse's configuration file, @~/.louse/config@
+-- This loads louse's configuration file, @~/.louse/config.yaml@
 
 module Data.Louse.IO.Config where
