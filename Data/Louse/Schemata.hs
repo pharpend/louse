@@ -42,11 +42,16 @@ import           System.IO.Error (isDoesNotExistError)
 
 -- |The list of available schemata
 --
--- @
--- schemata = sort . fmap (reverse . drop 5 . reverse) . filter (endswith ".json") <$> schemataFiles
--- @
 schemata :: IO [String]
-schemata = sort . fmap (reverse . drop 5 . reverse) . filter (endswith ".json") <$> schemataFiles
+schemata =
+  do jsonFiles <-
+       fmap (filter (endswith ".json")) schemataFiles
+     let jsonFileNames =
+           fmap (reverse .
+                 drop 5 .
+                 reverse)
+                jsonFiles
+     pure (sort jsonFileNames)
 
 -- |Print the output of 'schemata' to the console
 -- 
@@ -54,23 +59,25 @@ schemata = sort . fmap (reverse . drop 5 . reverse) . filter (endswith ".json") 
 -- listSchemata = mapM_ putStrLn =<< schemata
 -- @
 listSchemata :: IO ()
-listSchemata = mapM_ putStrLn =<< schemata
-  
+listSchemata =
+  let bindl = (=<<)
+  in bindl (mapM_ putStrLn) schemata
+
 -- |Get a specific schema. You can use 'schemata' to see the
 --  list of available schemata.
 getSchema :: String -> IO ByteString
-getSchema s = do
-  d <- schemataDir
-  let fp = mconcat [d, "/", s, ".json"]
-  try (B.readFile fp) >>= \case
-    Left err ->
-      if | isDoesNotExistError err -> fail $ mconcat
-                                               [ "Invalid schema: "
-                                               , s
-                                               , ". Run `louse list-schema' for a list of valid schema."
-                                               ]
-         | otherwise -> ioError err
-    Right txt -> pure txt
+getSchema s =
+  do d <- schemataDir
+     let fp = mconcat [d,"/",s,".json"]
+     eitherFileText <- try (B.readFile fp)
+     case eitherFileText of
+       Left err ->
+         if |  isDoesNotExistError err ->
+              fail (mconcat ["Invalid schema: "
+                            ,s
+                            ,". Run `louse list-schema' for a list of valid schema."])
+            |  otherwise -> ioError err
+       Right txt -> pure txt
 
 -- |Get a specific schema and print it to the console.
 -- 
@@ -86,7 +93,8 @@ showSchema = getSchema >=> B.hPut stdout
 -- schemataDir = (<> "/res/schemata") <$> getDataDir
 -- @
 schemataDir :: IO FilePath
-schemataDir = (<> "/res/schemata") <$> getDataDir
+schemataDir =
+  fmap (\x -> mappend x "/res/schemata") getDataDir
 
 -- |Print 'schemataDir' to the console
 -- 
