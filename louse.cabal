@@ -41,6 +41,7 @@ library
   exposed-modules:      Data.Louse
                         Data.Louse.IO
                         Data.Louse.IO.Bugs
+                        Data.Louse.IO.Config
                         Data.Louse.IO.DataFiles
                         Data.Louse.IO.Read
                         Data.Louse.Schemata

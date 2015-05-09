@@ -26,7 +26,8 @@
 
 module Data.Louse.IO
        (module Data.Louse.IO, module Data.Louse.IO.Bugs,
-        module Data.Louse.IO.DataFiles, module Data.Louse.IO.Read)
+        module Data.Louse.IO.Config, module Data.Louse.IO.DataFiles,
+        module Data.Louse.IO.Read)
        where
 
 import           Control.Monad
@@ -37,6 +38,7 @@ import qualified Data.ByteString.Base16 as Bs16
 import           Data.Conduit (connect)
 import           Data.Conduit.Binary (sinkFile)
 import           Data.Louse.IO.Bugs
+import           Data.Louse.IO.Config
 import           Data.Louse.IO.DataFiles
 import           Data.Louse.IO.Read
 import qualified Data.Map as M
