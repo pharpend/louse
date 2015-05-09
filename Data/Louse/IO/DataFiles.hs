@@ -31,15 +31,16 @@ module Data.Louse.IO.DataFiles where
 
 import           Control.Monad
 import           Control.Monad.Trans (lift)
-import           Control.Monad.Trans.Resource (ResourceT(..))
+import           Control.Monad.Trans.Resource
 import qualified Data.ByteString as Bs
-import           Data.ByteString.Char8 (pack)
+import           Data.ByteString.Lazy.Char8 (pack)
 import qualified Data.ByteString.Lazy as Bl
 import           Data.Conduit
 import           Data.Conduit.Binary
 import           Data.Conduit.Text
 import           Data.Monoid
 import           Paths_louse
+import           System.Exit
 import           Text.Editor
 
 -- |These are all magic values of the paths in the louse hierarchy.
@@ -55,24 +56,20 @@ readDataFile fp = do
   x <- lift (lift (getDataFileName fp))
   sourceFile x
 
--- |Read a data file entirely into memory.
--- 
--- > consumeDataFile = getDataFileName >=> readFile
--- 
-consumeDataFile :: FilePath -> IO Bs.ByteString
-consumeDataFile = getDataFileName >=> Bs.readFile
-
--- |Read a data file entirely into memory, return a string.
--- 
--- > consumeDataFileStr = getDataFileName >=> readFile
--- 
-consumeDataFileStr :: FilePath -> IO String
-consumeDataFileStr = getDataFileName >=> readFile
-
 -- |Given the path to a template, give the template to the user, allow
 -- him to edit it, and then return the edited template
 -- 
--- > editTemplate = consumeDataFile >=> runUserEditorDWIM yamlTemplate
+-- >>> editTemplate _templ_new_project
 -- 
-editTemplate :: FilePath -> IO Bs.ByteString
-editTemplate = consumeDataFile >=> runUserEditorDWIM yamlTemplate
+-- This will open up the "new project" template in the user's $EDITOR.
+editTemplate :: FilePath -> IO Bl.ByteString
+editTemplate fp =
+  do (exitcode,bytes) <-
+       runResourceT
+         (bracketConduit yamlTemplate
+                         (readDataFile fp)
+                         (toConsumer sinkLbs))
+     case exitcode of
+       ExitSuccess -> pure bytes
+       x@(ExitFailure _) ->
+         fail (mappend "Editor process failed with " (show x))
