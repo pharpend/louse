@@ -2,8 +2,8 @@
 # 
 # If you don't remember the syntax, consult https://en.wikipedia.org/wiki/YAML
 
-bug-synopsis: My synopsis
-bug-description: >-
+synopsis: My synopsis
+description: >-
   More description goes here.
 
   This is usually parsed with [Markdown syntax][1].
