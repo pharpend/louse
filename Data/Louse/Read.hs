@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Louse.IO.Read
+-- Module      : Data.Louse.Read
 -- Description : 'readLouse' and Friends
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -24,14 +24,14 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Louse.IO.Read where
+module Data.Louse.Read where
 
 import           Control.Exception
 import           Control.Monad
 import           Data.Aeson
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Lazy as Bl
-import           Data.Louse.IO.DataFiles
+import           Data.Louse.DataFiles
 import           Data.Monoid
 import qualified Data.Map as M
 import           Data.List.Utils (split)
@@ -144,39 +144,3 @@ lookupBug :: Louse -> BugId -> Maybe Bug
 lookupBug louse bugid =
   M.lookup bugid (louseBugs louse)
 
--- |Get the status
-statusStr :: FilePath -> IO String
-statusStr dir =
-  do let errprint = hPutStrLn stderr
-         rbind = (>>=)
-     louse <-
-       rbind (tryIOError (readLouseFromErr dir))
-             (\case
-                Left err
-                  | isDoesNotExistError err ->
-                    do errprint (mappend "Oops! You don't appear to have a louse repository in " dir)
-                       errprint "Hint: Try running `louse init`."
-                       exitFailure
-                  | isPermissionError err ->
-                    do errprint (mappend "I got a permission error when trying to read the louse repo in "
-                                         dir)
-                       errprint "Do you have permission to read this directory?"
-                       exitFailure
-                  | isAlreadyInUseError err ->
-                    do fail (mconcat ["Another process is using the louse repo in "
-                                     ,dir
-                                     ,". I don't know what to do about that, so I'm just going to quit."])
-                  | otherwise -> ioError err
-                Right l -> pure l)
-     let bugs = louseBugs louse
-         nTotalBugs = M.size bugs
-         nOpenBugs =
-           length (M.filter bugOpen bugs)
-         ratioOf = (%)
-         closureRateStr
-           | nTotalBugs == 0 = mempty
-           | otherwise =
-             mconcat ["Closure rate: ",show (ratioOf nOpenBugs nTotalBugs),"%."]
-     pure (unlines [mappend "Louse directory: " dir
-                   ,mappend "Open bugs: " (show nOpenBugs)
-                   ,closureRateStr])

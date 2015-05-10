@@ -24,14 +24,14 @@
 --   Stability   : experimental
 --   Portability : UNIX/GHC
 
-module Data.Louse
-       (module Data.Louse, module Data.Louse.IO,
-        module Data.Louse.Schemata, module Data.Louse.Trivia,
-        module Data.Louse.Types)
-       where
+module Data.Louse (module Data.Louse) where
 
-import Data.Louse.IO
-import Data.Louse.Schemata
-import Data.Louse.Trivia
-import Data.Louse.Types
-     
+import Data.Louse.Bugs as Data.Louse
+import Data.Louse.DataFiles as Data.Louse
+import Data.Louse.Initialize as Data.Louse
+import Data.Louse.Read as Data.Louse
+import Data.Louse.Schemata as Data.Louse
+import Data.Louse.Status as Data.Louse
+import Data.Louse.Trivia as Data.Louse
+import Data.Louse.Types as Data.Louse
+

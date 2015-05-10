@@ -89,39 +89,40 @@ runArgs x =
   case x of
     DBug y ->
       case y of
-        AddBug         -> failNotImplemented
-        CloseBug _     -> failNotImplemented
+        AddBug -> failNotImplemented
+        CloseBug _ -> failNotImplemented
         CommentOnBug _ -> failNotImplemented
-        DeleteBug _    -> failNotImplemented
-        EditBug _      -> failNotImplemented
-        ListBugs       -> failNotImplemented
-        ShowBug _      -> failNotImplemented
-    Init dir force -> do
-      workdir <- case dir of
-                   Nothing -> getCurrentDirectory
-                   Just x  -> makeAbsolute x
-      initInDir workdir force
+        DeleteBug _ -> failNotImplemented
+        EditBug _ -> failNotImplemented
+        ListBugs -> failNotImplemented
+        ShowBug _ -> failNotImplemented
+    Init dir force ->
+      do workdir <-
+           case dir of
+             Nothing -> getCurrentDirectory
+             Just x -> makeAbsolute x
+         initInDir workdir force
     People y ->
       case y of
-        AddPerson n e  -> failNotImplemented
+        AddPerson n e -> failNotImplemented
         DeletePerson _ -> failNotImplemented
-        ListPeople     -> failNotImplemented
-        ShowPerson _   -> failNotImplemented
+        ListPeople -> failNotImplemented
+        ShowPerson _ -> failNotImplemented
     Schema y ->
       case y of
         ListSchemata -> listSchemata
-        Path         -> showSchemaDir
+        Path -> showSchemaDir
         ShowSchema s -> showSchema s
-    Status -> status =<< getCurrentDirectory
+    Status -> status
     Trivia y ->
       case y of
         Copyright -> printOut louseCopyright
-        License   -> printOut louseLicense
-        Readme    -> printOut louseReadme
-        Tutorial  -> printOut louseTutorial
-        Version   -> printVersion
-  where
-    failNotImplemented = fail "FIXME: Feature not yet implemented"
+        License -> printOut louseLicense
+        Readme -> printOut louseReadme
+        Tutorial -> printOut louseTutorial
+        Version -> printVersion
+  where failNotImplemented =
+          fail "FIXME: Feature not yet implemented"
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp

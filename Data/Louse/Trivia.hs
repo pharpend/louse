@@ -37,7 +37,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Base16 as Bs16
 import           Data.Conduit
 import           Data.Conduit.Binary
-import           Data.Louse.IO.DataFiles
+import           Data.Louse.DataFiles
 import           Data.Version (showVersion)
 import           Paths_louse (getDataFileName, version)
 import           System.IO (hSetBinaryMode, stdout)

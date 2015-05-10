@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Louse.IO.Bugs
+-- Module      : Data.Louse.Bugs
 -- Description : Stuff for reading & writing bugs
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -24,7 +24,7 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Louse.IO.Bugs where
+module Data.Louse.Bugs where
 
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Resource (runResourceT)
@@ -33,8 +33,8 @@ import qualified Data.ByteString.Char8 as Bsc
 import Data.Conduit
 import Data.Conduit.Attoparsec (sinkParser)
 import Data.Conduit.Binary
+import Data.Louse.DataFiles (_bugs_dir)
 import Data.Louse.Types
-import Data.Louse.IO.DataFiles (_bugs_dir)
 import Data.Louse.Trivia (randomIdent)
 import Data.Time (UTCTime, getCurrentTime)
 import qualified Data.Text as T

@@ -15,8 +15,8 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Louse.IO
--- Description : I/O operations for Louse
+-- Module      : Data.Louse.Initialize
+-- Description : Initialize Louse in a directory
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
@@ -24,11 +24,7 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Louse.IO
-       (module Data.Louse.IO, module Data.Louse.IO.Bugs,
-        module Data.Louse.IO.Config, module Data.Louse.IO.DataFiles,
-        module Data.Louse.IO.Read)
-       where
+module Data.Louse.Initialize where
 
 import           Control.Monad
 import           Control.Monad.Trans.Resource (runResourceT)
@@ -37,21 +33,13 @@ import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Base16 as Bs16
 import           Data.Conduit (connect)
 import           Data.Conduit.Binary (sinkFile)
-import           Data.Louse.IO.Bugs
-import           Data.Louse.IO.Config
-import           Data.Louse.IO.DataFiles
-import           Data.Louse.IO.Read
+import           Data.Louse.Bugs
+import           Data.Louse.DataFiles
+import           Data.Louse.Read
 import qualified Data.Map as M
 import           Data.Monoid ((<>))
 import           System.Directory
 import           System.IO.Error
-
--- |Print the status to the screen
--- 
--- > status = putStr <=< statusStr
--- 
-status :: FilePath -> IO ()
-status = putStr <=< statusStr
 
 initInDir :: FilePath -> Bool -> IO ()
 initInDir dr force =
@@ -82,5 +70,3 @@ initInDir dr force =
      -- Create the bugs directory and the people directory
      createDirectoryIfMissing True $
        rpath _bugs_dir
-     createDirectoryIfMissing True $
-       rpath _people_dir

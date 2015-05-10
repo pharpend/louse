@@ -18,7 +18,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Data.Louse.IO.DataFiles
+-- Module      : Data.Louse.DataFiles
 -- Description : Paths and interface to Louse's data files
 -- Copyright   : Copyright (C) 2015 Peter Harpending
 -- License     : GPL-3
@@ -27,7 +27,7 @@
 -- Portability : UNIX/GHC
 -- 
 
-module Data.Louse.IO.DataFiles where
+module Data.Louse.DataFiles where
 
 import           Control.Monad
 import           Control.Monad.Trans (lift)
