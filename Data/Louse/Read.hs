@@ -28,9 +28,13 @@ module Data.Louse.Read where
 
 import           Control.Exception
 import           Control.Monad
+import           Control.Monad.Trans.Resource
 import           Data.Aeson
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Lazy as Bl
+import           Data.Conduit
+import           Data.Conduit.Attoparsec
+import           Data.Conduit.Binary hiding (drop)
 import           Data.Louse.DataFiles
 import           Data.Monoid
 import qualified Data.Map as M
@@ -89,24 +93,20 @@ readLouseFromErr
   :: FilePath -- ^The path to the project directory (i.e. NOT .louse)
   -> IO Louse -- ^The resulting 'Louse'
 readLouseFromErr fp =
-  do let prjson = fp <> _project_json
+  do let prjson = mappend fp _project_json
      prjInfoExists <- doesFileExist prjson
-     prjInfoBS <-
-       if prjInfoExists
-          then fmap Just (Bl.readFile prjson)
-          else pure Nothing
      prjInfo <-
-       case fmap eitherDecode prjInfoBS of
-         Nothing -> pure Nothing
-         Just x ->
-           case x of
-             Left err ->
-               fail (mconcat ["JSON decoding of "
-                             ,prjson
-                             ," failed with: "
-                             ,"\n"
-                             ,err])
-             Right pi -> pure (Just pi)
+       if (not prjInfoExists)
+          then pure Nothing
+          else (do prjInfoJSONValue <-
+                     runResourceT
+                       (connect (sourceFile prjson)
+                                (sinkParser json))
+                   prjInfo <-
+                     case fromJSON prjInfoJSONValue of
+                       Error s -> fail s
+                       Success a -> return a
+                   pure (Just prjInfo))
      fmap (Louse fp prjInfo)
           (readBugsFromErr fp)
 
