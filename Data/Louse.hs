@@ -23,15 +23,24 @@
 --   Maintainer  : Peter Harpending <peter@harpending.org>
 --   Stability   : experimental
 --   Portability : UNIX/GHC
+-- 
+-- This module re-exports the other modules. It exists for convenience
+-- purposes.
 
-module Data.Louse (module Data.Louse) where
+module Data.Louse
+       (module Data.Louse, module Data.Louse.Bugs,
+        module Data.Louse.DataFiles, module Data.Louse.Initialize,
+        module Data.Louse.Read, module Data.Louse.Schemata,
+        module Data.Louse.Status, module Data.Louse.Trivia,
+        module Data.Louse.Types)
+       where
 
-import Data.Louse.Bugs as Data.Louse
-import Data.Louse.DataFiles as Data.Louse
-import Data.Louse.Initialize as Data.Louse
-import Data.Louse.Read as Data.Louse
-import Data.Louse.Schemata as Data.Louse
-import Data.Louse.Status as Data.Louse
-import Data.Louse.Trivia as Data.Louse
-import Data.Louse.Types as Data.Louse
+import Data.Louse.Bugs
+import Data.Louse.DataFiles
+import Data.Louse.Initialize
+import Data.Louse.Read
+import Data.Louse.Schemata
+import Data.Louse.Status
+import Data.Louse.Trivia
+import Data.Louse.Types
 
