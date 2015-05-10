@@ -115,7 +115,7 @@ readBugsFromErr
   :: FilePath             -- ^The path to the project directory
   -> IO (M.Map BugId Bug) -- ^The resulting Map
 readBugsFromErr fp = 
-  readFilesFromErr $ mappend fp _bugs_dir
+  readFilesFromErr (mappend fp _bugs_dir)
 
 -- |Lazily reads files in a directory, returns a 'M.Map' of the name
 -- of the file, along with the decoded value.
@@ -127,7 +127,7 @@ readFilesFromErr directoryPath =
      -- For each filePath
      fmap
        M.fromList
-       (forM filePaths
+       (forM (drop 2 filePaths)
              (\fp ->
                 do fileBytes <- Bs.readFile fp
                    decodedContents <-
