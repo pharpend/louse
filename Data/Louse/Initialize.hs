@@ -42,10 +42,10 @@ import           System.Directory
 import           System.IO.Error
 
 initInDir :: FilePath -> Bool -> IO ()
-initInDir dr force =
-  do let dir = dr <> "/"
-         rpath = mappend dir
-     louseDirExists <- doesDirectoryExist $ rpath _louse_dir
+initInDir dir force =
+  do let absolutify = mappend dir
+     louseDirExists <-
+       doesDirectoryExist (absolutify _louse_dir)
      -- Try to read a louse
      eitherLouse <-
        tryIOError (readLouseFromErr dir)
@@ -56,17 +56,16 @@ initInDir dr force =
                 (fail (mconcat ["Louse is already initialized in ",dir,"."]))
        Left err
        -- If we can't read one, that's good
-         | isDoesNotExistError err -> pure ()
+         | isDoesNotExistError err ->
+           do
+              -- Create the louse directory
+              createDirectoryIfMissing True
+                                       (absolutify _louse_dir)
+              -- Write the "new project" template
+              runResourceT
+                (connect (readDataFile _templ_new_project)
+                         (sinkFile (mappend (absolutify _project_json) ".sample")))
+              -- Create the bugs directory and the people directory
+              createDirectoryIfMissing True
+                                       (absolutify _bugs_dir)
          | otherwise -> ioError err
-     -- If all is well, carry on
-     --
-     -- Create the louse directory
-     createDirectoryIfMissing True $
-       rpath _louse_dir
-     -- Write the "new project" template
-     runResourceT
-       (connect (readDataFile _templ_new_project)
-                (sinkFile (mappend (rpath _project_json) ".sample")))
-     -- Create the bugs directory and the people directory
-     createDirectoryIfMissing True $
-       rpath _bugs_dir
