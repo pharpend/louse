@@ -30,6 +30,7 @@
 module Data.Louse.DataFiles where
 
 import           Control.Monad
+import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Resource
 import qualified Data.ByteString as Bs
@@ -40,36 +41,40 @@ import           Data.Conduit.Binary
 import           Data.Conduit.Text
 import           Data.Monoid
 import           Paths_louse
+import           System.Directory (getAppUserDataDirectory)
 import           System.Exit
 import           Text.Editor
 
 -- |These are all magic values of the paths in the louse hierarchy.
-_louse_dir         = "/.louse/"
+_app_name :: FilePath
+_app_name = "louse"
+
+_louse_dir         = mconcat ["/.", _app_name, "/"]
 _project_json      = _louse_dir <> "project.yaml"
 _bugs_dir          = _louse_dir <> "bugs/"
 _people_dir        = _louse_dir <> "people/"
-_templ_new_project = "res/templates/new-project.yaml"
 
--- |Read a data file
+_config_path :: IO FilePath
+_config_path =
+  do dataDir <- getAppUserDataDirectory _app_name
+     return (mappend dataDir "/config.yaml")
+
+-- |Read a file lazily but efficiently
+produceFile :: FilePath -> Producer (ResourceT IO) Bs.ByteString
+produceFile fp =
+  do x <- liftIO (getDataFileName fp)
+     sourceFile x
+
+-- |Alias for 'produceFile'
 readDataFile :: FilePath -> Producer (ResourceT IO) Bs.ByteString
-readDataFile fp = do
-  x <- lift (lift (getDataFileName fp))
-  sourceFile x
+readDataFile = produceFile
 
--- |Given the path to a template, give the template to the user, allow
--- him to edit it, and then return the edited template
--- 
--- >>> editTemplate _templ_new_project
--- 
--- This will open up the "new project" template in the user's $EDITOR.
-editTemplate :: FilePath -> IO Bl.ByteString
-editTemplate fp =
-  do (exitcode,bytes) <-
-       runResourceT
-         (bracketConduit yamlTemplate
-                         (readDataFile fp)
-                         (toConsumer sinkLbs))
-     case exitcode of
-       ExitSuccess -> pure bytes
-       x@(ExitFailure _) ->
-         fail (mappend "Editor process failed with " (show x))
+type TemplatePath = String
+
+-- |Path to template for new 'ProjectInfo'
+_templ_new_project :: IO TemplatePath
+_templ_new_project = getDataFileName "res/templates/new-project-info.yaml"
+
+-- |Path to template for new 'Bug'
+_templ_new_bug :: IO TemplatePath
+_templ_new_bug = getDataFileName "res/templates/new-bug.yaml"

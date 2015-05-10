@@ -45,6 +45,7 @@ library
                         Data.Louse.Read
                         Data.Louse.Schemata
                         Data.Louse.Status
+                        Data.Louse.Templates
                         Data.Louse.Trivia
                         Data.Louse.Types
   build-depends:        aeson
@@ -66,6 +67,7 @@ library
                       , safe
                       , time
                       , text
+                      , transformers
                       , yaml
   if flag(dev)
     ghc-options:        -O0 -Wall

@@ -62,8 +62,9 @@ initInDir dir force =
               createDirectoryIfMissing True
                                        (absolutify _louse_dir)
               -- Write the "new project" template
+              npTemplate <- _templ_new_project
               runResourceT
-                (connect (readDataFile _templ_new_project)
+                (connect (readDataFile npTemplate)
                          (sinkFile (mappend (absolutify _project_json) ".sample")))
               -- Create the bugs directory and the people directory
               createDirectoryIfMissing True

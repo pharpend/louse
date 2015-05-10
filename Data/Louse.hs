@@ -29,18 +29,21 @@
 
 module Data.Louse
        (module Data.Louse, module Data.Louse.Bugs,
-        module Data.Louse.DataFiles, module Data.Louse.Initialize,
-        module Data.Louse.Read, module Data.Louse.Schemata,
-        module Data.Louse.Status, module Data.Louse.Trivia,
+        module Data.Louse.Config, module Data.Louse.DataFiles,
+        module Data.Louse.Initialize, module Data.Louse.Read,
+        module Data.Louse.Schemata, module Data.Louse.Status,
+        module Data.Louse.Templates, module Data.Louse.Trivia,
         module Data.Louse.Types)
        where
 
 import Data.Louse.Bugs
+import Data.Louse.Config
 import Data.Louse.DataFiles
 import Data.Louse.Initialize
 import Data.Louse.Read
 import Data.Louse.Schemata
 import Data.Louse.Status
+import Data.Louse.Templates
 import Data.Louse.Trivia
 import Data.Louse.Types
 

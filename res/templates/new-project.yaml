@@ -4,25 +4,12 @@
 # 
 # All of these fields are optional. If you don't want the field included, you
 # can delete it, or put a '#' at the beginning of the line.
-
-# Name of your project. It can only contain the 26 English letters, - and _ . It
-# can be at most 64 characters long.
-name: my-stupid-project
-# One line synopsis. Can be at most 64 characters long.
-synopsis: A program for X and Y.
-homepage: "http://mysite.com/foo/bar/baz"
-description: >-
+project-name: my-stupid-project
+project-homepage: "http://mysite.com/foo/bar/baz"
+project-description: >-
   This is the place for further description of your project. It can be at most
   512 characters.
 
   It's usually parsed with [Markdown syntax][1].
 
   [1]: https://daringfireball.net/projects/markdown/
-  
-# Maintainers. You can have at most 10.
-maintainers:
-  - name: Joe Q. Smith
-    email: "joe@foo.bar"
-
-  - name: Timothy G. Public
-    email: "timothy@baz.quux"

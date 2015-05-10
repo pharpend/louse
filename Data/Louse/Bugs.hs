@@ -26,6 +26,7 @@
 
 module Data.Louse.Bugs where
 
+import Control.Monad (mzero)
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
@@ -33,10 +34,13 @@ import qualified Data.ByteString.Char8 as Bsc
 import Data.Conduit
 import Data.Conduit.Attoparsec (sinkParser)
 import Data.Conduit.Binary
-import Data.Louse.DataFiles (_bugs_dir)
-import Data.Louse.Types
+import Data.Louse.Config
+import Data.Louse.DataFiles
+import Data.Louse.Templates
 import Data.Louse.Trivia (randomIdent)
+import Data.Louse.Types
 import Data.Time (UTCTime, getCurrentTime)
+import Data.Text (Text)
 import qualified Data.Text as T
 import System.Directory (removeFile)
 
@@ -52,11 +56,13 @@ import System.Directory (removeFile)
 --                }
 --   deriving (Eq, Show)
 
+-- |Interactively add a bug
+
 
 -- |Add a bug to the current project. This doesn't return a bug. It
 -- instead writes the bug to a file, and returns the 'BugId' pertaining
 -- to the file.
-addBug :: Person   -- ^The reporter
+addBug :: Person         -- ^The reporter
        -> T.Text         -- ^Title of the bug
        -> T.Text         -- ^Description of the bug
        -> IO BugId       -- ^Resulting 'BugId'
@@ -120,3 +126,34 @@ deleteBug bugid =
   let bugPath =
         (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
   in removeFile bugPath
+
+-- |Intermediate type for new bugs
+data NewBug =
+  NewBug {nbSynopsis :: Text
+         ,nbDescription :: Text}
+  deriving (Show,Eq)
+
+instance FromJSON NewBug where
+  parseJSON (Object v) = NewBug <$> (v .: "synopsis") <*> (v .: "description")
+  parseJSON _ = mzero
+
+-- |Make a new bug
+newBug :: IO ()
+newBug =
+  do maybeLC <- readLouseConfig
+     let reporter =
+           case maybeLC of
+             Just (LouseConfig r) -> r
+             Nothing -> Anonymous
+     nbTemplate <- _templ_new_bug
+     jsonValue <-
+       editTemplate nbTemplate
+                    (toConsumer (sinkParser json))
+     bugId <-
+       case fromJSON jsonValue of
+         Error s -> fail s
+         Success nb ->
+           addBug reporter
+                        (nbSynopsis nb)
+                        (nbDescription nb)
+     putStrLn (mappend "Added new bug with id " (T.unpack bugId))

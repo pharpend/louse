@@ -28,11 +28,11 @@ module Data.Louse.Types where
 
 import           Control.Applicative ((<|>))
 import           Control.Monad
-import           Data.Aeson
 import qualified Data.Map.Lazy as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as Tse
 import           Data.Time
+import           Data.Yaml
 
 type BugId = T.Text
 type IdMap = M.Map T.Text
@@ -161,3 +161,13 @@ _project_name        = "project-name"
 _project_maintainers = "project-maintainers"
 _project_homepage    = "project-homepage"
 _project_description = "project-description"
+
+data LouseConfig =
+  LouseConfig {whoami :: Person}
+  deriving (Show, Eq)
+
+instance FromJSON LouseConfig where
+  parseJSON x = fmap LouseConfig (parseJSON x)
+
+instance ToJSON LouseConfig where
+  toJSON (LouseConfig v) = toJSON v
