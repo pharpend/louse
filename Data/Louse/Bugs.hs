@@ -128,7 +128,10 @@ data NewBug =
   deriving (Show,Eq)
 
 instance FromJSON NewBug where
-  parseJSON (Object v) = NewBug <$> (v .: "synopsis") <*> (v .: "description")
+  parseJSON (Object v) =
+    NewBug <$>
+    (v .: "synopsis") <*>
+    (v .: "description")
   parseJSON _ = mzero
 
 -- |Make a new bug
