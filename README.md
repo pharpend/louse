@@ -40,25 +40,25 @@ copy of the license can be found in the LICENSE file.
 
 ## Installation and Usage
 
-You need to install the Haskell platform before installing louse. Chris
-Allen maintains an
-[exhaustive guide](https://github.com/bitemyapp/learnhaskell#getting-set-up)
-on installing the Haskell platform. on every operating system under the
-sun.
+Louse is written in Haskell. Because I haven't set up a good build
+system yet, you need to [install the Haskell platform][0] before
+installing .
 
 **Note**: as of 2015-05-05, the latest Haskell platform ships with GHC
-  7.8.3. Louse only supports GHC >=7.10, so you have to
+  7.8.3. Louse only supports GHC >=7.10, so you might have to
   [install GHC manually][1].
 
-I haven't published a version on Hackage (the Haskell package
-repository) yet, so you'll have to use the git version. To download and
-compile louse, run:
+Due to a bug in the Haskell package manager, 'cabal', you can't use it
+to build louse. Instead, you have to build louse manually:
 
 ```
 git clone https://github.com/pharpend/louse.git
 cd louse
 cabal update
 cabal install -j
+cd bin
+ghc louse.hs
+cp louse /usr/local/bin/louse
 ```
 
 For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run
@@ -115,4 +115,5 @@ These will probably go in another tool:
 Email: <peter@harpending.org>
 IRC: `pharpend` on FreeNode and OFTC.
 
+[0]: https://github.com/bitemyapp/learnhaskell#getting-set-up
 [1]: https://www.haskell.org/ghc/download_ghc_7_10_1#binaries
