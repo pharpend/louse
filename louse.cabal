@@ -75,8 +75,8 @@ library
     ghc-options:        -O2
 
 executable louse
+    buildable: False
     hs-source-dirs:     bin
-    other-modules:      Paths_louse
     build-depends:      base ==4.8.*
                       , bytestring
                       , directory
