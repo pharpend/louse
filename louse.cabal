@@ -37,7 +37,6 @@ library
                         MultiWayIf
                         OverloadedStrings
                         ScopedTypeVariables
-  other-modules:        Paths_louse
   exposed-modules:      Data.Louse
                         Data.Louse.Bugs
                         Data.Louse.DataFiles
@@ -48,6 +47,7 @@ library
                         Data.Louse.Templates
                         Data.Louse.Trivia
                         Data.Louse.Types
+                        Paths_louse
   build-depends:
       aeson
     , aeson-pretty
