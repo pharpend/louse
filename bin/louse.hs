@@ -216,16 +216,48 @@ pathSchemaInfo = infoHelp theOptions theHelp
 
 bugInfo :: ParserInfo Args
 bugInfo = infoHelp theOptions theHelp
-  where
-    theHelp = fullDesc <> progDesc "Do stuff with bugs."
-    theOptions = altConcat
-                        [ subparser (command "add" addBugInfo)
-                        , subparser (command "close" addBugInfo)
-                        , subparser (command "comment" addBugInfo)
-                        , subparser (command "delete" addBugInfo)
-                        , subparser (command "list" addBugInfo)
-                        , subparser (command "show" addBugInfo)
-                        ]
-    addBugInfo = infoHelp abopts abhelp
-    abhelp = fullDesc <> progDesc "Add a bug"
-    abopts = pure $ DBug AddBug
+  where theHelp =
+          fullDesc <>
+          progDesc "Do stuff with bugs."
+        theOptions =
+          altConcat [subparser (command "add" addBugInfo)
+                    ,subparser (command "close" closeBugInfo)
+                    ,subparser (command "comment" commentBugInfo)
+                    ,subparser (command "delete" delBugInfo)
+                    ,subparser (command "list" lsBugInfo)
+                    ,subparser (command "show" showBugInfo)]
+        addBugInfo = infoHelp abopts abhelp
+        abhelp =
+          fullDesc <>
+          progDesc "Add a bug"
+        abopts =
+          pure $
+          DBug AddBug
+        closeBugInfo = infoHelp cbopts cbhelp
+        cbhelp =
+          mappend fullDesc (progDesc "Close a bug")
+        cbopts =
+          fmap (DBug . CloseBug)
+               (strArgument (help "The bug to close (use `louse bug list` to see a list)"))
+        commentBugInfo = infoHelp cobopts cobhelp
+        cobhelp =
+          mappend fullDesc (progDesc "Add a comment to a bug.")
+        cobopts =
+          fmap (DBug . CommentOnBug)
+               (strArgument (help "The bug in question (use `louse bug list` to see a list)"))
+        delBugInfo = infoHelp dbopts dbhelp
+        dbhelp =
+          mappend fullDesc (progDesc "Delete a bug.")
+        dbopts =
+          fmap (DBug . DeleteBug)
+               (strArgument (help "The bug to delete (use `louse bug list` to see a list)"))
+        lsBugInfo = infoHelp lbopts lbhelp
+        lbhelp =
+          mappend fullDesc (progDesc "List all of the bugs")
+        lbopts = pure (DBug ListBugs)
+        showBugInfo = infoHelp sbopts sbhelp
+        sbhelp =
+          mappend fullDesc (progDesc "Pretty-print a bug")
+        sbopts =
+          fmap (DBug . ShowBug)
+               (strArgument (help "The bug to show (use `louse bug list` to see a list)"))
