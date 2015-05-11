@@ -27,14 +27,13 @@
 module Main where
 
 import           Control.Applicative
-import           Control.Monad
 import           Data.Louse
 import           Data.Monoid
+import           Data.Text (pack)
 import           Data.Version hiding (Version)
 import           Options.Applicative
 import           Paths_louse
 import           System.Directory
-import           System.IO
 
 
 main :: IO ()
@@ -49,7 +48,6 @@ infoHelp a = info (helper <*> a)
 
 data Args = DBug BugAction
           | Init (Maybe FilePath) Bool
-          | People PersonAction
           | Schema SchemaAction
           | Status
           | Trivia TriviaAction
@@ -72,12 +70,6 @@ data BugAction = AddBug
                | ShowBug String
   deriving Show
 
-data PersonAction = AddPerson String String
-                  | DeletePerson String
-                  | ListPeople
-                  | ShowPerson String
-  deriving Show
-
 data SchemaAction = ListSchemata
                   | Path
                   | ShowSchema String
@@ -89,10 +81,11 @@ runArgs x =
   case x of
     DBug y ->
       case y of
-        AddBug -> failNotImplemented
-        CloseBug _ -> failNotImplemented
-        CommentOnBug _ -> failNotImplemented
-        DeleteBug _ -> failNotImplemented
+        AddBug -> newBug
+        CloseBug bugid -> closeBug (pack bugid)
+        CommentOnBug bugid ->
+          newComment (pack bugid)
+        DeleteBug bugid -> deleteBug (pack bugid)
         EditBug _ -> failNotImplemented
         ListBugs -> failNotImplemented
         ShowBug _ -> failNotImplemented
@@ -100,14 +93,8 @@ runArgs x =
       do workdir <-
            case dir of
              Nothing -> getCurrentDirectory
-             Just x -> makeAbsolute x
+             Just w -> makeAbsolute w
          initInDir workdir force
-    People y ->
-      case y of
-        AddPerson n e -> failNotImplemented
-        DeletePerson _ -> failNotImplemented
-        ListPeople -> failNotImplemented
-        ShowPerson _ -> failNotImplemented
     Schema y ->
       case y of
         ListSchemata -> listSchemata
@@ -126,46 +113,50 @@ runArgs x =
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp
-  where
-    argsHelp :: InfoMod Args
-    argsHelp = mconcat
-                 [ fullDesc
-                 , header ("louse v." <> showVersion version)
-                 , progDesc "A distributed bug tracker."
-                 , footer
-                     "For information on a specific command, run `louse COMMAND --help`, where COMMAND is one of the commands listed above."
-                 ]
-    argsParser :: Parser Args
-    argsParser = altConcat
-                   [ Trivia <$> altConcat
-                                  [ copyrightParser
-                                  , licenseParser
-                                  , readmeParser
-                                  , tutorialParser
-                                  , versionParser
-                                  ]
-                   , hsubparser (command "bug" bugInfo)
-                   , hsubparser (command "init" initInfo)
-                   , hsubparser (command "ppl" pplInfo)
-                   , hsubparser (command "schema" schemataInfo)
-                   , hsubparser (command "schemata" schemataInfo)
-                   , hsubparser (command "status" statusInfo)
-                   ]
-    copyrightParser :: Parser TriviaAction
-    copyrightParser = flag' Copyright (help ("Print the copyright.") <>
-                                       long "copyright")
-    versionParser :: Parser TriviaAction
-    versionParser = flag' Version (help ("Print the version (" <> showVersion version <> ").") <>
-                                   long "version")
-    licenseParser :: Parser TriviaAction
-    licenseParser = flag' License (help "Print the license (GPL version 3)." <>
-                                   long "license")
-    tutorialParser :: Parser TriviaAction
-    tutorialParser = flag' Tutorial (help "Print the tutorial." <>
-                                     long "tutorial")
-    readmeParser :: Parser TriviaAction
-    readmeParser = flag' Readme (help "Print the README." <>
-                                 long "readme")
+  where argsHelp :: InfoMod Args
+        argsHelp =
+          mconcat [fullDesc
+                  ,header ("louse v." <> showVersion version)
+                  ,progDesc "A distributed bug tracker."
+                  ,footer "For information on a specific command, run `louse COMMAND --help`, where COMMAND is one of the commands listed above."]
+        argsParser :: Parser Args
+        argsParser =
+          altConcat [Trivia <$>
+                     altConcat [copyrightParser
+                               ,licenseParser
+                               ,readmeParser
+                               ,tutorialParser
+                               ,versionParser]
+                    ,hsubparser (command "bug" bugInfo)
+                    ,hsubparser (command "init" initInfo)
+                    ,hsubparser (command "schema" schemataInfo)
+                    ,hsubparser (command "schemata" schemataInfo)
+                    ,hsubparser (command "status" statusInfo)]
+        copyrightParser :: Parser TriviaAction
+        copyrightParser =
+          flag' Copyright
+                (help ("Print the copyright.") <>
+                 long "copyright")
+        versionParser :: Parser TriviaAction
+        versionParser =
+          flag' Version
+                (help ("Print the version (" <> showVersion version <> ").") <>
+                 long "version")
+        licenseParser :: Parser TriviaAction
+        licenseParser =
+          flag' License
+                (help "Print the license (GPL version 3)." <>
+                 long "license")
+        tutorialParser :: Parser TriviaAction
+        tutorialParser =
+          flag' Tutorial
+                (help "Print the tutorial." <>
+                 long "tutorial")
+        readmeParser :: Parser TriviaAction
+        readmeParser =
+          flag' Readme
+                (help "Print the README." <>
+                 long "readme")
 
 initInfo :: ParserInfo Args
 initInfo = infoHelp theOptions theHelp
@@ -238,26 +229,3 @@ bugInfo = infoHelp theOptions theHelp
     addBugInfo = infoHelp abopts abhelp
     abhelp = fullDesc <> progDesc "Add a bug"
     abopts = pure $ DBug AddBug
-
-pplInfo :: ParserInfo Args
-pplInfo = infoHelp theOptions theHelp
-  where
-    theHelp = fullDesc <> progDesc "Do stuff with people."
-    theOptions = altConcat
-                   [ subparser (command "add" addPplInfo)
-                   , subparser (command "delete" addPplInfo)
-                   , subparser (command "list" addPplInfo)
-                   , subparser (command "show" addPplInfo)
-                   ]
-    addPplInfo = infoHelp abopts abhelp
-    abhelp = fullDesc <> progDesc "Add a person"
-    abopts = fmap People $ AddPerson <$> strArgument
-                                           (mconcat
-                                              [ metavar "NAME"
-                                              , help "The full name of the person"
-                                              ])
-                                     <*> strArgument
-                                           (mconcat
-                                              [ metavar "EMAIL"
-                                              , help "The email address of the person."
-                                              ])

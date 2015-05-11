@@ -39,7 +39,6 @@ import Data.Louse.Types
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Data.Yaml
 import Paths_louse
 import System.Exit
 import Text.Editor

@@ -27,22 +27,26 @@
 module Data.Louse.Bugs where
 
 import Control.Monad (mzero)
-import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
 import qualified Data.ByteString.Char8 as Bsc
 import Data.Conduit
 import Data.Conduit.Attoparsec (sinkParser)
 import Data.Conduit.Binary
+import Data.Conduit.Combinators (sinkLazy)
+import qualified Data.Conduit.Text as Ct
 import Data.Louse.Config
 import Data.Louse.DataFiles
 import Data.Louse.Templates
 import Data.Louse.Trivia (randomIdent)
 import Data.Louse.Types
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Time (getCurrentTime)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as L
 import System.Directory (removeFile)
+import System.Exit
+import Text.Editor
 
 -- For reference:
 -- 
@@ -70,27 +74,21 @@ addBug person title description =
   do reportTime <- getCurrentTime
      let bugIsOpen = False
          comments = mempty
-         newBug =
+         nb =
            Bug person reportTime title description bugIsOpen comments
      bugid <- fmap Bsc.unpack randomIdent
      runResourceT
-       (connect (sourceLbs (encode newBug))
-                (sinkFile (mconcat [_bugs_dir,bugid,".yaml"])))
+       (connect (sourceLbs (encode nb))
+                (sinkFile (mconcat [_bugs_dir,bugid,".json"])))
      return (T.pack bugid)
 
 -- |Close a bug. This actually edits the files, so be careful.
 closeBug :: BugId -> IO ()
 closeBug bugid =
   do let bugsPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
-     bugAST <-
-       runResourceT
-         (connect (sourceFile bugsPath)
-                  (sinkParser json))
-     bug <-
-       case fromJSON bugAST of
-         Success b -> pure b
-         Error s -> fail s
+           (mconcat [_bugs_dir,T.unpack bugid,".json"])
+     bugAST <- runResourceT (connect (sourceFile bugsPath) (sinkParser json))
+     bug <- parseMonad bugAST
      runResourceT
        (connect (sourceLbs (encode (bug {bugOpen = False})))
                 (sinkFile bugsPath))
@@ -102,30 +100,26 @@ commentOnBug :: BugId                      -- ^The bug on which to comment
              -> IO ()
 commentOnBug bugid personid comment =
   do let bugsPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
+           (mconcat [_bugs_dir,T.unpack bugid,".json"])
      bugAST <-
-       runResourceT
-         (connect (sourceFile bugsPath)
-                  (sinkParser json))
-     bug <-
-       case fromJSON bugAST of
-         Success b -> pure b
-         Error s -> fail s
+       runResourceT (connect (sourceFile bugsPath) (sinkParser json))
+     bug <- parseMonad bugAST
      commentTime <- getCurrentTime
-     let newComment =
+     let nc =
            Comment personid commentTime comment
      runResourceT
        (connect (sourceLbs (encode (bug {bugComments =
                                            (mappend (bugComments bug)
-                                                    [newComment])})))
+                                                    [nc])})))
                 (sinkFile bugsPath))
 
 -- ^Delete a bug from the list of bugs. 
 deleteBug :: BugId -> IO ()
 deleteBug bugid =
   let bugPath =
-        (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
-  in removeFile bugPath
+        (mconcat [_bugs_dir,T.unpack bugid,".json"])
+  in removeFile bugPath >>
+     putStrLn (mappend "Deleted bug " (show bugid))
 
 -- |Intermediate type for new bugs
 data NewBug =
@@ -149,11 +143,31 @@ newBug =
      jsonValue <-
        editTemplate nbTemplate
                     (toConsumer (sinkParser json))
+     nb <- parseMonad jsonValue
      bugId <-
-       case fromJSON jsonValue of
-         Error s -> fail s
-         Success nb ->
-           addBug reporter
-                        (nbSynopsis nb)
-                        (nbDescription nb)
+       addBug reporter
+              (nbSynopsis nb)
+              (nbDescription nb)
      putStrLn (mappend "Added new bug with id " (T.unpack bugId))
+
+-- |Make a new bug
+newComment :: BugId -> IO ()
+newComment bid =
+  do maybeLC <- readLouseConfig
+     let reporter =
+           case maybeLC of
+             Just (LouseConfig r) -> r
+             Nothing -> Anonymous
+     (exitCode,comment) <-
+       runResourceT
+         (bracketConduit plainTemplate
+                         (toProducer (sourceLbs mempty))
+                         (fuse Ct.decodeUtf8 sinkLazy))
+     case exitCode of
+       a@(ExitFailure _) ->
+         fail (mappend "Editor failed with " (show a))
+       ExitSuccess ->
+         do commentOnBug bid
+                         reporter
+                         (L.toStrict comment)
+            putStrLn (mappend "Added comment to bug " (T.unpack bid))

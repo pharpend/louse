@@ -28,8 +28,6 @@
 
 module Data.Louse.Config where
 
-import Control.Applicative ((<|>))
-import Control.Monad (mzero)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
 import Data.Conduit
@@ -40,20 +38,19 @@ import Data.Louse.Types
 import System.Directory
 
 readLouseConfig :: IO (Maybe LouseConfig)
-readLouseConfig =
-  do configPath <- _config_path
-     configPathExists <- doesFileExist configPath
-     case configPathExists of
-       False -> pure Nothing
-       True ->
-         fmap Just
-              (do configJSONObject <-
-                    runResourceT
-                      (connect (sourceFile configPath)
-                               (sinkParser json))
-                  case fromJSON configJSONObject of
-                    Error s -> fail s
-                    Success x -> pure x)
+readLouseConfig = pure Nothing
+  -- do configPath <- _config_path
+  --    -- configPathExists <- doesFileExist configPath
+  --    -- case configPathExists of
+  --    -- False -> pure Nothing
+  --    -- True ->
+  --    return Nothing
+     -- fmap
+     --   Just
+     --   (parseMonad =<<
+     --    (runResourceT
+     --       (connect (sourceFile configPath)
+     --                (sinkParser json))))
 
 writeLouseConfig :: LouseConfig -> IO ()
 writeLouseConfig cfg =

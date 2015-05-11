@@ -102,11 +102,7 @@ readLouseFromErr fp =
                      runResourceT
                        (connect (sourceFile prjson)
                                 (sinkParser json))
-                   prjInfo <-
-                     case fromJSON prjInfoJSONValue of
-                       Error s -> fail s
-                       Success a -> return a
-                   pure (Just prjInfo))
+                   fmap Just (parseMonad prjInfoJSONValue))
      fmap (Louse fp prjInfo)
           (readBugsFromErr fp)
 
@@ -129,12 +125,9 @@ readFilesFromErr directoryPath =
        M.fromList
        (forM (drop 2 filePaths)
              (\fp ->
-                do fileBytes <- Bs.readFile fp
-                   decodedContents <-
-                     case decodeStrict fileBytes of
-                       Nothing ->
-                         fail (mappend "Could not decode contents of: " fp)
-                       Just v -> pure v
+                do value <-
+                     runResourceT (connect (sourceFile fp) (sinkParser json))
+                   decodedContents <- parseMonad value
                    let fileName =
                          T.pack (reverse (drop 5 (reverse fp)))
                    return (fileName,decodedContents)))

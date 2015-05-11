@@ -28,11 +28,10 @@ module Data.Louse.Types where
 
 import           Control.Applicative ((<|>))
 import           Control.Monad
+import           Data.Aeson
 import qualified Data.Map.Lazy as M
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as Tse
 import           Data.Time
-import           Data.Yaml
 
 type BugId = T.Text
 type IdMap = M.Map T.Text
@@ -171,3 +170,10 @@ instance FromJSON LouseConfig where
 
 instance ToJSON LouseConfig where
   toJSON (LouseConfig v) = toJSON v
+
+parseMonad :: (FromJSON a,Monad m)
+           => Value -> m a
+parseMonad v =
+  case fromJSON v of
+    Success x -> pure x
+    Error s -> fail s
