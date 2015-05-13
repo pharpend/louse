@@ -54,9 +54,7 @@ _config_path =
 
 -- |Read a file lazily but efficiently
 produceFile :: FilePath -> Producer (ResourceT IO) Bs.ByteString
-produceFile fp =
-  do x <- liftIO (getDataFileName fp)
-     sourceFile x
+produceFile = sourceFile
 
 -- |Alias for 'produceFile'
 readDataFile :: FilePath -> Producer (ResourceT IO) Bs.ByteString
