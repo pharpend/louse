@@ -31,6 +31,7 @@ import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
 import Data.Attoparsec (parseOnly, IResult(..))
 import qualified Data.ByteString.Char8 as Bsc
+import qualified Data.ByteString.Lazy as Bl
 import Data.Conduit
 import Data.Conduit.Attoparsec (sinkParser)
 import Data.Conduit.Binary
@@ -46,6 +47,7 @@ import qualified Data.Text as T
 import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as L
 import System.Directory (removeFile)
+import System.IO (openFile, IOMode(..))
 import System.Exit
 import Text.Editor
 
@@ -78,9 +80,10 @@ addBug person title description =
          nb =
            Bug person reportTime title description bugIsOpen comments
      bugid <- fmap Bsc.unpack randomIdent
-     runResourceT
-       (connect (sourceLbs (encode nb))
-                (sinkFile (mconcat [_bugs_dir,bugid,".json"])))
+     let filePath =
+           (mconcat [_bugs_dir,bugid,".json"])
+     let bug = encode nb
+     Bl.writeFile filePath bug
      return (T.pack bugid)
 
 -- |Close a bug. This actually edits the files, so be careful.
@@ -144,16 +147,11 @@ newBug =
              Just (LouseConfig r) -> r
              Nothing -> Anonymous
      nbTemplate <- _templ_new_bug
-     editedTemplate <-
-       fmap (parseOnly json')
-            (editTemplate nbTemplate)
      nb <-
-       case editedTemplate of
-         Right res ->
-           case fromJSON res of
-             Success x -> pure x
-             Error s -> fail s
+       fmap eitherDecodeStrict (editTemplate nbTemplate) >>=
+       \case
          Left err -> fail err
+         Right x -> pure x
      bugId <-
        addBug reporter
               (nbSynopsis nb)
