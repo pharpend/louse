@@ -160,24 +160,20 @@ argsParserInfo = infoHelp argsParser argsHelp
 
 initInfo :: ParserInfo Args
 initInfo = infoHelp theOptions theHelp
-  where
-    theHelp = fullDesc <> progDesc "Initialize louse."
-    theOptions = 
-      Init <$> option (Just <$> str)
-                            (mconcat
-                               [ long "workdir"
-                               , short 'w'
-                               , short 'd'
-                               , help
-                                   "Working directory. Defaults to the current working directory."
-                               , value Nothing
-                               ])
-                      <*> switch
-                            (mconcat
-                               [ long "force"
-                               , short 'f'
-                               , help "Initialize louse even if there is an existing louse project."
-                               ])
+  where theHelp =
+          fullDesc <>
+          progDesc "Initialize louse."
+        theOptions =
+          Init <$>
+          option (Just <$> str)
+                 (mconcat [long "workdir"
+                          ,short 'w'
+                          ,short 'd'
+                          ,help "Working directory. Defaults to the current working directory."
+                          ,value Nothing]) <*>
+          switch (mconcat [long "force"
+                          ,short 'f'
+                          ,help "Initialize louse even if there is an existing louse project."])
 
 statusInfo :: ParserInfo Args
 statusInfo = infoHelp theOptions theHelp
