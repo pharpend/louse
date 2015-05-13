@@ -46,7 +46,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as L
-import System.Directory (removeFile)
+import System.Directory (getCurrentDirectory, removeFile)
 import System.IO (openFile, IOMode(..))
 import System.Exit
 import Text.Editor
@@ -80,10 +80,10 @@ addBug person title description =
          nb =
            Bug person reportTime title description bugIsOpen comments
      bugid <- fmap Bsc.unpack randomIdent
-     let filePath =
-           (mconcat [_bugs_dir,bugid,".json"])
-     let bug = encode nb
-     Bl.writeFile filePath bug
+     pwd <- getCurrentDirectory
+     runResourceT
+       (connect (sourceLbs (encode nb))
+                (sinkFile (mconcat [pwd,_bugs_dir,bugid,".json"])))
      return (T.pack bugid)
 
 -- |Close a bug. This actually edits the files, so be careful.

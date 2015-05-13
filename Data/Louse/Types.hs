@@ -115,8 +115,9 @@ instance FromJSON Person where
   parseJSON _ = mzero
 
 instance ToJSON Person where
-  toJSON (Person n e) = 
+  toJSON (Person n e) =
     object [_person_name .= n,_person_email .= e]
+  toJSON Anonymous = Null
 
 data Comment =
   Comment {commentPerson :: Person
