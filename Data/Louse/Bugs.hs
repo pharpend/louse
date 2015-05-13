@@ -163,9 +163,9 @@ newComment bid =
              Nothing -> Anonymous
      (exitCode,comment) <-
        runResourceT
-         (bracketConduit plainTemplate
-                         (toProducer (sourceLbs mempty))
-                         (fuse Ct.decodeUtf8 sinkLazy))
+         (runUserEditorDWIM plainTemplate
+                            mempty
+                            (fuse Ct.decodeUtf8 sinkLazy))
      case exitCode of
        a@(ExitFailure _) ->
          fail (mappend "Editor failed with " (show a))

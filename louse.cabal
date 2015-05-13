@@ -49,8 +49,9 @@ library
                         Data.Louse.Types
                         Paths_louse
   build-depends:
-      aeson
+      aeson >=0.7
     , aeson-pretty
+    , attoparsec
     , base ==4.8.*
     , base16-bytestring
     , bytestring
