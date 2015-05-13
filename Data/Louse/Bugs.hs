@@ -29,12 +29,12 @@ module Data.Louse.Bugs where
 import Control.Monad (mzero)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
+import Data.Attoparsec (parseOnly, IResult(..))
 import qualified Data.ByteString.Char8 as Bsc
 import Data.Conduit
 import Data.Conduit.Attoparsec (sinkParser)
 import Data.Conduit.Binary
 import Data.Conduit.Combinators (sinkLazy)
-import qualified Data.Conduit.Text as Ct
 import Data.Louse.Config
 import Data.Louse.DataFiles
 import Data.Louse.Templates
@@ -43,6 +43,7 @@ import Data.Louse.Types
 import Data.Time (getCurrentTime)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as L
 import System.Directory (removeFile)
 import System.Exit
@@ -143,10 +144,16 @@ newBug =
              Just (LouseConfig r) -> r
              Nothing -> Anonymous
      nbTemplate <- _templ_new_bug
-     jsonValue <-
-       editTemplate nbTemplate
-                    (toConsumer (sinkParser json))
-     nb <- parseMonad jsonValue
+     editedTemplate <-
+       fmap (parseOnly json')
+            (editTemplate nbTemplate)
+     nb <-
+       case editedTemplate of
+         Right res ->
+           case fromJSON res of
+             Success x -> pure x
+             Error s -> fail s
+         Left err -> fail err
      bugId <-
        addBug reporter
               (nbSynopsis nb)
@@ -161,16 +168,7 @@ newComment bid =
            case maybeLC of
              Just (LouseConfig r) -> r
              Nothing -> Anonymous
-     (exitCode,comment) <-
-       runResourceT
-         (runUserEditorDWIM plainTemplate
-                            mempty
-                            (fuse Ct.decodeUtf8 sinkLazy))
-     case exitCode of
-       a@(ExitFailure _) ->
-         fail (mappend "Editor failed with " (show a))
-       ExitSuccess ->
-         do commentOnBug bid
-                         reporter
-                         (L.toStrict comment)
-            putStrLn (mappend "Added comment to bug " (T.unpack bid))
+     comment <-
+       fmap decodeUtf8 (runUserEditorDWIM plainTemplate "Enter your comment here")
+     commentOnBug bid reporter comment
+     putStrLn (mappend "Added comment to bug " (T.unpack bid))

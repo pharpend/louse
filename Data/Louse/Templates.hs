@@ -53,14 +53,5 @@ produceTemplate = produceFile
 -- >>> editTemplate _templ_new_project
 -- 
 -- This will open up the "new project" template in the user's $EDITOR.
-editTemplate :: FilePath -> Consumer ByteString (ResourceT IO) a -> IO a
-editTemplate fp consumer =
-  do (exitcode,bytes) <-
-       runResourceT
-         (bracketConduit yamlTemplate
-                         (readDataFile fp)
-                         consumer)
-     case exitcode of
-       ExitSuccess -> pure bytes
-       x@(ExitFailure _) ->
-         fail (mappend "Editor process failed with " (show x))
+editTemplate :: FilePath -> IO ByteString
+editTemplate = runUserEditorDWIMFile yamlTemplate
