@@ -39,6 +39,7 @@ library
                         ScopedTypeVariables
   exposed-modules:      Data.Louse
                         Data.Louse.Bugs
+                        Data.Louse.Config
                         Data.Louse.DataFiles
                         Data.Louse.Initialize
                         Data.Louse.Read
@@ -79,7 +80,6 @@ library
     ghc-options:        -O2
 
 executable louse
-    buildable: False
     hs-source-dirs:     bin
     build-depends:      base ==4.8.*
                       , bytestring
