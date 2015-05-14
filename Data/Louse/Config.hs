@@ -36,13 +36,13 @@ import Data.Louse.Types
 import System.Directory
 
 readLouseConfig :: IO (Maybe LouseConfig)
-readLouseConfig = pure Nothing
-  -- do configPath <- _config_path
-  --    configPathExists <- doesFileExist configPath
-  --    if configPathExists
-  --       then do configBytes <- B.readFile configPath
-  --               pure (decodeStrict configBytes)
-  --       else pure Nothing
+readLouseConfig =
+  do configPath <- _config_path
+     configPathExists <- doesFileExist configPath
+     if configPathExists
+        then do configBytes <- B.readFile configPath
+                pure (decodeStrict configBytes)
+        else pure Nothing
 
 writeLouseConfig :: LouseConfig -> IO ()
 writeLouseConfig cfg =
