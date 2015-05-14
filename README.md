@@ -3,7 +3,7 @@
 **Louse is unfinished. This document is for when it is finished.**
 
 louse is a very simple distributed bug-tracking system. It literally
-stores bug tracking information in a series of JSON files.
+stores bug tracking information in a series of YAML files.
 
 louse is licensed under the
 [GNU General Public License, version 3](https://gnu.org/licenses/gpl). A
@@ -107,9 +107,8 @@ These will probably go in another tool:
 
 ## Schemata
 
-The schema for the JSON file is stored in the
-`res/schemata/project.json`. The other schemata (for people, comments,
-individual bugs, etc) are stored in the `res/schemata/` directory.
+The schemata for the YAML files are stored in the `res/schemata/`
+directory.
 
 You can also access the schemata with the `louse` tool.
 
@@ -118,23 +117,18 @@ You can also access the schemata with the `louse` tool.
     comment
     person
     project
-    $ louse schemata show comment
-    {
-      "name": "comment",
-      "type": "object",
-      "properties": {
-        "comment-person": {
-          "required": false,
-          "type": "object",
-          "description": "The person associated with this comment. Should fit the person schema."
-        },
-        "comment-text": {
-          "required": true,
-          "type": "string",
-          "description": "The comment itself"
-        }
-      }
-    }
+    $ louse schema show comment
+    name: comment
+    type: object
+    properties:
+      comment-person:
+        required: false
+        type: string
+        description: The id of the person associated with this comment.
+      comment-text:
+        required: true
+        type: string
+        description: The comment itself
 
 ## Contact
 
