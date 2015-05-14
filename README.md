@@ -36,6 +36,30 @@ For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run
 `louse --tutorial`. For a brief listing of the available commands, you
 can run `louse --help`.
 
+    louse v.0.1.0.0
+    
+    Usage: louse (--copyright | --license | --readme | --tutorial | --version |
+                 COMMAND | COMMAND | COMMAND | COMMAND | COMMAND)
+      A distributed bug tracker.
+    
+    Available options:
+      -h,--help                Show this help text
+      --copyright              Print the copyright.
+      --license                Print the license (GPL version 3).
+      --readme                 Print the README.
+      --tutorial               Print the tutorial.
+      --version                Print the version (0.1.0.0).
+    
+    Available commands:
+      bug                      Do stuff with bugs.
+      init                     Initialize louse.
+      schema                   Do stuff with schemata.
+      schemata                 Do stuff with schemata.
+      status                   Initialize louse.
+
+For information on a specific command, run `louse COMMAND --help`, where COMMAND
+is one of the commands listed above.
+
 ## Inspiration
 
 If you're developing open-source software, there are, in broad terms, 3
