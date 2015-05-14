@@ -28,31 +28,23 @@
 
 module Data.Louse.Config where
 
-import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
-import Data.Conduit
-import Data.Conduit.Attoparsec
-import Data.Conduit.Binary
+import qualified Data.ByteString as B
+import Data.ByteString.Lazy (toStrict)
 import Data.Louse.DataFiles
 import Data.Louse.Types
 import System.Directory
 
 readLouseConfig :: IO (Maybe LouseConfig)
-readLouseConfig =
-  do configPath <- _config_path
-     configPathExists <- doesFileExist configPath
-     case configPathExists of
-       False -> pure Nothing
-       True ->
-         fmap Just
-              (parseMonad =<<
-               (runResourceT
-                  (connect (sourceFile configPath)
-                           (sinkParser json))))
+readLouseConfig = pure Nothing
+  -- do configPath <- _config_path
+  --    configPathExists <- doesFileExist configPath
+  --    if configPathExists
+  --       then do configBytes <- B.readFile configPath
+  --               pure (decodeStrict configBytes)
+  --       else pure Nothing
 
 writeLouseConfig :: LouseConfig -> IO ()
 writeLouseConfig cfg =
   do configPath <- _config_path
-     runResourceT
-       (connect (sourceLbs (encode cfg))
-                (sinkFile configPath))
+     B.writeFile configPath (toStrict (encode cfg))
