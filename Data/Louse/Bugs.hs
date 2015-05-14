@@ -29,7 +29,7 @@ module Data.Louse.Bugs where
 import Control.Monad (mzero)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
-import Data.Attoparsec (parseOnly, IResult(..))
+import Data.Attoparsec.ByteString (parseOnly, IResult(..))
 import qualified Data.ByteString.Char8 as Bsc
 import qualified Data.ByteString.Lazy as Bl
 import Data.Conduit
