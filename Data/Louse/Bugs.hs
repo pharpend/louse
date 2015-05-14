@@ -77,7 +77,7 @@ addBug :: Person         -- ^The reporter
        -> IO BugId       -- ^Resulting 'BugId'
 addBug person title description =
   do reportTime <- getCurrentTime
-     let bugIsOpen = False
+     let bugIsOpen = True
          comments = mempty
          nb =
            Bug person reportTime title description bugIsOpen comments
