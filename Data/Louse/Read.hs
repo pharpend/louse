@@ -27,6 +27,7 @@
 module Data.Louse.Read where
 
 import           Control.Exception
+import           Control.Exceptional
 import           Control.Monad
 import           Control.Monad.Trans.Resource
 import qualified Data.ByteString as Bs
@@ -53,15 +54,8 @@ import           Text.Editor
 -- 
 -- > readLouse = readLouseFrom =<< getCurrentDirectory
 -- 
-readLouse :: IO (Either String Louse)
+readLouse :: IO (Exceptional Louse)
 readLouse = readLouseFrom =<< getCurrentDirectory
-
--- |Read the 'Louse' from the current directory
--- 
--- > readLouseMay = readLouseFromMay =<< getCurrentDirectory
--- 
-readLouseMay :: IO (Maybe Louse)
-readLouseMay = readLouseFromMay =<< getCurrentDirectory
 
 -- |Read the 'Louse' from the current directory
 -- 
@@ -72,25 +66,13 @@ readLouseErr = readLouseFromErr =<< getCurrentDirectory
 
 -- |Wrapper around 'readLouseFromErr', which catches errors, and returns
 -- a 'Left' if there is an error.
-readLouseFrom 
-  :: FilePath                   -- ^The working directory
-  -> IO (Either String Louse)
+readLouseFrom :: FilePath                   -- ^The working directory
+              -> IO (Exceptional Louse)
 readLouseFrom fp =
   (try (readLouseFromErr fp) :: IO (Either SomeException Louse)) >>=
   \case
-    Left err -> pure (Left (show err))
-    Right x -> pure (Right x)
-
--- |Wrapper around 'readLouseFromErr', which returns 'Nothing' if there
--- is an error.
-readLouseFromMay 
-  :: FilePath         -- ^The working directory
-  -> IO (Maybe Louse)
-readLouseFromMay =
-  readLouseFrom >=>
-  \case
-    Left _ -> pure Nothing
-    Right x -> pure (Just x)
+    Left err -> pure (fail (show err))
+    Right x -> pure (pure x)
 
 -- |This is a function to read the Louse instance from a directory.
 readLouseFromErr 
