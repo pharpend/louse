@@ -22,7 +22,8 @@ data-files:             README.md
 extra-source-files:     README.md
                         LICENSE
                         TUTORIAL.md
-                        res/schemata/*.json
+                        res/schemata/*.yaml
+                        res/templates/*.yaml
 flag dev
   description:          Enable development mode settings (such as disabling optimizations).
   default:              False
