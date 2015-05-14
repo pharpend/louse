@@ -35,6 +35,7 @@ import qualified Data.ByteString as Bs
 import           Data.Conduit
 import           Data.Conduit.Binary
 import           Data.Monoid
+import           Data.Yaml
 import           Paths_louse
 import           System.Directory (getAppUserDataDirectory)
 
@@ -70,3 +71,20 @@ _templ_new_project =
 -- |Path to template for new 'Bug'
 _templ_new_bug :: IO TemplatePath
 _templ_new_bug = getDataFileName "res/templates/new-bug.json"
+
+errDecodeFile :: FromJSON a => FilePath -> IO a
+errDecodeFile filePath =
+  ((>>=) (decodeFileEither filePath)
+         (\case
+            Left err -> ppError err
+            Right x -> pure x))
+
+errDecode :: FromJSON a
+          => Bs.ByteString -> IO a
+errDecode bytes =
+  case decodeEither' bytes of
+    Left err -> ppError err
+    Right x -> pure x
+
+ppError :: ParseException -> IO a
+ppError = fail . prettyPrintParseException

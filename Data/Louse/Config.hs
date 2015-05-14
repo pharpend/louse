@@ -28,11 +28,11 @@
 
 module Data.Louse.Config where
 
-import Data.Aeson
 import qualified Data.ByteString as B
 import Data.ByteString.Lazy (toStrict)
 import Data.Louse.DataFiles
 import Data.Louse.Types
+import Data.Yaml
 import System.Directory
 
 readLouseConfig :: IO (Maybe LouseConfig)
@@ -40,11 +40,10 @@ readLouseConfig =
   do configPath <- _config_path
      configPathExists <- doesFileExist configPath
      if configPathExists
-        then do configBytes <- B.readFile configPath
-                pure (decodeStrict configBytes)
+        then fmap Just (errDecodeFile configPath)
         else pure Nothing
 
 writeLouseConfig :: LouseConfig -> IO ()
 writeLouseConfig cfg =
   do configPath <- _config_path
-     B.writeFile configPath (toStrict (encode cfg))
+     encodeFile configPath cfg

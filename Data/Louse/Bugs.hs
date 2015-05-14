@@ -28,8 +28,6 @@ module Data.Louse.Bugs where
 
 import Control.Monad (forM_, mzero)
 import Control.Monad.Trans.Resource (runResourceT)
-import Data.Aeson
-import Data.Attoparsec.ByteString (parseOnly, IResult(..))
 import qualified Data.ByteString.Char8 as Bsc
 import qualified Data.ByteString.Lazy as Bl
 import Data.Conduit
@@ -50,6 +48,7 @@ import qualified Data.Text.IO as TIO
 import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as L
 import Data.Traversable (for)
+import Data.Yaml
 import System.Directory (getCurrentDirectory, removeFile)
 import System.IO (openFile, IOMode(..))
 import System.Exit
@@ -85,21 +84,18 @@ addBug person title description =
            Bug person reportTime title description bugIsOpen comments
      bugid <- fmap Bsc.unpack randomIdent
      pwd <- getCurrentDirectory
-     runResourceT
-       (connect (sourceLbs (encode nb))
-                (sinkFile (mconcat [pwd,_bugs_dir,bugid,".json"])))
+     encodeFile (mconcat [pwd,_bugs_dir,bugid,".yaml"])
+                nb
      return (T.pack bugid)
 
 -- |Close a bug. This actually edits the files, so be careful.
 closeBug :: BugId -> IO ()
 closeBug bugid =
   do let bugsPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".json"])
-     bugAST <- runResourceT (connect (sourceFile bugsPath) (sinkParser json))
-     bug <- parseMonad bugAST
-     runResourceT
-       (connect (sourceLbs (encode (bug {bugOpen = False})))
-                (sinkFile bugsPath))
+           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
+     bug <- errDecodeFile bugsPath
+     encodeFile bugsPath
+                (bug {bugOpen = False})
 
 -- |Comment on a bug. This actually edits the data files, so be careful!
 commentOnBug :: BugId                      -- ^The bug on which to comment
@@ -108,24 +104,22 @@ commentOnBug :: BugId                      -- ^The bug on which to comment
              -> IO ()
 commentOnBug bugid personid comment =
   do let bugsPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".json"])
-     bugAST <-
-       runResourceT (connect (sourceFile bugsPath) (sinkParser json))
-     bug <- parseMonad bugAST
+           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
+     bug <- errDecodeFile bugsPath
      commentTime <- getCurrentTime
      let nc =
            Comment personid commentTime comment
-     runResourceT
-       (connect (sourceLbs (encode (bug {bugComments =
-                                           (mappend (bugComments bug)
-                                                    [nc])})))
-                (sinkFile bugsPath))
+     (encodeFile
+        bugsPath
+        (bug {bugComments =
+                (mappend (bugComments bug)
+                         [nc])}))
 
 -- ^Delete a bug from the list of bugs. 
 deleteBug :: BugId -> IO ()
 deleteBug bugid =
   let bugPath =
-        (mconcat [_bugs_dir,T.unpack bugid,".json"])
+        (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
   in removeFile bugPath >>
      putStrLn (mappend "Deleted bug " (show bugid))
 
@@ -152,10 +146,7 @@ newBug =
              Nothing -> Anonymous
      nbTemplate <- _templ_new_bug
      nb <-
-       fmap eitherDecodeStrict (editTemplate nbTemplate) >>=
-       \case
-         Left err -> fail err
-         Right x -> pure x
+       (=<<) errDecode (editTemplate nbTemplate)
      bugId <-
        addBug reporter
               (nbSynopsis nb)

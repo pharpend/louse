@@ -29,7 +29,6 @@ module Data.Louse.Read where
 import           Control.Exception
 import           Control.Monad
 import           Control.Monad.Trans.Resource
-import           Data.Aeson
 import qualified Data.ByteString as Bs
 import qualified Data.ByteString.Lazy as Bl
 import           Data.Conduit
@@ -42,6 +41,7 @@ import           Data.List.Utils (split,startswith)
 import           Data.Louse.Types
 import           Data.Ratio ((%))
 import qualified Data.Text as T
+import           Data.Yaml
 import           Safe
 import           System.Directory
 import           System.Exit (exitFailure)
@@ -102,11 +102,7 @@ readLouseFromErr fp =
      prjInfo <-
        if (not prjInfoExists)
           then pure Nothing
-          else (do prjInfoJSONValue <-
-                     runResourceT
-                       (connect (sourceFile prjson)
-                                (sinkParser json))
-                   fmap Just (parseMonad prjInfoJSONValue))
+          else fmap Just (errDecodeFile prjson)
      fmap (Louse fp prjInfo)
           (readBugsFromErr fp)
 
@@ -131,11 +127,7 @@ readFilesFromErr directoryPath =
                       startswith ".")
                      filePaths)
              (\fp ->
-                do value <-
-                     runResourceT
-                       (connect (sourceFile (mappend directoryPath fp))
-                                (sinkParser json))
-                   decodedContents <- parseMonad value
+                do decodedContents <- errDecodeFile fp
                    let fileName =
                          T.pack (reverse (drop 5 (reverse fp)))
                    return (fileName,decodedContents)))
@@ -144,4 +136,3 @@ readFilesFromErr directoryPath =
 lookupBug :: Louse -> BugId -> Maybe Bug
 lookupBug louse bugid =
   M.lookup bugid (louseBugs louse)
-

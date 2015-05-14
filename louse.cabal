@@ -50,10 +50,7 @@ library
                         Data.Louse.Types
                         Paths_louse
   build-depends:
-      aeson >=0.7
-    , aeson-pretty
-    , attoparsec
-    , base ==4.8.*
+      base ==4.8.*
     , base16-bytestring
     , bytestring
     , conduit >=1.2.3 && <1.3
@@ -71,6 +68,7 @@ library
     , time
     , text
     , transformers
+    , yaml ==0.8.*
     -- Temporarily copied over here from the executable, since the executable
     -- can't be built with cabal: <http://ix.io/iuC>.
                       , optparse-applicative ==0.11.*
