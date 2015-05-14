@@ -113,6 +113,14 @@ commentOnBug bugid personid comment =
         (bug {bugComments =
                 (mappend (bugComments bug)
                          [nc])}))
+-- |Edit a bug manually
+editBug :: BugId -> IO ()
+editBug bugid
+  do let bugsPath =
+           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
+     bug <- errDecodeFile bugsPath
+     newBug <- errDecode =<< runUserEditorDWIM yamlTemplate (encode bug)
+     encodeFile bugsPath newBug
 
 -- |Delete a bug from the list of bugs. 
 deleteBug :: BugId -> IO ()
@@ -134,6 +142,7 @@ instance FromJSON NewBug where
     (v .: "synopsis") <*>
     (v .: "description")
   parseJSON _ = mzero
+  
 
 -- |Make a new bug
 newBug :: IO ()

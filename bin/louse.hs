@@ -86,7 +86,7 @@ runArgs x =
         CommentOnBug bugid ->
           newComment (pack bugid)
         DeleteBug bugid -> deleteBug (pack bugid)
-        EditBug _ -> failNotImplemented
+        EditBug bid -> editBug bid
         ListBugs -> listBugs Open
         ShowBug bid -> showBug (pack bid)
     Init dir force ->
