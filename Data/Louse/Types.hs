@@ -172,3 +172,12 @@ instance FromJSON LouseConfig where
 
 instance ToJSON LouseConfig where
   toJSON (LouseConfig v) = toJSON v
+
+class Select a where
+  select :: Text -> Exceptional a
+
+class Select a => SelectGet a b where
+  selectGet :: Monad m => a -> m (Exceptional b)
+
+class Select a => SelectSet a b where
+  selectSet :: Monad m => a -> b -> m ()

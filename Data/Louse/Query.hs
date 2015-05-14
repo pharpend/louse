@@ -32,15 +32,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Safe
 
-class Select a where
-  select :: Text -> Exceptional a
-
-class Select a => SelectGet a b where
-  selectGet :: Monad m => a -> m (Exceptional b)
-
-class Select a => SelectSet a b where
-  selectSet :: Monad m => a -> b -> m ()
-
 data Query
   = QBug {qBugQuery :: BugQuery}
   | QConfig {qConfigQuery :: ConfigQuery}
