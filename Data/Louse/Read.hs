@@ -38,7 +38,7 @@ import           Data.Conduit.Binary hiding (drop)
 import           Data.Louse.DataFiles
 import           Data.Monoid
 import qualified Data.Map as M
-import           Data.List.Utils (split)
+import           Data.List.Utils (split,startswith)
 import           Data.Louse.Types
 import           Data.Ratio ((%))
 import qualified Data.Text as T
@@ -127,10 +127,14 @@ readFilesFromErr directoryPath =
      -- For each filePath
      fmap
        M.fromList
-       (forM (drop 2 filePaths)
+       (forM (filter (not .
+                      startswith ".")
+                     filePaths)
              (\fp ->
                 do value <-
-                     runResourceT (connect (sourceFile fp) (sinkParser json))
+                     runResourceT
+                       (connect (sourceFile (mappend directoryPath fp))
+                                (sinkParser json))
                    decodedContents <- parseMonad value
                    let fileName =
                          T.pack (reverse (drop 5 (reverse fp)))
