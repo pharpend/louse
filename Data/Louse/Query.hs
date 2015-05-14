@@ -42,7 +42,7 @@ data BugsQuery
   | BQClosed
   | BQOpen
   deriving (Eq, Show)
- 
+
 data ConfigQuery =
   CQWhoami {cqWhoamiQuery :: Maybe WhoamiQuery}
   deriving (Eq, Show)
@@ -53,38 +53,35 @@ data WhoamiQuery
   deriving (Eq,Show)
 
 instance Select Query where
-  select = parseQuery
-
-parseQuery :: Text -> Exceptional Query
-parseQuery q =
-  let qPieces = T.splitOn "." q
-  in case headMay qPieces of
-       Nothing ->
-         fail "You have to submit a query."
-       Just "bugs" ->
-         fmap QBug
-              (case atMay qPieces 1 of
-                 Nothing -> pure BQAll
-                 Just x ->
-                   (case x of
-                      "all" -> pure BQAll
-                      "closed" -> pure BQClosed
-                      "open" -> pure BQOpen
-                      x ->
-                        fail (mappend "bug: no match for value " (T.unpack x))))
-       Just "config" ->
-         fmap QConfig
-              (case atMay qPieces 1 of
-                 Nothing ->
-                   fail "I need something more specific than \"config\""
-                 Just "whoami" ->
-                   fmap CQWhoami
-                        (case atMay qPieces 2 of
-                           Nothing ->
-                             pure Nothing
-                           Just "name" ->
-                             pure (Just WQName)
-                           Just "email" ->
-                             pure (Just WQEmail)))
-       Just x ->
-         fail (mappend "toplevel: no match for value " (T.unpack x))
+  select q =
+    let qPieces = T.splitOn "." q
+    in case headMay qPieces of
+         Nothing ->
+           fail "You have to submit a query."
+         Just "bugs" ->
+           fmap QBugs
+                (case atMay qPieces 1 of
+                   Nothing -> pure BQAll
+                   Just x ->
+                     (case x of
+                        "all" -> pure BQAll
+                        "closed" -> pure BQClosed
+                        "open" -> pure BQOpen
+                        x ->
+                          fail (mappend "bug: no match for value " (T.unpack x))))
+         Just "config" ->
+           fmap QConfig
+                (case atMay qPieces 1 of
+                   Nothing ->
+                     fail "I need something more specific than \"config\""
+                   Just "whoami" ->
+                     fmap CQWhoami
+                          (case atMay qPieces 2 of
+                             Nothing ->
+                               pure Nothing
+                             Just "name" ->
+                               pure (Just WQName)
+                             Just "email" ->
+                               pure (Just WQEmail)))
+         Just x ->
+           fail (mappend "toplevel: no match for value " (T.unpack x))
