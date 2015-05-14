@@ -38,9 +38,11 @@ import Data.Conduit.Binary
 import Data.Conduit.Combinators (sinkLazy)
 import Data.Louse.Config
 import Data.Louse.DataFiles
+import Data.Louse.Read
 import Data.Louse.Templates
 import Data.Louse.Trivia (randomIdent)
 import Data.Louse.Types
+import qualified Data.Map as M
 import Data.Time (getCurrentTime)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -170,3 +172,30 @@ newComment bid =
        fmap decodeUtf8 (runUserEditorDWIM plainTemplate "Enter your comment here")
      commentOnBug bid reporter comment
      putStrLn (mappend "Added comment to bug " (T.unpack bid))
+
+-- |This is so users don't have to type the entire 40-character long
+-- sequence when running 'louse bug show'
+lookupShortKey :: T.Text -> IO (Maybe Bug)
+lookupShortKey k =
+  do louse <-
+       readLouse >>=
+       \case
+         Left err ->
+           fail (unlines ["I wasn't able to read a louse repo from the current directory."
+                         ,"Are you sure it exists?"
+                         ,"The error message is:"
+                         ,err])
+         Right l -> pure l
+     let longKeys = M.keys (louseBugs louse)
+         shortKeyLength = T.length k
+         shortKeysToLongKeysMap =
+           M.fromList
+             (do long_ <- longKeys
+                 let short_ =
+                       T.take shortKeyLength long_
+                 return (short_,long_))
+     case M.lookup k shortKeysToLongKeysMap of
+       Just longKey ->
+         return (M.lookup longKey (louseBugs louse))
+       Nothing ->
+         fail (mappend "There is no bug whose ident starts with " (T.unpack k))
