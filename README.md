@@ -57,8 +57,8 @@ can run `louse --help`.
       schemata                 Do stuff with schemata.
       status                   Initialize louse.
 
-For information on a specific command, run `louse COMMAND --help`, where COMMAND
-is one of the commands listed above.
+    For information on a specific command, run `louse COMMAND --help`, where COMMAND
+    is one of the commands listed above.
 
 ## Inspiration
 
