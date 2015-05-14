@@ -130,7 +130,6 @@ argsParserInfo = infoHelp argsParser argsHelp
                     ,hsubparser (command "bug" bugInfo)
                     ,hsubparser (command "init" initInfo)
                     ,hsubparser (command "schema" schemataInfo)
-                    ,hsubparser (command "schemata" schemataInfo)
                     ,hsubparser (command "status" statusInfo)]
         copyrightParser :: Parser TriviaAction
         copyrightParser =
