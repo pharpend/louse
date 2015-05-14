@@ -61,7 +61,7 @@ statusStr dir =
          nTotalBugs = M.size bugs
          nOpenBugs =
            length (M.filter bugOpen bugs)
-         ratioOf = (%)
+         ratioOf a b = round (a % b)
          closureRateStr
            | nTotalBugs == 0 = mempty
            | otherwise =
