@@ -65,8 +65,6 @@ import Text.Editor
 --                }
 --   deriving (Eq, Show)
 
--- |Interactively add a bug
-
 
 -- |Add a bug to the current project. This doesn't return a bug. It
 -- instead writes the bug to a file, and returns the 'BugId' pertaining
