@@ -114,7 +114,7 @@ These are liable to change, but this is what I have so far.
 6.  Add support for common features like relations, tagging, and
     attachments.
 
-### 0.3
+### 0.2
 
 Those which exist:
 
