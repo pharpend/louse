@@ -114,7 +114,7 @@ commentOnBug bugid personid comment =
                 (mappend (bugComments bug)
                          [nc])}))
 
--- ^Delete a bug from the list of bugs. 
+-- |Delete a bug from the list of bugs. 
 deleteBug :: BugId -> IO ()
 deleteBug bugid =
   do let bugPath =
