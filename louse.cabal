@@ -34,10 +34,11 @@ flag lib_only
 
 library
   default-language:     Haskell2010
-  default-extensions:   LambdaCase
-                        MultiWayIf
-                        OverloadedStrings
-                        ScopedTypeVariables
+  extensions:   LambdaCase
+                MultiParamTypeClasses
+                MultiWayIf
+                OverloadedStrings
+                ScopedTypeVariables
   exposed-modules:      Data.Louse
                         Data.Louse.Bugs
                         Data.Louse.DataFiles
@@ -71,9 +72,6 @@ library
     , text
     , transformers
     , yaml ==0.8.*
-    -- Temporarily copied over here from the executable, since the executable
-    -- can't be built with cabal: <http://ix.io/iuC>.
-                      , optparse-applicative ==0.11.*
   if flag(dev)
     ghc-options:        -O0 -Wall
   else

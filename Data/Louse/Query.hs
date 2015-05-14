@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
