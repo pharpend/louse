@@ -54,11 +54,7 @@ to build louse. Instead, you have to build louse manually:
 ```
 git clone https://github.com/pharpend/louse.git
 cd louse
-cabal update
-cabal install -j
-cd bin
-ghc louse.hs
-cp louse /usr/local/bin/louse
+./configure && make && sudo make install
 ```
 
 For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run
