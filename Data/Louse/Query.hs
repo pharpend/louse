@@ -35,10 +35,10 @@ import Safe
 class Select a where
   select :: Text -> Exceptional a
 
-class Selectable a => SelectGet a b where
+class Select a => SelectGet a b where
   selectGet :: Monad m => a -> m (Exceptional b)
 
-class Selectable a => SelectSet a b where
+class Select a => SelectSet a b where
   selectSet :: Monad m => a -> b -> m ()
 
 data Query
