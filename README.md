@@ -128,12 +128,12 @@ Those which exist:
 
 ### 1.0
 
-Proper bash completion. optparse-applicative claims to have it, but it
-doesn't. It lies!
-
-### 2.0
-
-A plugin system.
+1.  Proper bash completion. optparse-applicative claims to have it, but it
+    doesn't. It lies!
+2.  A plugin system. This would include support for custom issue tracker
+    APIs.
+3.  Support for indexing and marshaling to common database
+    software. (the *SQLs).
 
 ## Schemata
 
