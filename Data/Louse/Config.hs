@@ -38,19 +38,17 @@ import Data.Louse.Types
 import System.Directory
 
 readLouseConfig :: IO (Maybe LouseConfig)
-readLouseConfig = pure Nothing
-  -- do configPath <- _config_path
-  --    -- configPathExists <- doesFileExist configPath
-  --    -- case configPathExists of
-  --    -- False -> pure Nothing
-  --    -- True ->
-  --    return Nothing
-     -- fmap
-     --   Just
-     --   (parseMonad =<<
-     --    (runResourceT
-     --       (connect (sourceFile configPath)
-     --                (sinkParser json))))
+readLouseConfig =
+  do configPath <- _config_path
+     configPathExists <- doesFileExist configPath
+     case configPathExists of
+       False -> pure Nothing
+       True ->
+         fmap Just
+              (parseMonad =<<
+               (runResourceT
+                  (connect (sourceFile configPath)
+                           (sinkParser json))))
 
 writeLouseConfig :: LouseConfig -> IO ()
 writeLouseConfig cfg =
