@@ -1,6 +1,7 @@
 INSTALLFLAGS=-j
+LIBONLY=-flib_only
 
-all: update build
+all: update build-exe
 
 clean:
 	cabal clean
@@ -8,9 +9,14 @@ clean:
 update:
 	cabal update
 
-build:
-	cabal install ${INSTALLFLAGS}
+build-lib:
+	cabal install ${INSTALLFLAGS} ${LIBONLY}
+
+build-exe: build-lib
 	cd bin && ghc louse.hs
+
+build:
+	cabal install
 
 install:
 	cp bin/louse /usr/local/bin/louse
