@@ -1,0 +1,6 @@
+#!/bin/sh
+# 
+# This file doesn't actually do anything, I just put it here so people can have
+# the satisfaction of typing "./configure && make && sudo make install"
+
+exit 0
