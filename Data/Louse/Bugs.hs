@@ -26,7 +26,7 @@
 
 module Data.Louse.Bugs where
 
-import Control.Monad (mzero)
+import Control.Monad (forM_, mzero)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
 import Data.Attoparsec.ByteString (parseOnly, IResult(..))
@@ -46,8 +46,10 @@ import qualified Data.Map as M
 import Data.Time (getCurrentTime)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as L
+import Data.Traversable (for)
 import System.Directory (getCurrentDirectory, removeFile)
 import System.IO (openFile, IOMode(..))
 import System.Exit
@@ -194,8 +196,41 @@ lookupShortKey k =
                  let short_ =
                        T.take shortKeyLength long_
                  return (short_,long_))
-     case M.lookup k shortKeysToLongKeysMap of
-       Just longKey ->
-         return (M.lookup longKey (louseBugs louse))
-       Nothing ->
-         fail (mappend "There is no bug whose ident starts with " (T.unpack k))
+     pure ((>>=) (M.lookup k shortKeysToLongKeysMap)
+                 (\longKey ->
+                    M.lookup longKey (louseBugs louse)))
+
+-- |Print out information about a bug to the terminal.
+showBug :: T.Text {- |The optionally abbreviated bug id -} -> IO ()
+showBug ident =
+  lookupShortKey ident >>=
+  \case
+    Nothing ->
+      fail (mconcat ["I can't find a bug whose ident starts with:\n\t"
+                    ,(T.unpack ident)])
+    Just x -> print x
+
+data State = Open | Closed | All
+-- |Print out a list in the form ident\ttitle to the terminal.
+listBugs :: State -> IO ()
+listBugs state =
+  do louse <- readLouseErr
+     let openBugs =
+           let allBugs = louseBugs louse
+           in case state of
+                Open -> M.filter bugOpen allBugs
+                All -> allBugs
+                Closed ->
+                  M.filter (not . bugOpen) allBugs
+         keys_ = M.keys openBugs
+         titles_ =
+           map bugTitle (M.elems openBugs)
+         keysTitles = zip keys_ titles_
+     forM_ keysTitles
+           (\(key,title) ->
+              TIO.putStrLn
+                (mconcat [T.take 8 key,T.replicate 4 " ",ellipsize title]))
+  where ellipsize t
+          | T.length t > 65 =
+            mappend (T.take 65 t) "..."
+          | otherwise = t

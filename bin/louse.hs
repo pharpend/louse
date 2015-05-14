@@ -87,8 +87,8 @@ runArgs x =
           newComment (pack bugid)
         DeleteBug bugid -> deleteBug (pack bugid)
         EditBug _ -> failNotImplemented
-        ListBugs -> failNotImplemented
-        ShowBug _ -> failNotImplemented
+        ListBugs -> listBugs Open
+        ShowBug bid -> showBug (pack bid)
     Init dir force ->
       do workdir <-
            case dir of
