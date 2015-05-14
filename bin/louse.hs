@@ -48,10 +48,10 @@ infoHelp a = info (helper <*> a)
 
 data Args = DBug BugAction
           | Init (Maybe FilePath) Bool
+          | Query QueryAction
           | Schema SchemaAction
           | Status
           | Trivia TriviaAction
-
   deriving Show
 
 data TriviaAction = Copyright
@@ -75,6 +75,11 @@ data SchemaAction = ListSchemata
                   | ShowSchema String
   deriving Show
 
+data QueryAction
+  = Set String
+        String
+  | Get String
+  deriving (Show)
 
 runArgs :: Args -> IO ()
 runArgs x =
@@ -95,6 +100,10 @@ runArgs x =
              Nothing -> getCurrentDirectory
              Just w -> makeAbsolute w
          initInDir workdir force
+    Query y ->
+      case y of
+        Get a -> print (parseQuery (pack a))
+        Set a b -> print (parseQuery (pack a))
     Schema y ->
       case y of
         ListSchemata -> listSchemata
@@ -129,7 +138,9 @@ argsParserInfo = infoHelp argsParser argsHelp
                                ,versionParser]
                     ,hsubparser (command "bug" bugInfo)
                     ,hsubparser (command "init" initInfo)
+                    ,hsubparser (command "get" getInfo)
                     ,hsubparser (command "schema" schemataInfo)
+                    ,hsubparser (command "set" setInfo)
                     ,hsubparser (command "status" statusInfo)]
         copyrightParser :: Parser TriviaAction
         copyrightParser =
@@ -263,3 +274,29 @@ bugInfo = infoHelp theOptions theHelp
         sbopts =
           fmap (DBug . ShowBug)
                (strArgument (help "The bug to show (use `louse bug list` to see a list)"))
+
+getInfo :: ParserInfo Args
+getInfo = infoHelp getOptions getHelp
+  where getHelp =
+          mconcat [fullDesc
+                  ,progDesc "Query information."
+                  ,footer "Use `louse get selectors` to show a list of selectors."]
+        getOptions =
+          fmap (Query . Get)
+               (strArgument
+                  (mconcat [help "The selector. An example would be \"config.whoami.name\"."
+                           ,metavar "SELECTOR"]))
+
+setInfo :: ParserInfo Args
+setInfo = infoHelp getOptions getHelp
+  where getHelp =
+          mconcat [fullDesc
+                  ,progDesc "Set some variables."
+                  ,footer "Use `louse get selectors` to show a list of selectors."]
+        getOptions =
+          Query <$>
+          (Set <$>
+           (strArgument
+              (mconcat [help "The selector. An example would be \"config.whoami.name\"."
+                       ,metavar "SELECTOR"])) <*>
+           (strArgument (mconcat [help "The new value.",metavar "VALUE"])))
