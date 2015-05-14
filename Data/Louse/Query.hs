@@ -33,11 +33,11 @@ import qualified Data.Text as T
 import Safe
 
 data Query
-  = QBug {qBugQuery :: BugQuery}
+  = QBugs {qBugsQuery :: BugsQuery}
   | QConfig {qConfigQuery :: ConfigQuery}
   deriving (Eq,Show)
 
-data BugQuery
+data BugsQuery
   = BQAll
   | BQClosed
   | BQOpen
