@@ -75,18 +75,22 @@ readLouseErr = readLouseFromErr =<< getCurrentDirectory
 readLouseFrom 
   :: FilePath                   -- ^The working directory
   -> IO (Either String Louse)
-readLouseFrom fp = (try (readLouseFromErr fp) :: IO (Either SomeException Louse)) >>= \case
-                     Left err -> pure (Left (show err))
-                     Right x  -> pure (Right x)
+readLouseFrom fp =
+  (try (readLouseFromErr fp) :: IO (Either SomeException Louse)) >>=
+  \case
+    Left err -> pure (Left (show err))
+    Right x -> pure (Right x)
 
 -- |Wrapper around 'readLouseFromErr', which returns 'Nothing' if there
 -- is an error.
 readLouseFromMay 
   :: FilePath         -- ^The working directory
   -> IO (Maybe Louse)
-readLouseFromMay = readLouseFrom >=> \case
-                     Left _  -> pure Nothing
-                     Right x -> pure (Just x)
+readLouseFromMay =
+  readLouseFrom >=>
+  \case
+    Left _ -> pure Nothing
+    Right x -> pure (Just x)
 
 -- |This is a function to read the Louse instance from a directory.
 readLouseFromErr 
