@@ -27,6 +27,7 @@
 module Main where
 
 import           Control.Applicative
+import           Control.Exceptional
 import           Data.Louse
 import           Data.Monoid
 import           Data.Text (pack)
@@ -102,8 +103,8 @@ runArgs x =
          initInDir workdir force
     Query y ->
       case y of
-        Get a -> print (parseQuery (pack a))
-        Set a b -> print (parseQuery (pack a))
+        Get a -> print (select (pack a) :: Exceptional Query)
+        Set a b -> print (select (pack a) :: Exceptional Query)
     Schema y ->
       case y of
         ListSchemata -> listSchemata

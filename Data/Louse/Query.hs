@@ -28,6 +28,7 @@
 module Data.Louse.Query where
 
 import Control.Exceptional
+import Data.Louse.Types
 import Data.Text (Text)
 import qualified Data.Text as T
 import Safe

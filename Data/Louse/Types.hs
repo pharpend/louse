@@ -27,8 +27,10 @@
 module Data.Louse.Types where
 
 import           Control.Applicative ((<|>))
+import           Control.Exceptional
 import           Control.Monad
 import qualified Data.Map.Lazy as M
+import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time
 import           Data.Yaml
