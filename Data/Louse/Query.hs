@@ -27,9 +27,19 @@
 
 module Data.Louse.Query where
 
+import Control.Exceptional
 import Data.Text (Text)
 import qualified Data.Text as T
 import Safe
+
+class Select a where
+  select :: Text -> Exceptional a
+
+class Selectable a => SelectGet a b where
+  selectGet :: Monad m => a -> m (Exceptional b)
+
+class Selectable a => SelectSet a b where
+  selectSet :: Monad m => a -> b -> m ()
 
 data Query
   = QBug {qBugQuery :: BugQuery}
@@ -51,7 +61,10 @@ data WhoamiQuery
   | WQEmail
   deriving (Eq,Show)
 
-parseQuery :: Text -> Exceptable Query
+instance Select Query where
+  select = parseQuery
+
+parseQuery :: Text -> Exceptional Query
 parseQuery q =
   let qPieces = T.splitOn "." q
   in case headMay qPieces of
@@ -84,25 +97,3 @@ parseQuery q =
                              pure (Just WQEmail)))
        Just x ->
          fail (mappend "toplevel: no match for value " (T.unpack x))
-
--- |This is basically specialized Either, or Maybe with errors
-data Exceptable b
-  = Failure String
-  | Success b
-  deriving (Eq, Show, Read)
-
-instance Functor Exceptable where
-  fmap f (Success a) = Success (f a)
-  fmap _ (Failure s) = Failure s
-
-instance Applicative Exceptable where
-  pure = Success
-  Success f <*> Success x = Success (f x)
-  Failure s <*> _ = Failure s
-  _ <*> Failure s = Failure s
-
-instance Monad Exceptable where
-  (>>=) (Success x) f = f x
-  (>>=) (Failure s) _ = Failure s
-  fail = Failure
-  return = pure
