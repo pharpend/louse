@@ -42,6 +42,7 @@ data Louse =
          { workingDirectory :: FilePath
          , louseProjectInfo :: !(Maybe ProjectInfo)
          , louseBugs :: IdMap Bug
+         , louseUser :: Person
          }
   deriving (Eq, Show)
 

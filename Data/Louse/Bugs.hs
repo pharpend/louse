@@ -34,7 +34,6 @@ import Data.Conduit
 import Data.Conduit.Attoparsec (sinkParser)
 import Data.Conduit.Binary
 import Data.Conduit.Combinators (sinkLazy)
-import Data.Louse.Config
 import Data.Louse.DataFiles
 import Data.Louse.Read
 import Data.Louse.Templates
@@ -118,9 +117,9 @@ commentOnBug bugid personid comment =
 -- ^Delete a bug from the list of bugs. 
 deleteBug :: BugId -> IO ()
 deleteBug bugid =
-  let bugPath =
-        (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
-  in removeFile bugPath >>
+  do let bugPath =
+           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
+     removeFile bugPath
      putStrLn (mappend "Deleted bug " (show bugid))
 
 -- |Intermediate type for new bugs
@@ -139,11 +138,7 @@ instance FromJSON NewBug where
 -- |Make a new bug
 newBug :: IO ()
 newBug =
-  do maybeLC <- readLouseConfig
-     let reporter =
-           case maybeLC of
-             Just (LouseConfig r) -> r
-             Nothing -> Anonymous
+  do reporter <- fmap whoami readLouseConfig
      nbTemplate <- _templ_new_bug
      nb <-
        (=<<) errDecode (editTemplate nbTemplate)
@@ -156,11 +151,7 @@ newBug =
 -- |Make a new bug
 newComment :: BugId -> IO ()
 newComment bid =
-  do maybeLC <- readLouseConfig
-     let reporter =
-           case maybeLC of
-             Just (LouseConfig r) -> r
-             Nothing -> Anonymous
+  do reporter <- fmap whoami readLouseConfig
      comment <-
        fmap decodeUtf8 (runUserEditorDWIM plainTemplate "Enter your comment here")
      commentOnBug bid reporter comment

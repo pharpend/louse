@@ -103,8 +103,9 @@ readLouseFromErr fp =
        if (not prjInfoExists)
           then pure Nothing
           else fmap Just (errDecodeFile pryaml)
-     fmap (Louse fp prjInfo)
-          (readBugsFromErr fp)
+     ap (fmap (Louse fp prjInfo)
+              (readBugsFromErr fp))
+        (fmap whoami readLouseConfig)
 
 -- |Lazily reads the bugs.
 readBugsFromErr 
@@ -127,7 +128,8 @@ readFilesFromErr directoryPath =
                       startswith ".")
                      filePaths)
              (\fp ->
-                do decodedContents <- errDecodeFile fp
+                do decodedContents <-
+                     errDecodeFile (mconcat [directoryPath,"/",fp])
                    let fileName =
                          T.pack (reverse (drop 5 (reverse fp)))
                    return (fileName,decodedContents)))
@@ -136,3 +138,18 @@ readFilesFromErr directoryPath =
 lookupBug :: Louse -> BugId -> Maybe Bug
 lookupBug louse bugid =
   M.lookup bugid (louseBugs louse)
+
+-- |Read the louse config
+readLouseConfig :: IO LouseConfig
+readLouseConfig =
+  do configPath <- _config_path
+     configPathExists <- doesFileExist configPath
+     if configPathExists
+        then errDecodeFile configPath
+        else pure (LouseConfig Anonymous)
+
+-- |Write the louse config back
+writeLouseConfig :: LouseConfig -> IO ()
+writeLouseConfig cfg =
+  do configPath <- _config_path
+     encodeFile configPath cfg

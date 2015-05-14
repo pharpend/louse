@@ -40,7 +40,6 @@ library
                         ScopedTypeVariables
   exposed-modules:      Data.Louse
                         Data.Louse.Bugs
-                        Data.Louse.Config
                         Data.Louse.DataFiles
                         Data.Louse.Initialize
                         Data.Louse.Read
