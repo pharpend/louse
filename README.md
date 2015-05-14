@@ -80,21 +80,43 @@ distribute the standard development workflow.
 
 ## Milestones
 
-The following commands need to be implemented:
+These are liable to change, but this is what I have so far.
 
-* ~~`louse bug add`~~
-* `louse bug close`
-* `louse bug comment`
-* `louse bug delete`
-* ~~`louse bug list`~~
-* ~~`louse bug show`~~
+### 0.1
 
-The following commands need to be removed:
+1.  The following commands need to be implemented:
+    
+    * ~~`louse bug add`~~
+    * `louse bug close`
+    * ~~`louse bug comment`~~ ish
+    * `louse bug edit`
+    * ~~`louse bug delete`~~
+    * ~~`louse bug list`~~
+    * ~~`louse bug show`~~
 
-* ~~`louse ppl`~~
-* ~~`louse schemata`~~
+2. The following commands need to be removed:
+   
+   * ~~`louse ppl`~~
+   * ~~`louse schemata`~~
 
-These will probably go in another tool:
+3. Rewrite the tutorial
+
+### 0.2
+
+1.  Replace `louse bug list` and `louse bug show` with a more flexible
+    `louse query`.
+
+    Additonally, factor out the query to be a central part of the
+    `Read.hs` file, rather than just stuck on in `Bugs.hs`.
+
+2.  Add a `louse config` command to edit the configuration file.
+
+3.  Add support for common features like relations, tagging, and
+    attachments.
+
+### 0.3
+
+Those which exist:
 
 * Add support for GitHub issues API
 * Add support for BitBucket issues API
@@ -102,8 +124,16 @@ These will probably go in another tool:
 * Add support for GitLab.com issues API
 * Add support for Launchpad issues API
 * Add support for Bugzilla issues API
-* Add support for Custom issue tracker API
-* Add support for Custom issue tracker API
+* Add support for Debbugs API
+
+### 1.0
+
+Proper bash completion. optparse-applicative claims to have it, but it
+doesn't. It lies!
+
+### 2.0
+
+A plugin system.
 
 ## Schemata
 
