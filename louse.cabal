@@ -42,6 +42,7 @@ library
                         Data.Louse.Bugs
                         Data.Louse.DataFiles
                         Data.Louse.Initialize
+                        Data.Louse.Query
                         Data.Louse.Read
                         Data.Louse.Schemata
                         Data.Louse.Status
