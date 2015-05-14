@@ -72,13 +72,14 @@ library
     , transformers
     -- Temporarily copied over here from the executable, since the executable
     -- can't be built with cabal: <http://ix.io/iuC>.
-                      -- , optparse-applicative ==0.11.*
+                      , optparse-applicative ==0.11.*
   if flag(dev)
     ghc-options:        -O0 -Wall
   else
     ghc-options:        -O2
 
 executable louse
+    buildable: False
     hs-source-dirs:     bin
     build-depends:      base ==4.8.*
                       , bytestring
