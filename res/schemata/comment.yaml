@@ -1,0 +1,11 @@
+name: comment
+type: object
+properties:
+  comment-person:
+    required: false
+    type: string
+    description: The id of the person associated with this comment.
+  comment-text:
+    required: true
+    type: string
+    description: The comment itself

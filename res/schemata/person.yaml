@@ -1,0 +1,10 @@
+name: person
+type: object
+description: A person
+properties:
+  person-name:
+    required: true
+    type: string
+  person-email:
+    required: true
+    type: string
