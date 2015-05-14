@@ -89,7 +89,7 @@ These are liable to change, but this is what I have so far.
     * ~~`louse bug add`~~
     * ~~`louse bug close`~~
     * ~~`louse bug comment`~~ ish
-    * `louse bug edit`
+    * ~~`louse bug edit`~~
     * ~~`louse bug delete`~~
     * ~~`louse bug list`~~
     * ~~`louse bug show`~~
@@ -101,17 +101,17 @@ These are liable to change, but this is what I have so far.
 
 3. Rewrite the tutorial
 
-### 0.2
-
-1.  Replace `louse bug list` and `louse bug show` with a more flexible
+4.  Replace `louse bug list` and `louse bug show` with a more flexible
     `louse query`.
 
     Additonally, factor out the query to be a central part of the
     `Read.hs` file, rather than just stuck on in `Bugs.hs`.
 
-2.  Add a `louse config` command to edit the configuration file.
+    The query should use the familiar SQL syntax
 
-3.  Add support for common features like relations, tagging, and
+5.  Add a `louse config` command to edit the configuration file.
+
+6.  Add support for common features like relations, tagging, and
     attachments.
 
 ### 0.3
