@@ -87,7 +87,7 @@ These are liable to change, but this is what I have so far.
 1.  The following commands need to be implemented:
     
     * ~~`louse bug add`~~
-    * `louse bug close`
+    * ~~`louse bug close`~~
     * ~~`louse bug comment`~~ ish
     * `louse bug edit`
     * ~~`louse bug delete`~~
