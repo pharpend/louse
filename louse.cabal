@@ -62,6 +62,7 @@ library
     , crypto-random
     , directory >=1.2
     , editor-open ==0.4.*
+    , exceptional ==0.1.*
     , MissingH
     , mtl
     , resourcet
