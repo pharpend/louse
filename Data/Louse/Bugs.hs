@@ -26,6 +26,7 @@
 
 module Data.Louse.Bugs where
 
+import Control.Exceptional
 import Control.Monad (forM_, mzero)
 import Control.Monad.Trans.Resource (runResourceT)
 import qualified Data.ByteString.Char8 as Bsc
@@ -180,12 +181,12 @@ lookupShortKey k =
   do louse <-
        readLouse >>=
        \case
-         Left err ->
+         Failure err ->
            fail (unlines ["I wasn't able to read a louse repo from the current directory."
                          ,"Are you sure it exists?"
                          ,"The error message is:"
                          ,err])
-         Right l -> pure l
+         Success l -> pure l
      let longKeys = M.keys (louseBugs louse)
          shortKeyLength = T.length k
          shortKeysToLongKeysMap =

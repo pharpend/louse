@@ -29,6 +29,7 @@
 
 module Data.Louse.DataFiles where
 
+import           Control.Exceptional
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Resource
 import qualified Data.ByteString as Bs
@@ -79,6 +80,14 @@ errDecodeFile filePath =
             Left err -> ppError err
             Right x -> pure x))
 
+decodeFileExceptional :: FromJSON a => FilePath -> IO (Exceptional a)
+decodeFileExceptional filePath =
+  (flip fmap
+        (decodeFileEither filePath)
+        (\case
+           Left err -> ppError err
+           Right x -> pure x))
+
 errDecode :: FromJSON a
           => Bs.ByteString -> IO a
 errDecode bytes =
@@ -86,5 +95,12 @@ errDecode bytes =
     Left err -> ppError err
     Right x -> pure x
 
-ppError :: ParseException -> IO a
+decodeExceptional :: FromJSON a
+                   => Bs.ByteString -> Exceptional a
+decodeExceptional bytes =
+  case decodeEither' bytes of
+    Left err -> ppError err
+    Right x -> pure x
+
+ppError :: Monad m => ParseException -> m a
 ppError = fail . prettyPrintParseException
