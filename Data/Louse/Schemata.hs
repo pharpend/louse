@@ -43,11 +43,11 @@ import           System.IO.Error (isDoesNotExistError)
 --
 schemata :: IO [String]
 schemata =
-  do jsonFilePaths <-
-       fmap (filter (endswith ".json")) schemataFiles
+  do yamlFilePaths <-
+       fmap (filter (endswith ".yaml")) schemataFiles
      pure (sort (fmap (\fileName ->
                          last (split "/" (reverse (drop 5 (reverse fileName)))))
-                      jsonFilePaths))
+                      yamlFilePaths))
 
 -- |Print the output of 'schemata' to the console
 -- 
@@ -64,7 +64,7 @@ listSchemata =
 getSchema :: String -> IO ByteString
 getSchema s =
   do d <- schemataDir
-     let fp = mconcat [d,"/",s,".json"]
+     let fp = mconcat [d,"/",s,".yaml"]
      eitherFileText <- try (B.readFile fp)
      case eitherFileText of
        Left err ->

@@ -17,8 +17,8 @@ data-files:             README.md
                         LICENSE
                         TUTORIAL.md
                         res/copyright.txt
-                        res/schemata/*.json
-                        res/templates/*.json
+                        res/schemata/*.yaml
+                        res/templates/*.yaml
 extra-source-files:     README.md
                         LICENSE
                         TUTORIAL.md

@@ -44,14 +44,14 @@ _app_name :: FilePath
 _app_name = "louse"
 
 _louse_dir         = mconcat ["/.", _app_name, "/"]
-_project_json      = _louse_dir <> "project.json"
+_project_yaml      = _louse_dir <> "project.yaml"
 _bugs_dir          = _louse_dir <> "bugs/"
 _people_dir        = _louse_dir <> "people/"
 
 _config_path :: IO FilePath
 _config_path =
   do dataDir <- getAppUserDataDirectory _app_name
-     return (mappend dataDir "/config.json")
+     return (mappend dataDir "/config.yaml")
 
 -- |Read a file lazily but efficiently
 produceFile :: FilePath -> Producer (ResourceT IO) Bs.ByteString
@@ -66,11 +66,11 @@ type TemplatePath = String
 -- |Path to template for new 'ProjectInfo'
 _templ_new_project :: IO TemplatePath
 _templ_new_project =
-  getDataFileName "res/templates/new-project.json"
+  getDataFileName "res/templates/new-project.yaml"
 
 -- |Path to template for new 'Bug'
 _templ_new_bug :: IO TemplatePath
-_templ_new_bug = getDataFileName "res/templates/new-bug.json"
+_templ_new_bug = getDataFileName "res/templates/new-bug.yaml"
 
 errDecodeFile :: FromJSON a => FilePath -> IO a
 errDecodeFile filePath =

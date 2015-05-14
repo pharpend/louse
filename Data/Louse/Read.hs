@@ -97,12 +97,12 @@ readLouseFromErr
   :: FilePath -- ^The path to the project directory (i.e. NOT .louse)
   -> IO Louse -- ^The resulting 'Louse'
 readLouseFromErr fp =
-  do let prjson = mappend fp _project_json
-     prjInfoExists <- doesFileExist prjson
+  do let pryaml = mappend fp _project_yaml
+     prjInfoExists <- doesFileExist pryaml
      prjInfo <-
        if (not prjInfoExists)
           then pure Nothing
-          else fmap Just (errDecodeFile prjson)
+          else fmap Just (errDecodeFile pryaml)
      fmap (Louse fp prjInfo)
           (readBugsFromErr fp)
 
