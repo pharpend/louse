@@ -90,7 +90,8 @@ addBug person title description =
 -- |Close a bug. This actually edits the files, so be careful.
 closeBug :: BugId -> IO ()
 closeBug bugid =
-  do let bugsPath =
+  do pwd <- getCurrentDirectory
+     let bugsPath =
            (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
      bug <- errDecodeFile bugsPath
      encodeFile bugsPath
@@ -102,7 +103,8 @@ commentOnBug :: BugId                      -- ^The bug on which to comment
              -> T.Text                     -- ^The actual comment text
              -> IO ()
 commentOnBug bugid personid comment =
-  do let bugsPath =
+  do pwd <- getCurrentDirectory
+     let bugsPath =
            (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
      bug <- errDecodeFile bugsPath
      commentTime <- getCurrentTime
@@ -115,18 +117,23 @@ commentOnBug bugid personid comment =
                          [nc])}))
 -- |Edit a bug manually
 editBug :: BugId -> IO ()
-editBug bugid
-  do let bugsPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
-     bug <- errDecodeFile bugsPath
-     newBug <- errDecode =<< runUserEditorDWIM yamlTemplate (encode bug)
+editBug bugid =
+  do pwd <- getCurrentDirectory
+     let bugsPath =
+           (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
+     bug <- (errDecodeFile bugsPath) :: IO Bug
+     newBug <-
+       (errDecode =<<
+        runUserEditorDWIM yamlTemplate
+                          (encode bug)) :: IO Bug
      encodeFile bugsPath newBug
 
 -- |Delete a bug from the list of bugs. 
 deleteBug :: BugId -> IO ()
 deleteBug bugid =
-  do let bugPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
+  do pwd <- getCurrentDirectory
+     let bugPath =
+           (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
      removeFile bugPath
      putStrLn (mappend "Deleted bug " (show bugid))
 

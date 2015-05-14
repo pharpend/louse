@@ -86,7 +86,7 @@ runArgs x =
         CommentOnBug bugid ->
           newComment (pack bugid)
         DeleteBug bugid -> deleteBug (pack bugid)
-        EditBug bid -> editBug bid
+        EditBug bid -> editBug (pack bid)
         ListBugs -> listBugs Open
         ShowBug bid -> showBug (pack bid)
     Init dir force ->
@@ -109,7 +109,7 @@ runArgs x =
         Tutorial -> printOut louseTutorial
         Version -> printVersion
   where failNotImplemented =
-          fail "FIXME: Feature not yet implemented"
+          (fail "FIXME: Feature not yet implemented") :: IO a
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo = infoHelp argsParser argsHelp
@@ -219,6 +219,7 @@ bugInfo = infoHelp theOptions theHelp
                     ,subparser (command "close" closeBugInfo)
                     ,subparser (command "comment" commentBugInfo)
                     ,subparser (command "delete" delBugInfo)
+                    ,subparser (command "edit" editBugInfo)
                     ,subparser (command "list" lsBugInfo)
                     ,subparser (command "show" showBugInfo)]
         addBugInfo = infoHelp abopts abhelp
@@ -246,6 +247,12 @@ bugInfo = infoHelp theOptions theHelp
         dbopts =
           fmap (DBug . DeleteBug)
                (strArgument (help "The bug to delete (use `louse bug list` to see a list)"))
+        editBugInfo = infoHelp ebopts ebhelp
+        ebhelp =
+          mappend fullDesc (progDesc "Edit a bug manually with $EDITOR.")
+        ebopts =
+          fmap (DBug . EditBug)
+               (strArgument (help "The bug to edit (use `louse bug list` to see a list)"))
         lsBugInfo = infoHelp lbopts lbhelp
         lbhelp =
           mappend fullDesc (progDesc "List all of the bugs")
