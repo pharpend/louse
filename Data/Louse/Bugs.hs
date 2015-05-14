@@ -199,7 +199,8 @@ lookupShortKey k =
                     M.lookup longKey (louseBugs louse)))
 
 -- |Print out information about a bug to the terminal.
-showBug :: T.Text {- |The optionally abbreviated bug id -} -> IO ()
+showBug :: T.Text -- ^The optionally abbreviated bug id
+        -> IO ()
 showBug ident =
   lookupShortKey ident >>=
   \case
