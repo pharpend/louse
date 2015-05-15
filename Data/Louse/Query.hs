@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances
+           , MultiParamTypeClasses #-}
 
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
@@ -28,29 +29,19 @@
 module Data.Louse.Query where
 
 import Control.Exceptional
+import Control.Monad.IO.Class
+import Data.Louse.Read
 import Data.Louse.Types
+import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Data.Yaml
 import Safe
 
 data Query
   = QBugs {qBugsQuery :: BugsQuery}
   | QConfig {qConfigQuery :: ConfigQuery}
-  deriving (Eq,Show)
-
-data BugsQuery
-  = BQAll
-  | BQClosed
-  | BQOpen
-  deriving (Eq, Show)
-
-data ConfigQuery =
-  CQWhoami {cqWhoamiQuery :: Maybe WhoamiQuery}
-  deriving (Eq, Show)
-
-data WhoamiQuery
-  = WQName
-  | WQEmail
   deriving (Eq,Show)
 
 instance Select Query where
@@ -86,3 +77,45 @@ instance Select Query where
                                pure (Just WQEmail)))
          Just x ->
            fail (mappend "toplevel: no match for value " (T.unpack x))
+           
+data BugsQuery
+  = BQAll
+  | BQClosed
+  | BQOpen
+  deriving (Eq, Show)
+  
+instance MonadIO m => SelectGet m BugsQuery (IdMap Bug) where
+  selectGet x =
+    do louse <-
+         (=<<) runExceptional (liftIO readLouse)
+       let allBugs = louseBugs louse
+       pure (Success (case x of
+                        BQAll -> allBugs
+                        BQClosed ->
+                          M.filter (not . bugOpen) allBugs
+                        BQOpen ->
+                          M.filter bugOpen allBugs))
+
+data ConfigQuery =
+  CQWhoami {cqWhoamiQuery :: Maybe WhoamiQuery}
+  deriving (Eq, Show)
+  
+instance MonadIO m => SelectGet m ConfigQuery Text where
+  selectGet (CQWhoami x) = selectGet x
+
+data WhoamiQuery
+  = WQName
+  | WQEmail
+  deriving (Eq,Show)
+
+instance MonadIO m => SelectGet m (Maybe WhoamiQuery) Text where
+  selectGet x =
+    do louse <- liftIO readLouseErr
+       return (return (case louseUser louse of
+                         Anonymous -> "Anonymous"
+                         Person n e ->
+                           case x of
+                             Nothing ->
+                               TE.decodeUtf8 (encode (Person n e))
+                             Just WQName -> n
+                             Just WQEmail -> e))
