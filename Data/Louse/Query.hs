@@ -66,30 +66,39 @@ data WhoamiQuery
   | WQEmail
   deriving (Eq,Show)
 
-selectorMap :: HashMap Text (Selector, Query)
+data Pair a b =
+  Pair {first :: a
+       ,second :: b}
+  deriving (Eq,Show)
+
+selectorMap :: HashMap Text (Pair Selector Query)
 selectorMap =
   fromSelectorList
-    [(Selector "bugs" "List the bugs" True False,QBugs BQAll)
-    ,(Selector "bugs.all" "Same as bugs" True False,QBugs BQAll)
-    ,(Selector "bugs.closed" "List only the closed bugs" True False
-     ,QBugs BQClosed)
-    ,(Selector "bugs.open" "List the open bugs" True False,QBugs BQOpen)
-    ,(Selector "config.whoami" "Information about yourself" True False
-     ,QConfig (CQWhoami Nothing))
-    ,(Selector "config.whoami.email" "Your email address" True True
-     ,QConfig (CQWhoami (Just WQEmail)))
-    ,(Selector "config.whoami.name" "Your full name" True True
-     ,QConfig (CQWhoami (Just WQName)))
-    ,(Selector "selectors" "List all of the selectors" True False,QSelectors)]
+    [Pair (Selector "bugs" "List the bugs" True False)
+          (QBugs BQAll)
+    ,Pair (Selector "bugs.all" "Same as bugs" True False)
+          (QBugs BQAll)
+    ,Pair (Selector "bugs.closed" "List only the closed bugs" True False)
+          (QBugs BQClosed)
+    ,Pair (Selector "bugs.open" "List the open bugs" True False)
+          (QBugs BQOpen)
+    ,Pair (Selector "config.whoami" "Information about yourself" True False)
+          (QConfig (CQWhoami Nothing))
+    ,Pair (Selector "config.whoami.email" "Your email address" True True)
+          (QConfig (CQWhoami (Just WQEmail)))
+    ,Pair (Selector "config.whoami.name" "Your full name" True True)
+          (QConfig (CQWhoami (Just WQName)))
+    ,Pair (Selector "selectors" "List all of the selectors" True False)
+          (QSelectors)]
   where fromSelectorList sels =
           H.fromList
-            (do x@(selector,_) <- sels
+            (do x@(Pair selector _) <- sels
                 pure (name selector,x))
 
 instance Select Query where
   select q =
     case H.lookup q selectorMap of
-      Just (_,query) -> pure query
+      Just (Pair _ query) -> pure query
       Nothing ->
         fail (unlines ["I'm sorry, I can't find a selector matching"
                       ,T.unpack q
@@ -100,7 +109,7 @@ instance MonadIO m => SelectGet m Query Text where
   selectGet (QConfig q) = selectGet q
   selectGet QSelectors =
     return (Success (unpackSelectors
-                       (do (selector,_) <- H.elems selectorMap
+                       (do (Pair selector _) <- H.elems selectorMap
                            return selector)))
 
 instance MonadIO m => SelectSet m Query Text where
