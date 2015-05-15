@@ -178,8 +178,8 @@ instance ToJSON LouseConfig where
 class Select a where
   select :: Text -> Exceptional a
 
-class Select a => SelectGet a b where
-  selectGet :: Monad m => a -> m (Exceptional b)
+class (Monad m) => SelectGet m a b  where
+  selectGet :: a -> m (Exceptional b)
 
-class Select a => SelectSet a b where
-  selectSet :: Monad m => a -> b -> m ()
+class (Monad m) => SelectSet m a b  where
+  selectSet :: a -> b -> m ()
