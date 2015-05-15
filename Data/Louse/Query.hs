@@ -27,8 +27,7 @@
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 
-module Data.Louse.Query
-       (module Data.Louse.Query, module Data.Louse.Query.Selector) where
+module Data.Louse.Query where
 
 import Control.Exceptional
 import Control.Monad.IO.Class
