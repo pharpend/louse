@@ -32,6 +32,7 @@ import           Data.Louse
 import           Data.Monoid
 import           Data.Text (pack)
 import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import           Data.Version hiding (Version)
 import           Options.Applicative
 import           Paths_louse
@@ -109,7 +110,7 @@ runArgs x =
                runExceptional (select (pack a)) :: IO Query
              decoded <-
                (=<<) runExceptional (selectGet selection) :: IO T.Text
-             putStrLn (T.unpack decoded)
+             TIO.putStr decoded
         Set a b ->
           print (select (pack a) :: Exceptional Query)
     Schema y ->

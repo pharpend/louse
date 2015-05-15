@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances
-           , MultiParamTypeClasses #-}
+           , MultiParamTypeClasses 
+    #-}
 
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
@@ -48,7 +49,7 @@ import Safe
 data Query
   = QBugs {qBugsQuery :: BugsQuery}
   | QConfig {qConfigQuery :: ConfigQuery}
-  | QSelectors [Selector]
+  | QSelectors
   deriving (Eq,Show)
 
 data BugsQuery
@@ -79,7 +80,8 @@ selectorMap =
     ,(Selector "config.whoami.email" "Your email address" True True
      ,QConfig (CQWhoami (Just WQEmail)))
     ,(Selector "config.whoami.name" "Your full name" True True
-     ,QConfig (CQWhoami (Just WQName)))]
+     ,QConfig (CQWhoami (Just WQName)))
+    ,(Selector "selectors" "List all of the selectors" True False,QSelectors)]
   where fromSelectorList sels =
           H.fromList
             (do x@(selector,_) <- sels
@@ -97,7 +99,10 @@ instance Select Query where
 instance MonadIO m => SelectGet m Query Text where
   selectGet (QBugs q) = selectGet q
   selectGet (QConfig q) = selectGet q
-  selectGet _ = fail "No"
+  selectGet QSelectors =
+    return (Success (unpackSelectors
+                       (do (selector,_) <- H.elems selectorMap
+                           return selector)))
 
 instance MonadIO m => SelectGet m BugsQuery Text where
   selectGet x =
