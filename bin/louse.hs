@@ -31,6 +31,7 @@ import           Control.Exceptional
 import           Data.Louse
 import           Data.Monoid
 import           Data.Text (pack)
+import qualified Data.Text as T
 import           Data.Version hiding (Version)
 import           Options.Applicative
 import           Paths_louse
@@ -103,8 +104,14 @@ runArgs x =
          initInDir workdir force
     Query y ->
       case y of
-        Get a -> print (select (pack a) :: Exceptional Query)
-        Set a b -> print (select (pack a) :: Exceptional Query)
+        Get a ->
+          do selection <-
+               runExceptional (select (pack a)) :: IO Query
+             decoded <-
+               (=<<) runExceptional (selectGet selection) :: IO T.Text
+             putStrLn (T.unpack decoded)
+        Set a b ->
+          print (select (pack a) :: Exceptional Query)
     Schema y ->
       case y of
         ListSchemata -> listSchemata
