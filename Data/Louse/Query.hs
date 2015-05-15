@@ -104,6 +104,15 @@ instance MonadIO m => SelectGet m Query Text where
                        (do (selector,_) <- H.elems selectorMap
                            return selector)))
 
+instance MonadIO m => SelectSet m Query Text where
+  selectSet (QBugs _) _ =
+    fail (unlines ["You can't use \"set\" on bugs as a whole (although you can change attributes"
+                  ,"of individual bugs). I haven't written that code yet, but you will be able to"
+                  ,"in the future. Probably."])
+  selectSet (QSelectors) _ =
+    fail "Selectors are not settable. Settable? Whatever. You get the point. Bad user!"
+  selectSet (QConfig q) x = selectSet q x
+
 instance MonadIO m => SelectGet m BugsQuery Text where
   selectGet x =
     do louse <-
@@ -121,6 +130,11 @@ instance MonadIO m => SelectGet m BugsQuery Text where
 instance MonadIO m => SelectGet m ConfigQuery Text where
   selectGet (CQWhoami x) = selectGet x
 
+instance MonadIO m => SelectSet m ConfigQuery Text where
+  selectSet (CQWhoami (Just x)) = selectSet x
+  selectSet (CQWhoami Nothing) =
+    fail "You can't set your entire identity (yet). I'm working on it, though."
+
 instance MonadIO m => SelectGet m (Maybe WhoamiQuery) Text where
   selectGet x =
     do lc <- liftIO readLouseConfig
@@ -133,7 +147,34 @@ instance MonadIO m => SelectGet m (Maybe WhoamiQuery) Text where
                              Just WQName -> n
                              Just WQEmail -> e))
   
-  
+instance MonadIO m => SelectSet m WhoamiQuery Text where
+  selectSet WQName newName =
+    do c@(LouseConfig oldPerson) <- liftIO readLouseConfig
+       if (T.toLower newName) ==
+          "anonymous"
+          then liftIO (writeLouseConfig (LouseConfig Anonymous))
+          else liftIO (case oldPerson of
+                         Person n e ->
+                           writeLouseConfig
+                             (c {whoami =
+                                   Person newName e})
+                         Anonymous ->
+                           writeLouseConfig
+                             (c {whoami =
+                                   Person newName mempty}))
+  selectSet WQEmail newEmail =
+    liftIO (do c@(LouseConfig oldPerson) <- readLouseConfig
+               case oldPerson of
+                 Person n e ->
+                   writeLouseConfig
+                     (c {whoami =
+                           Person n newEmail})
+                 Anonymous ->
+                   writeLouseConfig
+                     (c {whoami =
+                           Person mempty newEmail}))
+
+
 -- This is the old version of 'select'
 -- -- let qPieces = T.splitOn "." q
 -- -- in case headMay qPieces of

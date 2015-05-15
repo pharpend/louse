@@ -112,7 +112,9 @@ runArgs x =
                (=<<) runExceptional (selectGet selection) :: IO T.Text
              TIO.putStr decoded
         Set a b ->
-          print (select (pack a) :: Exceptional Query)
+          do selection <-
+               runExceptional (select (pack a)) :: IO Query
+             selectSet selection (pack b)
     Schema y ->
       case y of
         ListSchemata -> listSchemata

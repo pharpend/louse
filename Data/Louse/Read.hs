@@ -133,5 +133,7 @@ readLouseConfig =
 -- |Write the louse config back
 writeLouseConfig :: LouseConfig -> IO ()
 writeLouseConfig cfg =
-  do configPath <- _config_path
+  do dataDir <- getAppUserDataDirectory "louse"
+     createDirectoryIfMissing True dataDir
+     configPath <- _config_path
      encodeFile configPath cfg
