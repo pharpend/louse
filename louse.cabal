@@ -68,6 +68,7 @@ library
     , exceptional >=0.1.4
     , MissingH
     , mtl
+    , pager
     , resourcet
     , safe
     , time
