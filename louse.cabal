@@ -68,7 +68,6 @@ library
     , exceptional >=0.1.4
     , MissingH
     , mtl
-    , pager
     , resourcet
     , safe
     , time
@@ -89,6 +88,7 @@ executable louse
                       , exceptional
                       , louse
                       , optparse-applicative ==0.11.*
+                      , pager >=0.1.1
                       , text
                       , transformers
     default-language:   Haskell2010
