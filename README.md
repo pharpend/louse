@@ -11,13 +11,9 @@ copy of the license can be found in the LICENSE file.
 
 ## Installation and Usage
 
-Louse is written in Haskell. Because I haven't set up a good build
-system yet, you need to [install the Haskell platform][0] before
-installing .
-
-**Note**: as of 2015-05-05, the latest Haskell platform ships with GHC
-  7.8.3. Louse only supports GHC >=7.10, so you might have to
-  [install GHC manually][1].
+Louse is written in Haskell. As a result, you need to [install
+Haskell](https://github.com/bitemyapp/learnhaskell/blob/master/install.md)
+first.
 
 You can use `cabal` to install this
 
@@ -33,32 +29,8 @@ have the satisfaction of typing
 instead of `cabal install`
 
 For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run
-`louse --tutorial`. For a brief listing of the available commands, you
-can run `louse --help`.
-
-    louse v.0.1.0.0
-    
-    Usage: louse (--copyright | --license | --readme | --tutorial | --version |
-                 COMMAND | COMMAND | COMMAND | COMMAND | COMMAND)
-      A distributed bug tracker.
-    
-    Available options:
-      -h,--help                Show this help text
-      --copyright              Print the copyright.
-      --license                Print the license (GPL version 3).
-      --readme                 Print the README.
-      --tutorial               Print the tutorial.
-      --version                Print the version (0.1.0.0).
-    
-    Available commands:
-      bug                      Do stuff with bugs.
-      init                     Initialize louse.
-      schema                   Do stuff with schemata.
-      schemata                 Do stuff with schemata.
-      status                   Initialize louse.
-
-    For information on a specific command, run `louse COMMAND --help`, where COMMAND
-    is one of the commands listed above.
+`louse get about.tutorial`. For a brief listing of the available
+commands, you can run `louse --help`.
 
 ## Inspiration
 
@@ -84,6 +56,9 @@ These are liable to change, but this is what I have so far.
 
 ### 0.1
 
+At this point, I should be comfortable using louse, instead of the
+current walking-on-egg-shells approach.
+
 1.  The following commands need to be implemented:
     
     * ~~`louse bug add`~~
@@ -94,6 +69,10 @@ These are liable to change, but this is what I have so far.
     * ~~`louse bug list`~~
     * ~~`louse bug show`~~
 
+    **Edit 2015-05-15**: I ended up replacing most of these with the
+    query system.  The query system is a lot more flexible, so we're
+    using that.
+
 2. The following commands need to be removed:
    
    * ~~`louse ppl`~~
@@ -101,15 +80,20 @@ These are liable to change, but this is what I have so far.
 
 3. Rewrite the tutorial
 
-4.  Replace `louse bug list` and `louse bug show` with a more flexible
-    `louse query`.
+4.  ~~Replace `louse bug list` and `louse bug show` with a more flexible
+    `louse query`.~~
 
-    Additonally, factor out the query to be a central part of the
-    `Read.hs` file, rather than just stuck on in `Bugs.hs`.
+    ~~Additonally, factor out the query to be a central part of the
+    `Read.hs` file, rather than just stuck on in `Bugs.hs`.~~
 
-    The query should use the familiar SQL syntax
+    ~~The query should use the familiar SQL syntax~~
 
-5.  Add a `louse config` command to edit the configuration file.
+    **Edit 2015-05-15**: The query system is operational
+
+5.  ~~Add a `louse config` command to edit the configuration file.~~
+
+    **Edit 2015-05-15**: This is done through the query system. The
+    query system is inspired by Ed Kmett's lenses.
 
 6.  Add support for common features like relations, tagging, and
     attachments.
@@ -125,6 +109,8 @@ Those which exist:
 * Add support for Launchpad issues API
 * Add support for Bugzilla issues API
 * Add support for Debbugs API
+
+I think the API stuff should go in a separate tool.
 
 ### 1.0
 
@@ -142,12 +128,12 @@ directory.
 
 You can also access the schemata with the `louse` tool.
 
-    $ louse schemata list
+    $ louse get schema.list
     bug
     comment
     person
     project
-    $ louse schema show comment
+    $ louse get schema.comment
     name: comment
     type: object
     properties:
@@ -164,6 +150,3 @@ You can also access the schemata with the `louse` tool.
 
 Email: <peter@harpending.org>
 IRC: `pharpend` on FreeNode and OFTC.
-
-[0]: https://github.com/bitemyapp/learnhaskell#getting-set-up
-[1]: https://www.haskell.org/ghc/download_ghc_7_10_1#binaries
