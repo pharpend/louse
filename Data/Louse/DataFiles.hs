@@ -35,7 +35,11 @@ import           Control.Monad.Trans.Resource
 import qualified Data.ByteString as Bs
 import           Data.Conduit
 import           Data.Conduit.Binary
+import qualified Data.Conduit.Combinators as CC
+import qualified Data.Conduit.Text as CT
 import           Data.Monoid
+import           Data.Text (Text)
+import qualified Data.Text.IO as TIO
 import           Data.Yaml
 import           Paths_louse
 import           System.Directory (getAppUserDataDirectory)
@@ -61,6 +65,13 @@ produceFile = sourceFile
 -- |Alias for 'produceFile'
 readDataFile :: FilePath -> Producer (ResourceT IO) Bs.ByteString
 readDataFile = produceFile
+
+-- |This runs 'getDataFileName' on the argument, and then sends back the text from that file..
+readDataFileText :: FilePath -> IO Text
+readDataFileText fp =
+  do filePath <- getDataFileName fp
+     TIO.readFile filePath
+
 
 type TemplatePath = String
 
