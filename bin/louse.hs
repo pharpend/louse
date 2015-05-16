@@ -28,286 +28,192 @@ module Main where
 
 import           Control.Applicative
 import           Control.Exceptional
+import           Control.Monad.Trans.Reader
 import           Data.Louse
 import           Data.Monoid
-import           Data.Text (pack)
+import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import           Data.Version hiding (Version)
 import           Options.Applicative
+import           Options.Applicative.Types (ReadM(..))
 import           Paths_louse
 import           System.Directory
 
+runArgs :: Args -> IO ()
+runArgs (Args workdir stdin cmd) =
+  let failNotImplemented =
+        (fail "FIXME: Feature not yet implemented") :: IO a
+  in do workingDirectory <-
+          case workdir of
+            Nothing -> getCurrentDirectory
+            Just x -> pure x
+        case cmd of
+          Initialize ->
+            initInDir workingDirectory False
+          Query y ->
+            case y of
+              Get a ->
+                do selection <-
+                     runExceptional (select (T.pack a)) :: IO Query
+                   decoded <-
+                     (=<<) runExceptional (selectGet selection) :: IO T.Text
+                   TIO.putStr decoded
+              Set a b ->
+                do selection <-
+                     runExceptional (select (T.pack a)) :: IO Query
+                   selectSet selection (T.pack (head b))
+              Lookup _ _ -> failNotImplemented
+          Status -> status
 
-main :: IO ()
-main = execParser argsParserInfo >>= runArgs
+data Args =
+  Args {workingDirectory :: Maybe FilePath
+       ,getStuffFromStdin :: Bool
+       ,argsCommand :: SubCommand}
+  deriving (Eq,Show)
 
-altConcat :: Alternative f => [f a] -> f a
-altConcat [] = empty
-altConcat (x:xs) = x <|> altConcat xs
-
-infoHelp :: Parser a -> InfoMod a -> ParserInfo a
-infoHelp a = info (helper <*> a)
-
-data Args = DBug BugAction
-          | Init (Maybe FilePath) Bool
-          | Query QueryAction
-          | Schema SchemaAction
-          | Status
-          | Trivia TriviaAction
-  deriving Show
-
-data TriviaAction = Copyright
-                  | License
-                  | Readme
-                  | Tutorial
-                  | Version
-  deriving Show
-
-data BugAction = AddBug
-               | CloseBug String
-               | CommentOnBug String
-               | DeleteBug String
-               | EditBug String
-               | ListBugs
-               | ShowBug String
-  deriving Show
-
-data SchemaAction = ListSchemata
-                  | Path
-                  | ShowSchema String
-  deriving Show
+data SubCommand
+  = Initialize
+  | Query QueryAction
+  | Status
+  | AddBug
+  | CommentOnBug String (Maybe String)
+  | DeleteBug String
+  deriving (Eq,Show)
 
 data QueryAction
   = Set String
-        String
+        [String]
   | Get String
-  deriving (Show)
-
-runArgs :: Args -> IO ()
-runArgs x =
-  case x of
-    DBug y ->
-      case y of
-        AddBug -> newBug
-        CloseBug bugid -> closeBug (pack bugid)
-        CommentOnBug bugid ->
-          newComment (pack bugid)
-        DeleteBug bugid -> deleteBug (pack bugid)
-        EditBug bid -> editBug (pack bid)
-        ListBugs -> listBugs Open
-        ShowBug bid -> showBug (pack bid)
-    Init dir force ->
-      do workdir <-
-           case dir of
-             Nothing -> getCurrentDirectory
-             Just w -> makeAbsolute w
-         initInDir workdir force
-    Query y ->
-      case y of
-        Get a ->
-          do selection <-
-               runExceptional (select (pack a)) :: IO Query
-             decoded <-
-               (=<<) runExceptional (selectGet selection) :: IO T.Text
-             TIO.putStr decoded
-        Set a b ->
-          do selection <-
-               runExceptional (select (pack a)) :: IO Query
-             selectSet selection (pack b)
-    Schema y ->
-      case y of
-        ListSchemata -> listSchemata
-        Path -> showSchemaDir
-        ShowSchema s -> showSchema s
-    Status -> status
-    Trivia y ->
-      case y of
-        Copyright -> printOut louseCopyright
-        License -> printOut louseLicense
-        Readme -> printOut louseReadme
-        Tutorial -> printOut louseTutorial
-        Version -> printVersion
-  where failNotImplemented =
-          (fail "FIXME: Feature not yet implemented") :: IO a
+  | Lookup String
+           [String]
+  deriving (Eq,Show)
 
 argsParserInfo :: ParserInfo Args
-argsParserInfo = infoHelp argsParser argsHelp
-  where argsHelp :: InfoMod Args
-        argsHelp =
-          mconcat [fullDesc
-                  ,header ("louse v." <> showVersion version)
-                  ,progDesc "A distributed bug tracker."
-                  ,footer "For information on a specific command, run `louse COMMAND --help`, where COMMAND is one of the commands listed above."]
-        argsParser :: Parser Args
-        argsParser =
-          altConcat [Trivia <$>
-                     altConcat [copyrightParser
-                               ,licenseParser
-                               ,readmeParser
-                               ,tutorialParser
-                               ,versionParser]
-                    ,hsubparser (command "bug" bugInfo)
-                    ,hsubparser (command "init" initInfo)
-                    ,hsubparser (command "get" getInfo)
-                    ,hsubparser (command "schema" schemataInfo)
-                    ,hsubparser (command "set" setInfo)
-                    ,hsubparser (command "status" statusInfo)]
-        copyrightParser :: Parser TriviaAction
-        copyrightParser =
-          flag' Copyright
-                (help ("Print the copyright.") <>
-                 long "copyright")
-        versionParser :: Parser TriviaAction
-        versionParser =
-          flag' Version
-                (help ("Print the version (" <> showVersion version <> ").") <>
-                 long "version")
-        licenseParser :: Parser TriviaAction
-        licenseParser =
-          flag' License
-                (help "Print the license (GPL version 3)." <>
-                 long "license")
-        tutorialParser :: Parser TriviaAction
-        tutorialParser =
-          flag' Tutorial
-                (help "Print the tutorial." <>
-                 long "tutorial")
-        readmeParser :: Parser TriviaAction
-        readmeParser =
-          flag' Readme
-                (help "Print the README." <>
-                 long "readme")
+argsParserInfo =
+  info ((<*>) helper
+              (Args <$>
+               (option maybeReader
+                       (mconcat [help "The working directory"
+                                ,short 'w'
+                                ,long "workdir"
+                                ,short 'd'
+                                ,long "directory"])) <*>
+               (switch (mconcat [help "Get input from stdin instead of opening up your $EDITOR."
+                                ,long "stdin"])) <*>
+               (alt [alt [subparser (command "initialize"
+                                             (flip info
+                                                   (mappend briefDesc
+                                                            (progDesc "Initialize louse in the (optionally specified) directory."))
+                                                   (pure Initialize)))
+                         ,subparser (command "init"
+                                             (flip info
+                                                   (mappend briefDesc
+                                                            (progDesc "Alias for \"initialize\"."))
+                                                   (pure Initialize)))
+                         ,subparser (command "status"
+                                             (flip info
+                                                   (mappend briefDesc
+                                                            (progDesc "Get the status of the louse instance in the (optionally specified) directory"))
+                                                   (pure Status)))
+                         ,subparser (command "st"
+                                             (flip info
+                                                   (mappend briefDesc
+                                                            (progDesc "Alias for \"status\"."))
+                                                   (pure Status)))]
+                    ,queryCommands
+                    ,bugCommands])))
+       (mconcat [fullDesc
+                ,header ("louse v." <> showVersion version)
+                ,progDesc "A distributed bug tracker."
+                ,footer "For information on a specific command, run `louse COMMAND --help`, where COMMAND is one of the commands listed above."])
+          
 
-initInfo :: ParserInfo Args
-initInfo = infoHelp theOptions theHelp
-  where theHelp =
-          fullDesc <>
-          progDesc "Initialize louse."
-        theOptions =
-          Init <$>
-          option (Just <$> str)
-                 (mconcat [long "workdir"
-                          ,short 'w'
-                          ,short 'd'
-                          ,help "Working directory. Defaults to the current working directory."
-                          ,value Nothing]) <*>
-          switch (mconcat [long "force"
-                          ,short 'f'
-                          ,help "Initialize louse even if there is an existing louse project."])
+bugCommands :: Parser SubCommand
+bugCommands =
+  let addBug = pure AddBug
+      commentOnBug =
+        (pure CommentOnBug) <*>
+        (strArgument (help "The bug on which to comment.")) <*>
+        (option maybeReader
+                (mconcat [help "The comment. By default, I will open up your $EDITOR. Or, if you said so, I will read the comment from stdin."
+                         ,short 'm'
+                         ,long "message"
+                         ,short 'c'
+                         ,long "comment"
+                         ,value Nothing]))
+      deleteBug =
+        fmap DeleteBug (strArgument (help "The bug to delete."))
+  in alt [subparser (command "add-bug"
+                             (flip info
+                                   (mconcat [briefDesc,progDesc "Add a bug"])
+                                   addBug))
+         ,subparser (command "ab"
+                             (flip info
+                                   (mconcat [briefDesc
+                                            ,progDesc "Alias for \"add-bug\"."])
+                                   addBug))
+         ,subparser (command "comment-on-bug"
+                             (flip info
+                                   (mconcat [briefDesc
+                                            ,progDesc "Comment on a bug."])
+                                   commentOnBug))
+         ,subparser (command "cob"
+                             (flip info
+                                   (mconcat [briefDesc
+                                            ,progDesc "Alias for \"comment-on-bug\"."])
+                                   commentOnBug))
+         ,subparser (command "delete-bug"
+                             (flip info
+                                   (mconcat [briefDesc
+                                            ,progDesc "Delete a bug from the database."])
+                                   deleteBug))
+         ,subparser (command "del"
+                             (flip info
+                                   (mconcat [briefDesc
+                                            ,progDesc "Alias for \"delete-bug\"."])
+                                   deleteBug))
+         ,subparser (command "rm"
+                             (flip info
+                                   (mconcat [briefDesc
+                                            ,progDesc "Alias for \"delete-bug\"."])
+                                   deleteBug))]
 
-statusInfo :: ParserInfo Args
-statusInfo = infoHelp theOptions theHelp
-  where
-    theHelp = fullDesc <> progDesc "Initialize louse."
-    theOptions = pure Status
+queryCommands :: Parser SubCommand
+queryCommands =
+  alt [subparser (command "get"
+                          (flip info
+                                (mconcat [briefDesc
+                                         ,progDesc "Query information, either about the current louse project, about louse in general, about your configuration."])
+                                (fmap (Query . Get)
+                                      (strArgument (mconcat [help "The selector. An example would be `louse get selectors`."])))))
+      ,subparser (command "set"
+                          (flip info
+                                (mconcat [briefDesc
+                                         ,progDesc "Use this command to change variables, like whether or not a bug is open, or configuration options for louse."])
+                                ((pure Query) <*>
+                                 ((pure Set) <*>
+                                  (strArgument
+                                     (mconcat [help "The selector."
+                                              ,metavar "SELECTOR"])) <*>
+                                  (option strings
+                                          (mconcat [help "The new value"
+                                                   ,metavar "VALUE"]))))))]
 
-schemataInfo :: ParserInfo Args
-schemataInfo = infoHelp schemataOptions schemataHelp
-  where
-    schemataHelp = fullDesc <> progDesc "Do stuff with schemata."
-    schemataOptions :: Parser Args
-    schemataOptions = altConcat
-                        [ subparser (command "dir" pathSchemaInfo)
-                        , subparser (command "list" listSchemataInfo)
-                        , subparser (command "path" pathSchemaInfo)
-                        , subparser (command "show" showSchemaInfo)
-                        ]
-showSchemaInfo :: ParserInfo Args
-showSchemaInfo = infoHelp theOptions theHelp
-  where
-    theHelp = fullDesc <> progDesc "Show a specific schema."
-    theOptions = fmap Schema $ ShowSchema <$> strArgument (help "The schema to show")
+strings :: ReadM [String]
+strings = ReadM (ReaderT (\s -> pure (words s)))
 
-listSchemataInfo :: ParserInfo Args
-listSchemataInfo = infoHelp theOptions theHelp
-  where
-    theHelp = fullDesc <> progDesc "List the available schemata"
-    theOptions = pure $ Schema ListSchemata
+maybeReader :: ReadM (Maybe String)
+maybeReader =
+  let readMaybe s
+        | s == mempty = return Nothing
+        | otherwise = return (Just s)
+  in ReadM (ReaderT readMaybe)
 
-pathSchemaInfo :: ParserInfo Args
-pathSchemaInfo = infoHelp theOptions theHelp
-  where
-    theHelp = fullDesc <> progDesc "Show the directory in which the schemata are stored"
-    theOptions = pure $ Schema Path
+alt :: Alternative f
+    => [f a] -> f a
+alt [] = empty
+alt (x:xs) = x <|> alt xs
 
-bugInfo :: ParserInfo Args
-bugInfo = infoHelp theOptions theHelp
-  where theHelp =
-          fullDesc <>
-          progDesc "Do stuff with bugs."
-        theOptions =
-          altConcat [subparser (command "add" addBugInfo)
-                    ,subparser (command "close" closeBugInfo)
-                    ,subparser (command "comment" commentBugInfo)
-                    ,subparser (command "delete" delBugInfo)
-                    ,subparser (command "edit" editBugInfo)
-                    ,subparser (command "list" lsBugInfo)
-                    ,subparser (command "show" showBugInfo)]
-        addBugInfo = infoHelp abopts abhelp
-        abhelp =
-          fullDesc <>
-          progDesc "Add a bug"
-        abopts =
-          pure $
-          DBug AddBug
-        closeBugInfo = infoHelp cbopts cbhelp
-        cbhelp =
-          mappend fullDesc (progDesc "Close a bug")
-        cbopts =
-          fmap (DBug . CloseBug)
-               (strArgument (help "The bug to close (use `louse bug list` to see a list)"))
-        commentBugInfo = infoHelp cobopts cobhelp
-        cobhelp =
-          mappend fullDesc (progDesc "Add a comment to a bug.")
-        cobopts =
-          fmap (DBug . CommentOnBug)
-               (strArgument (help "The bug in question (use `louse bug list` to see a list)"))
-        delBugInfo = infoHelp dbopts dbhelp
-        dbhelp =
-          mappend fullDesc (progDesc "Delete a bug.")
-        dbopts =
-          fmap (DBug . DeleteBug)
-               (strArgument (help "The bug to delete (use `louse bug list` to see a list)"))
-        editBugInfo = infoHelp ebopts ebhelp
-        ebhelp =
-          mappend fullDesc (progDesc "Edit a bug manually with $EDITOR.")
-        ebopts =
-          fmap (DBug . EditBug)
-               (strArgument (help "The bug to edit (use `louse bug list` to see a list)"))
-        lsBugInfo = infoHelp lbopts lbhelp
-        lbhelp =
-          mappend fullDesc (progDesc "List all of the bugs")
-        lbopts = pure (DBug ListBugs)
-        showBugInfo = infoHelp sbopts sbhelp
-        sbhelp =
-          mappend fullDesc (progDesc "Pretty-print a bug")
-        sbopts =
-          fmap (DBug . ShowBug)
-               (strArgument (help "The bug to show (use `louse bug list` to see a list)"))
-
-getInfo :: ParserInfo Args
-getInfo = infoHelp getOptions getHelp
-  where getHelp =
-          mconcat [fullDesc
-                  ,progDesc "Query information."
-                  ,footer "Use `louse get selectors` to show a list of selectors."]
-        getOptions =
-          fmap (Query . Get)
-               (strArgument
-                  (mconcat [help "The selector. An example would be \"config.whoami.name\"."
-                           ,metavar "SELECTOR"]))
-
-setInfo :: ParserInfo Args
-setInfo = infoHelp getOptions getHelp
-  where getHelp =
-          mconcat [fullDesc
-                  ,progDesc "Set some variables."
-                  ,footer "Use `louse get selectors` to show a list of selectors."]
-        getOptions =
-          Query <$>
-          (Set <$>
-           (strArgument
-              (mconcat [help "The selector. An example would be \"config.whoami.name\"."
-                       ,metavar "SELECTOR"])) <*>
-           (strArgument (mconcat [help "The new value.",metavar "VALUE"])))
+main :: IO ()
+main = execParser argsParserInfo >>= runArgs
