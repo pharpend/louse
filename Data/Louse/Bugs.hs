@@ -70,40 +70,39 @@ import Text.Editor
 -- |Add a bug to the current project. This doesn't return a bug. It
 -- instead writes the bug to a file, and returns the 'BugId' pertaining
 -- to the file.
-addBug :: Person         -- ^The reporter
+addBug :: FilePath
+       -> Person         -- ^The reporter
        -> T.Text         -- ^Title of the bug
        -> T.Text         -- ^Description of the bug
        -> IO BugId       -- ^Resulting 'BugId'
-addBug person title description =
+addBug pwd person title description =
   do reportTime <- getCurrentTime
      let bugIsOpen = True
          comments = mempty
          nb =
            Bug person reportTime title description bugIsOpen comments
      bugid <- fmap Bsc.unpack randomIdent
-     pwd <- getCurrentDirectory
      encodeFile (mconcat [pwd,_bugs_dir,bugid,".yaml"])
                 nb
      return (T.pack bugid)
 
 -- |Close a bug. This actually edits the files, so be careful.
-closeBug :: BugId -> IO ()
-closeBug bugid =
-  do pwd <- getCurrentDirectory
-     let bugsPath =
+closeBug :: FilePath -> BugId -> IO ()
+closeBug pwd bugid =
+  do let bugsPath =
            (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
      bug <- errDecodeFile bugsPath
      encodeFile bugsPath
                 (bug {bugOpen = False})
 
 -- |Comment on a bug. This actually edits the data files, so be careful!
-commentOnBug :: BugId                      -- ^The bug on which to comment
+commentOnBug :: FilePath
+             -> BugId                      -- ^The bug on which to comment
              -> Person             -- ^The commenter
              -> T.Text                     -- ^The actual comment text
              -> IO ()
-commentOnBug bugid personid comment =
-  do pwd <- getCurrentDirectory
-     let bugsPath =
+commentOnBug pwd bugid personid comment =
+  do let bugsPath =
            (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
      bug <- errDecodeFile bugsPath
      commentTime <- getCurrentTime
@@ -115,10 +114,9 @@ commentOnBug bugid personid comment =
                 (mappend (bugComments bug)
                          [nc])}))
 -- |Edit a bug manually
-editBug :: BugId -> IO ()
-editBug bugid =
-  do pwd <- getCurrentDirectory
-     let bugsPath =
+editBug :: FilePath -> BugId -> IO ()
+editBug pwd bugid =
+  do let bugsPath =
            (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
      bug <- (errDecodeFile bugsPath) :: IO Bug
      newBug <-
@@ -128,10 +126,9 @@ editBug bugid =
      encodeFile bugsPath newBug
 
 -- |Delete a bug from the list of bugs. 
-deleteBug :: BugId -> IO ()
-deleteBug bugid =
-  do pwd <- getCurrentDirectory
-     let bugPath =
+deleteBug :: FilePath -> BugId -> IO ()
+deleteBug pwd bugid =
+  do let bugPath =
            (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
      removeFile bugPath
      putStrLn (mappend "Deleted bug " (show bugid))
@@ -151,25 +148,29 @@ instance FromJSON NewBug where
   
 
 -- |Make a new bug
-newBug :: IO ()
-newBug =
+newBug :: FilePath -> IO ()
+newBug fp =
   do reporter <- fmap whoami readLouseConfig
      nbTemplate <- _templ_new_bug
      nb <-
        (=<<) errDecode (editTemplate nbTemplate)
      bugId <-
-       addBug reporter
+       addBug fp
+              reporter
               (nbSynopsis nb)
               (nbDescription nb)
      putStrLn (mappend "Added new bug with id " (T.unpack bugId))
 
 -- |Make a new bug
-newComment :: BugId -> IO ()
-newComment bid =
+newComment :: FilePath -> BugId -> Maybe Text -> IO ()
+newComment fp bid maybeComment =
   do reporter <- fmap whoami readLouseConfig
      comment <-
-       fmap decodeUtf8 (runUserEditorDWIM plainTemplate "Enter your comment here")
-     commentOnBug bid reporter comment
+       case maybeComment of
+         Just c -> pure c
+         Nothing ->
+           fmap decodeUtf8 (runUserEditorDWIM plainTemplate "Enter your comment here")
+     commentOnBug fp bid reporter comment
      putStrLn (mappend "Added comment to bug " (T.unpack bid))
 
 -- |This is so users don't have to type the entire 40-character long

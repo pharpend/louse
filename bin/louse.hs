@@ -47,7 +47,7 @@ runArgs (Args workdir stdin cmd) =
   in do workingDirectory <-
           case workdir of
             Nothing -> getCurrentDirectory
-            Just x -> pure x
+            Just x -> makeAbsolute x
         case cmd of
           Initialize ->
             initInDir workingDirectory False
@@ -64,7 +64,14 @@ runArgs (Args workdir stdin cmd) =
                      runExceptional (select (T.pack a)) :: IO Query
                    selectSet selection (T.pack (head b))
               Lookup _ _ -> failNotImplemented
-          Status -> status
+          Status -> putStr =<< statusStr workingDirectory
+          AddBug -> newBug workingDirectory
+          CommentOnBug bugid maybeComment ->
+            newComment workingDirectory
+                       (T.pack bugid)
+                       (fmap T.pack maybeComment)
+          DeleteBug bugid ->
+            deleteBug workingDirectory (T.pack bugid)
 
 data Args =
   Args {workingDirectory :: Maybe FilePath
@@ -91,38 +98,35 @@ data QueryAction
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo =
-  info ((<*>) helper
-              (Args <$>
-               (option maybeReader
-                       (mconcat [help "The working directory"
-                                ,short 'w'
-                                ,long "workdir"
-                                ,short 'd'
-                                ,long "directory"])) <*>
-               (switch (mconcat [help "Get input from stdin instead of opening up your $EDITOR."
-                                ,long "stdin"])) <*>
-               (alt [alt [subparser (command "initialize"
-                                             (flip info
-                                                   (mappend briefDesc
-                                                            (progDesc "Initialize louse in the (optionally specified) directory."))
-                                                   (pure Initialize)))
-                         ,subparser (command "init"
-                                             (flip info
-                                                   (mappend briefDesc
-                                                            (progDesc "Alias for \"initialize\"."))
-                                                   (pure Initialize)))
-                         ,subparser (command "status"
-                                             (flip info
-                                                   (mappend briefDesc
-                                                            (progDesc "Get the status of the louse instance in the (optionally specified) directory"))
-                                                   (pure Status)))
-                         ,subparser (command "st"
-                                             (flip info
-                                                   (mappend briefDesc
-                                                            (progDesc "Alias for \"status\"."))
-                                                   (pure Status)))]
-                    ,queryCommands
-                    ,bugCommands])))
+  info (helper <*>
+        (Args <$>
+         (option maybeReader
+                 (mconcat [help "The working directory"
+                          ,short 'w'
+                          ,long "workdir"
+                          ,short 'd'
+                          ,long "directory"
+                          ,value Nothing])) <*>
+         (switch (mconcat [help "Get input from stdin instead of opening up your $EDITOR."
+                          ,long "stdin"])) <*>
+         (alt [alt [subparser (command "initialize"
+                                       (infoHelp (mappend briefDesc
+                                                          (progDesc "Initialize louse in the (optionally specified) directory."))
+                                                 (pure Initialize)))
+                   ,subparser (command "init"
+                                       (infoHelp (mappend briefDesc
+                                                          (progDesc "Alias for \"initialize\"."))
+                                                 (pure Initialize)))
+                   ,subparser (command "status"
+                                       (infoHelp (mappend briefDesc
+                                                          (progDesc "Get the status of the louse instance in the (optionally specified) directory"))
+                                                 (pure Status)))
+                   ,subparser (command "st"
+                                       (infoHelp (mappend briefDesc
+                                                          (progDesc "Alias for \"status\"."))
+                                                 (pure Status)))]
+              ,queryCommands
+              ,bugCommands])))
        (mconcat [fullDesc
                 ,header ("louse v." <> showVersion version)
                 ,progDesc "A distributed bug tracker."
@@ -145,60 +149,53 @@ bugCommands =
       deleteBug =
         fmap DeleteBug (strArgument (help "The bug to delete."))
   in alt [subparser (command "add-bug"
-                             (flip info
-                                   (mconcat [briefDesc,progDesc "Add a bug"])
-                                   addBug))
+                             (infoHelp (mconcat [briefDesc,progDesc "Add a bug"]) addBug))
          ,subparser (command "ab"
-                             (flip info
-                                   (mconcat [briefDesc
-                                            ,progDesc "Alias for \"add-bug\"."])
-                                   addBug))
+                             (infoHelp (mconcat [briefDesc
+                                                ,progDesc "Alias for \"add-bug\"."])
+                                       addBug))
          ,subparser (command "comment-on-bug"
-                             (flip info
-                                   (mconcat [briefDesc
-                                            ,progDesc "Comment on a bug."])
-                                   commentOnBug))
+                             (infoHelp (mconcat [briefDesc
+                                                ,progDesc "Comment on a bug."])
+                                       commentOnBug))
          ,subparser (command "cob"
-                             (flip info
-                                   (mconcat [briefDesc
-                                            ,progDesc "Alias for \"comment-on-bug\"."])
-                                   commentOnBug))
+                             (infoHelp (mconcat [briefDesc
+                                                ,progDesc "Alias for \"comment-on-bug\"."])
+                                       commentOnBug))
          ,subparser (command "delete-bug"
-                             (flip info
-                                   (mconcat [briefDesc
-                                            ,progDesc "Delete a bug from the database."])
-                                   deleteBug))
+                             (infoHelp (mconcat [briefDesc
+                                                ,progDesc "Delete a bug from the database."])
+                                       deleteBug))
          ,subparser (command "del"
-                             (flip info
-                                   (mconcat [briefDesc
-                                            ,progDesc "Alias for \"delete-bug\"."])
-                                   deleteBug))
+                             (infoHelp (mconcat [briefDesc
+                                                ,progDesc "Alias for \"delete-bug\"."])
+                                       deleteBug))
          ,subparser (command "rm"
-                             (flip info
-                                   (mconcat [briefDesc
-                                            ,progDesc "Alias for \"delete-bug\"."])
-                                   deleteBug))]
+                             (infoHelp (mconcat [briefDesc
+                                                ,progDesc "Alias for \"delete-bug\"."])
+                                       deleteBug))]
 
 queryCommands :: Parser SubCommand
 queryCommands =
   alt [subparser (command "get"
-                          (flip info
-                                (mconcat [briefDesc
-                                         ,progDesc "Query information, either about the current louse project, about louse in general, about your configuration."])
-                                (fmap (Query . Get)
-                                      (strArgument (mconcat [help "The selector. An example would be `louse get selectors`."])))))
+                          (infoHelp (mconcat [briefDesc
+                                             ,progDesc "Query information, either about the current louse project, about louse in general, about your configuration."])
+                                    (Query <$>
+                                     (Get <$>
+                                      (strArgument
+                                         (mconcat [help "The selector. An example would be `louse get about.selectors`."
+                                                  ,metavar "SELECTOR"]))))))
       ,subparser (command "set"
-                          (flip info
-                                (mconcat [briefDesc
-                                         ,progDesc "Use this command to change variables, like whether or not a bug is open, or configuration options for louse."])
-                                ((pure Query) <*>
-                                 ((pure Set) <*>
-                                  (strArgument
-                                     (mconcat [help "The selector."
-                                              ,metavar "SELECTOR"])) <*>
-                                  (option strings
-                                          (mconcat [help "The new value"
-                                                   ,metavar "VALUE"]))))))]
+                          (infoHelp (mconcat [briefDesc
+                                             ,progDesc "Use this command to change variables, like whether or not a bug is open, or configuration options for louse."])
+                                    ((pure Query) <*>
+                                     ((pure Set) <*>
+                                      (strArgument
+                                         (mconcat [help "The selector."
+                                                  ,metavar "SELECTOR"])) <*>
+                                      (option strings
+                                              (mconcat [help "The new value"
+                                                       ,metavar "VALUE"]))))))]
 
 strings :: ReadM [String]
 strings = ReadM (ReaderT (\s -> pure (words s)))
@@ -215,5 +212,13 @@ alt :: Alternative f
 alt [] = empty
 alt (x:xs) = x <|> alt xs
 
+infoHelp x y  = info (helper <*> y) x
+
+parserPrefs :: ParserPrefs
+parserPrefs =
+  prefs (mconcat [disambiguate,showHelpOnError])
+
 main :: IO ()
-main = execParser argsParserInfo >>= runArgs
+main =
+  customExecParser parserPrefs argsParserInfo >>=
+  runArgs

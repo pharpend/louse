@@ -1,0 +1,7 @@
+bug-creation-date: 2015-05-16T04:34:56.438Z
+bug-comments: []
+bug-open: true
+bug-reporter: null
+bug-title: `louse query` should be an alias for `louse get`
+bug-description: >-
+    There is currently no `louse query`

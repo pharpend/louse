@@ -46,9 +46,17 @@ import Data.Yaml
 import Safe
 
 data Query
-  = QBugs {qBugsQuery :: BugsQuery}
+  = QAbout {qAboutQuery :: Maybe AboutQuery}
+  | QBugs {qBugsQuery :: BugsQuery}
   | QConfig {qConfigQuery :: ConfigQuery}
-  | QSelectors
+  deriving (Eq,Show)
+
+data AboutQuery
+  = AQLicense
+  | AQSchema
+  | AQSelectors
+  | AQTutorial
+  | AQVersion
   deriving (Eq,Show)
 
 data BugsQuery
@@ -74,13 +82,18 @@ data Pair a b =
 selectorMap :: HashMap Text (Pair Selector Query)
 selectorMap =
   fromSelectorList
-    [Pair (Selector "about" "About louse." True False) QSelectors
-    ,Pair (Selector "about.license" "Print out louse's license (GPL-3)." True False) QSelectors
+    [Pair (Selector "about" "About louse." True False)
+          (QAbout Nothing)
+    ,Pair (Selector "about.license" "Print out louse's license (GPL-3)." True False)
+          (QAbout (Just AQLicense))
     ,Pair (Selector "about.schema" "List the various schemata of louse's data files" True False)
-          QSelectors
-    ,Pair (Selector "about.selectors" "List all of the selectors" True False) QSelectors
-    ,Pair (Selector "about.tutorial" "Print the tutorial" True False) QSelectors
-    ,Pair (Selector "about.version" "Print out the version" True False) QSelectors
+          (QAbout (Just AQSchema))
+    ,Pair (Selector "about.selectors" "List all of the selectors" True False)
+          (QAbout (Just AQSelectors))
+    ,Pair (Selector "about.tutorial" "Print the tutorial" True False)
+          (QAbout (Just AQTutorial))
+    ,Pair (Selector "about.version" "Print out the version" True False)
+          (QAbout (Just AQVersion))
     ,Pair (Selector "bugs" "List the bugs" True False)
           (QBugs BQAll)
     ,Pair (Selector "bugs.all" "Same as bugs" True False)
@@ -112,19 +125,20 @@ instance Select Query where
 instance MonadIO m => SelectGet m Query Text where
   selectGet (QBugs q) = selectGet q
   selectGet (QConfig q) = selectGet q
-  selectGet QSelectors =
+  selectGet (QAbout (Just AQSelectors)) =
     return (Success (unpackSelectors
                        (do (Pair selector _) <- H.elems selectorMap
                            return selector)))
+  selectGet (QAbout _) = fail "no,no"
 
 instance MonadIO m => SelectSet m Query Text where
   selectSet (QBugs _) _ =
     fail (unlines ["You can't use \"set\" on bugs as a whole (although you can change attributes"
                   ,"of individual bugs). I haven't written that code yet, but you will be able to"
                   ,"in the future. Probably."])
-  selectSet (QSelectors) _ =
-    fail "Selectors are not settable. Settable? Whatever. You get the point. Bad user!"
   selectSet (QConfig q) x = selectSet q x
+  selectSet _ _ =
+    fail "Selectors are not settable. Settable? Whatever. You get the point. Bad user!"
 
 instance MonadIO m => SelectGet m BugsQuery Text where
   selectGet x =
