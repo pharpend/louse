@@ -74,7 +74,14 @@ data Pair a b =
 selectorMap :: HashMap Text (Pair Selector Query)
 selectorMap =
   fromSelectorList
-    [Pair (Selector "bugs" "List the bugs" True False)
+    [Pair (Selector "about" "About louse." True False) QSelectors
+    ,Pair (Selector "about.license" "Print out louse's license (GPL-3)." True False) QSelectors
+    ,Pair (Selector "about.schema" "List the various schemata of louse's data files" True False)
+          QSelectors
+    ,Pair (Selector "about.selectors" "List all of the selectors" True False) QSelectors
+    ,Pair (Selector "about.tutorial" "Print the tutorial" True False) QSelectors
+    ,Pair (Selector "about.version" "Print out the version" True False) QSelectors
+    ,Pair (Selector "bugs" "List the bugs" True False)
           (QBugs BQAll)
     ,Pair (Selector "bugs.all" "Same as bugs" True False)
           (QBugs BQAll)
@@ -87,9 +94,7 @@ selectorMap =
     ,Pair (Selector "config.whoami.email" "Your email address" True True)
           (QConfig (CQWhoami (Just WQEmail)))
     ,Pair (Selector "config.whoami.name" "Your full name" True True)
-          (QConfig (CQWhoami (Just WQName)))
-    ,Pair (Selector "selectors" "List all of the selectors" True False)
-          (QSelectors)]
+          (QConfig (CQWhoami (Just WQName)))]
   where fromSelectorList sels =
           H.fromList
             (do x@(Pair selector _) <- sels
