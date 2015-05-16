@@ -65,7 +65,9 @@ statusStr dir =
          closureRateStr
            | nTotalBugs == 0 = mempty
            | otherwise =
-             mconcat ["Closure rate: ",show ((*) 100 (ratioOf nOpenBugs nTotalBugs)),"%."]
+             mconcat ["Closure rate: "
+                     ,show ((*) 100 (ratioOf (nTotalBugs - nOpenBugs) nTotalBugs))
+                     ,"%."]
      pure (unlines [mappend "Louse directory: " dir
                    ,mappend "Open bugs: " (show nOpenBugs)
                    ,closureRateStr])
