@@ -148,5 +148,5 @@ You can also access the schemata with the `louse` tool.
 
 ## Contact
 
-Email: <peter@harpending.org>
-IRC: `pharpend` on FreeNode and OFTC.
+* Email: <peter@harpending.org>
+* IRC: `pharpend` on FreeNode and OFTC.
