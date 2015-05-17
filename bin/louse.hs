@@ -61,15 +61,14 @@ runArgs (Args workdir stdin cmd) =
             case y of
               Get a ->
                 do (selection :: Query) <-
-                     select (T.pack a) >>=
-                     runExceptional
-                   decoded <- selectGet selection >>= runExceptional
+                     bindr (select (T.pack a)) runExceptional
+                   decoded <-
+                     bindr (selectGet workingDirectory selection) runExceptional
                    printOrPage decoded
               Set a b ->
                 do (selection :: Query) <-
-                     select (T.pack a) >>=
-                     runExceptional
-                   selectSet selection (T.pack (head b))
+                     bindr (select (T.pack a)) runExceptional
+                   selectSet workingDirectory selection (T.pack (head b))
               Lookup _ _ -> failNotImplemented
           Status -> putStr =<< statusStr workingDirectory
           AddBug -> newBug workingDirectory

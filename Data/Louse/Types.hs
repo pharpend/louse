@@ -179,7 +179,7 @@ class Monad m => Select m a  where
   select :: Text -> m (Exceptional a)
 
 class Monad m => SelectGet m a b  where
-  selectGet :: a -> m (Exceptional b)
+  selectGet :: FilePath -> a -> m (Exceptional b)
 
 class Monad m => SelectSet m a b  where
-  selectSet :: a -> b -> m ()
+  selectSet :: FilePath -> a -> b -> m ()

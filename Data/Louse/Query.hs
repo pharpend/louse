@@ -251,62 +251,102 @@ instance Select IO Query where
                      Just x -> Success x)
 
 instance SelectGet IO Query Text where
-  selectGet (QBugs q) = selectGet q
-  selectGet (QConfig q) = selectGet q
-  selectGet (QAbout Nothing) =
+  selectGet fp (QBugs q) = selectGet fp q
+  selectGet fp (QConfig q) = selectGet fp q
+  selectGet _ (QAbout Nothing) =
     do fpath <- getDataFileName "README.md"
        fmap Success (TIO.readFile fpath)
-  selectGet (QAbout (Just q)) = selectGet q
+  selectGet fp (QAbout (Just q)) = selectGet fp q
 
 instance SelectSet IO Query Text where
-  selectSet (QBugs _) _ =
+  selectSet _ (QBugs _) _ =
     fail (unlines ["You can't use \"set\" on bugs as a whole (although you can change attributes"
                   ,"of individual bugs). I haven't written that code yet, but you will be able to"
                   ,"in the future. Probably."])
-  selectSet (QConfig q) x = selectSet q x
-  selectSet _ _ =
+  selectSet f (QConfig q) x = selectSet f q x
+  selectSet _ _ _ =
     fail "Selectors are not settable. Settable? Whatever. You get the point. Bad user!"
 
 instance SelectGet IO BugsQuery Text where
-  selectGet _ = fail "Failing temporarily"
-    -- do louse <- readLouse >>= runExceptional
-    --      let allBugs = louseBugs louse
-    --        pure (Success (T.unlines (fmap (T.take 8)
-    --                                         (M.keys (case x of
-    --                                                      BQAll -> allBugs
-    --                                                        BQClosed ->
-    --                                                          M.filter (not . bugOpen) allBugs
-    --                                                          BQOpen ->
-    --                                                            M.filter bugOpen allBugs)))))
+  selectGet dirPath query =
+    do louse <-
+         bindr (readLouseFrom dirPath)
+               (\case
+                  Failure err ->
+                    fail (mconcat ["I wasn't able to read a louse repo from the current directory.\n"
+                                  ,"Here's the full error message:\n    "
+                                  ,err])
+                  Success s -> return s)
+       let successList = return . Success . T.unwords
+       case query of
+         BQSuchThat STQAll ->
+           successList (M.keys (louseBugs louse))
+         BQSuchThat STQClosed ->
+           successList
+             (do (bugid,bug) <-
+                   M.toList (louseBugs louse)
+                 if not (bugOpen bug)
+                    then return bugid
+                    else mzero)
+         BQSuchThat STQOpen ->
+           successList
+             (do (bugid,bug) <-
+                   M.toList (louseBugs louse)
+                 if bugOpen bug
+                    then return bugid
+                    else mzero)
+         BQBug ident foo ->
+           case lookupShortKey louse ident of
+             Nothing ->
+               return (Failure (mappend "There is no bug in the current repo with ident: "
+                                        (T.unpack ident)))
+             Just bug ->
+               case foo of
+                 BQClosed ->
+                   return (Success (T.pack (show (not (bugOpen bug)))))
+                 BQComments ->
+                   return (Success (TE.decodeUtf8 (encode (bugComments bug))))
+                 BQCreationDate ->
+                   return (Success (T.pack (show (bugCreationDate bug))))
+                 BQDescription ->
+                   return (Success (bugDescription bug))
+                 BQOpen ->
+                   return (Success (T.pack (show (bugOpen bug))))
+                 BQReporter ->
+                   return (Success (TE.decodeUtf8 (encode (bugReporter bug))))
+                 BQShow ->
+                   return (Success (TE.decodeUtf8 (encode bug)))
+                 BQTitle ->
+                   return (Success (bugTitle bug))
 
 
 instance SelectGet IO AboutQuery Text where
-  selectGet AQLicense =
+  selectGet _ AQLicense =
     fmap Success (readDataFileText "LICENSE")
-  selectGet AQVersion =
+  selectGet _ AQVersion =
     return (Success (mappend (T.pack (showVersion version)) "\n"))
-  selectGet AQTutorial =
+  selectGet _ AQTutorial =
     fmap Success (readDataFileText "TUTORIAL.md")
-  selectGet AQSelectors =
+  selectGet _ AQSelectors =
     return (Success (unpackSelectors
                        (do selectorPair <- selectorList
                            case selectorPair of
                              StaticPair s _ -> return s
                              ParsedPair s _ -> return s
                              NullPair s -> return s)))
-  selectGet x =
+  selectGet _ x =
     fail (mconcat ["You can't get ",show x," yet"])
 
 instance SelectGet IO ConfigQuery Text where
-  selectGet (CQWhoami x) = selectGet x
+  selectGet fp (CQWhoami x) = selectGet fp x
 
 instance SelectSet IO ConfigQuery Text where
-  selectSet (CQWhoami (Just x)) = selectSet x
-  selectSet (CQWhoami Nothing) =
+  selectSet fp (CQWhoami (Just x)) = selectSet fp x
+  selectSet _ (CQWhoami Nothing) =
     fail "You can't set your entire identity (yet). I'm working on it, though."
 
 instance SelectGet IO (Maybe WhoamiQuery) Text where
-  selectGet x =
+  selectGet _ x =
     do lc <- readLouseConfig
        return (Success (case whoami lc of
                           Anonymous -> "Anonymous"
@@ -318,13 +358,13 @@ instance SelectGet IO (Maybe WhoamiQuery) Text where
                               Just WQEmail -> e))
 
 instance SelectSet IO WhoamiQuery Text where
-  selectSet WQName newName =
+  selectSet _ WQName newName =
     do c@(LouseConfig oldPerson) <- readLouseConfig
        if (T.toLower newName) ==
           "anonymous"
           then writeLouseConfig (LouseConfig Anonymous)
           else case oldPerson of
-                 Person n e ->
+                 Person _ e ->
                    writeLouseConfig
                      (c {whoami =
                            Person newName e})
@@ -332,10 +372,10 @@ instance SelectSet IO WhoamiQuery Text where
                    writeLouseConfig
                      (c {whoami =
                            Person newName mempty})
-  selectSet WQEmail newEmail =
+  selectSet _ WQEmail newEmail =
     do c@(LouseConfig oldPerson) <- readLouseConfig
        case oldPerson of
-         Person n e ->
+         Person n _ ->
            writeLouseConfig
              (c {whoami = Person n newEmail})
          Anonymous ->
