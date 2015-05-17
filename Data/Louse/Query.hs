@@ -127,19 +127,19 @@ selectorList =
         (QBugs BQClosed)
   ,Pair (Selector "repo.bugs.open" "List the open bugs" True False)
         (QBugs BQOpen)
-  ,NullPair (Selector "repo.bugs[BUGID]"
+  ,NullPair (Selector "repo.bugs.bug-BUGID"
                       "Show the bug whose ident is BUGID. (Short bugids are okay)."
                       True
                       False)
-  ,NullPair (Selector "repo.bugs[BUGID].closed" "The opposite of \"open\"." True True)
-  ,NullPair (Selector "repo.bugs[BUGID].creation-date"
+  ,NullPair (Selector "repo.bugs.bug-BUGID..closed" "The opposite of \"open\"." True True)
+  ,NullPair (Selector "repo.bugs.bug-BUGID.creation-date"
                       "The date at which the bug was created."
                       True
                       True)
-  ,NullPair (Selector "repo.bugs[BUGID].description" "Further description of the bug." True True)
-  ,NullPair (Selector "repo.bugs[BUGID].open" "Whether or not the bug is open." True True)
-  ,NullPair (Selector "repo.bugs[BUGID].reporter" "The person who reported the bug." True True)
-  ,NullPair (Selector "repo.bugs[BUGID].title" "The title of the bug." True True)]
+  ,NullPair (Selector "repo.bugs.bug-BUGID.description" "Further description of the bug." True True)
+  ,NullPair (Selector "repo.bugs.bug-BUGID.open" "Whether or not the bug is open." True True)
+  ,NullPair (Selector "repo.bugs.bug-BUGID.reporter" "The person who reported the bug." True True)
+  ,NullPair (Selector "repo.bugs.bug-BUGID.title" "The title of the bug." True True)]
 
 instance Select IO Query where
   select q =
