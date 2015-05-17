@@ -83,13 +83,23 @@ data SchemaQuery
   | SQShow Text
   deriving (Eq,Show)
 
-data Pair a b
-  = Pair {first :: a
-         ,second :: b}
-  |
-    -- |This is in no way a hack because I didn't account for selectors that needed special parsing.
-    NullPair {first :: a}
+data SelectorPair
+    -- |This is for hashmap lookup
+  = StaticPair {pairSelector :: Selector
+               ,pairQuery :: Query}
+    -- |This is for pairs that need special parsing, such as retrieving a
+    --bug by its id. I can't list every bug in a static hashmap.
+  | ParsedPair {pairSelector :: Selector
+               ,pairParser :: (Text -> Query)}
   deriving (Eq,Show)
+
+-- Take a
+splitToPieces :: Text -> (Text,Text,Text)
+splitToPieces q =
+  (T.takeWhile (/= '{') q
+  ,T.takeWhile (/= '}')
+               (T.drop 1 (T.dropWhile (/= '{') q))
+  ,T.drop 1 (T.dropWhile (/= '}') q))
 
 selectorMap :: HashMap Text (Pair Selector Query)
 selectorMap =
