@@ -196,7 +196,7 @@ class Monad m => Select m a where
   -- >                                (T.drop 1 (T.dropWhile (/= '[') q))
   -- >                   ,T.drop 1 (T.dropWhile (/= ']') q))
   -- >          in selectKey firstSelector key restOf
-  select :: Text -> Exceptional a
+  select :: Text -> m (Exceptional a)
 
   -- |In louse, 'select' will call this function when given a query like
   --
