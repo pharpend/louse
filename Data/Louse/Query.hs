@@ -115,6 +115,12 @@ selectorList =
         (QAbout (Just AQTutorial))
   ,Pair (Selector "about.version" "Print out the version" True False)
         (QAbout (Just AQVersion))
+  ,Pair (Selector "config.whoami" "Information about yourself" True False)
+        (QConfig (CQWhoami Nothing))
+  ,Pair (Selector "config.whoami.email" "Your email address" True True)
+        (QConfig (CQWhoami (Just WQEmail)))
+  ,Pair (Selector "config.whoami.name" "Your full name" True True)
+        (QConfig (CQWhoami (Just WQName)))
   ,Pair (Selector "repo.bugs" "List the bugs" True False)
         (QBugs BQAll)
   ,Pair (Selector "repo.bugs.closed" "List only the closed bugs" True False)
@@ -133,13 +139,7 @@ selectorList =
   ,NullPair (Selector "repo.bugs[BUGID].description" "Further description of the bug." True True)
   ,NullPair (Selector "repo.bugs[BUGID].open" "Whether or not the bug is open." True True)
   ,NullPair (Selector "repo.bugs[BUGID].reporter" "The person who reported the bug." True True)
-  ,NullPair (Selector "repo.bugs[BUGID].title" "The title of the bug." True True)
-  ,Pair (Selector "config.whoami" "Information about yourself" True False)
-        (QConfig (CQWhoami Nothing))
-  ,Pair (Selector "config.whoami.email" "Your email address" True True)
-        (QConfig (CQWhoami (Just WQEmail)))
-  ,Pair (Selector "config.whoami.name" "Your full name" True True)
-        (QConfig (CQWhoami (Just WQName)))]
+  ,NullPair (Selector "repo.bugs[BUGID].title" "The title of the bug." True True)]
 
 instance Select Query where
   select q =
