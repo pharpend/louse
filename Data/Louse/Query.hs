@@ -79,6 +79,7 @@ data SuchThatQuery
 
 data BugQuery
   = BQClosed
+  | BQComments
   | BQCreationDate
   | BQDescription
   | BQOpen
@@ -191,15 +192,28 @@ selectorList =
               |  rest == mempty ->
                 return (QBugs (BQBug ident BQShow))
               |  otherwise ->
-                return (QBugs (BQBug ident
-                                     (case rest of
-                                        "closed" -> BQClosed
-                                        "creation-date" -> BQCreationDate
-                                        "description" -> BQDescription
-                                        "open" -> BQOpen
-                                        "reporter" -> BQReporter
-                                        "title" -> BQTitle))))
+                fmap (QBugs .
+                      BQBug ident)
+                     (case rest of
+                        "closed" ->
+                          return BQClosed
+                        "comments" ->
+                          return BQComments
+                        "creation-date" ->
+                          return BQCreationDate
+                        "description" ->
+                          return BQDescription
+                        "open" -> return BQOpen
+                        "reporter" ->
+                          return BQReporter
+                        "title" -> return BQTitle
+                        x ->
+                          fail (mconcat ["No match for repo.bugs{"
+                                        ,T.unpack ident
+                                        ,"}."
+                                        ,T.unpack x])))
   ,NullPair (Selector "repo.bugs{BUGID}.closed" "The opposite of \"open\"." True True)
+  ,NullPair (Selector "repo.bugs{BUGID}.comments" "View all of the comments on a bug" True False)
   ,NullPair (Selector "repo.bugs{BUGID}.creation-date"
                       "The date at which the bug was created."
                       True
