@@ -102,65 +102,59 @@ selectorMap =
 
 selectorList :: [Pair Selector Query]
 selectorList =
-  [Pair (Selector "about" "About louse." True False)
-        (QAbout Nothing)
-  ,Pair (Selector "about.license" "Print out louse's license (GPL-3)." True False)
-        (QAbout (Just AQLicense))
-  ,Pair (Selector "about.schema" "List the various schemata of louse's data files" True False)
-        (QAbout (Just (AQSchema SQAll)))
-  ,NullPair (Selector "about.schema[SCHEMA_NAME]" "Get a specific schema." True False)
-  ,Pair (Selector "about.selectors" "List all of the selectors" True False)
-        (QAbout (Just AQSelectors))
-  ,Pair (Selector "about.tutorial" "Print the tutorial" True False)
-        (QAbout (Just AQTutorial))
-  ,Pair (Selector "about.version" "Print out the version" True False)
-        (QAbout (Just AQVersion))
-  ,Pair (Selector "config.whoami" "Information about yourself" True False)
-        (QConfig (CQWhoami Nothing))
-  ,Pair (Selector "config.whoami.email" "Your email address" True True)
-        (QConfig (CQWhoami (Just WQEmail)))
-  ,Pair (Selector "config.whoami.name" "Your full name" True True)
-        (QConfig (CQWhoami (Just WQName)))
-  ,Pair (Selector "repo.bugs" "List the bugs" True False)
-        (QBugs BQAll)
-  ,Pair (Selector "repo.bugs.closed" "List only the closed bugs" True False)
-        (QBugs BQClosed)
-  ,Pair (Selector "repo.bugs.open" "List the open bugs" True False)
-        (QBugs BQOpen)
-  ,NullPair (Selector "repo.bugs.bug-BUGID"
-                      "Show the bug whose ident is BUGID. (Short bugids are okay)."
-                      True
-                      False)
-  ,NullPair (Selector "repo.bugs.bug-BUGID..closed" "The opposite of \"open\"." True True)
-  ,NullPair (Selector "repo.bugs.bug-BUGID.creation-date"
+  [StaticPair (Selector "about" "About louse." True False)
+              (QAbout Nothing)
+  ,StaticPair (Selector "about.license" "Print out louse's license (GPL-3)." True False)
+              (QAbout (Just AQLicense))
+  ,StaticPair (Selector "about.schema" "List the various schemata of louse's data files" True False)
+              (QAbout (Just (AQSchema SQAll)))
+  ,ParsedPair (Selector "about.schema{SCHEMA_NAME}" "Get a specific schema." True False)
+              (\t -> SQShow)
+  ,StaticPair (Selector "about.selectors" "List all of the selectors" True False)
+              (QAbout (Just AQSelectors))
+  ,StaticPair (Selector "about.tutorial" "Print the tutorial" True False)
+              (QAbout (Just AQTutorial))
+  ,StaticPair (Selector "about.version" "Print out the version" True False)
+              (QAbout (Just AQVersion))
+  ,StaticPair (Selector "config.whoami" "Information about yourself" True False)
+              (QConfig (CQWhoami Nothing))
+  ,StaticPair (Selector "config.whoami.email" "Your email address" True True)
+              (QConfig (CQWhoami (Just WQEmail)))
+  ,StaticPair (Selector "config.whoami.name" "Your full name" True True)
+              (QConfig (CQWhoami (Just WQName)))
+  ,StaticPair (Selector "repo.bugs" "List the bugs" True False)
+              (QBugs BQAll)
+  ,StaticPair (Selector "repo.bugs.closed" "List only the closed bugs" True False)
+              (QBugs BQClosed)
+  ,StaticPair (Selector "repo.bugs.open" "List the open bugs" True False)
+              (QBugs BQOpen)
+  ,ParsedPair
+     (Selector "repo.bugs.{bugid}"
+               "Show the bug whose ident is BUGID. (Short bugids are okay)."
+               True
+               False)
+  ,NullPair (Selector "repo.bugs.{bugid}..closed" "The opposite of \"open\"." True True)
+  ,NullPair (Selector "repo.bugs.{bugid}.creation-date"
                       "The date at which the bug was created."
                       True
                       True)
-  ,NullPair (Selector "repo.bugs.bug-BUGID.description" "Further description of the bug." True True)
-  ,NullPair (Selector "repo.bugs.bug-BUGID.open" "Whether or not the bug is open." True True)
-  ,NullPair (Selector "repo.bugs.bug-BUGID.reporter" "The person who reported the bug." True True)
-  ,NullPair (Selector "repo.bugs.bug-BUGID.title" "The title of the bug." True True)]
+  ,NullPair (Selector "repo.bugs.{bugid}.description" "Further description of the bug." True True)
+  ,NullPair (Selector "repo.bugs.{bugid}.open" "Whether or not the bug is open." True True)
+  ,NullPair (Selector "repo.bugs.{bugid}.reporter" "The person who reported the bug." True True)
+  ,NullPair (Selector "repo.bugs.{bugid}.title" "The title of the bug." True True)]
+  
+selectWithKey :: Text -> Text -> Text -> IO Query
 
 instance Select IO Query where
   select q =
     case H.lookup q selectorMap of
-              -- If we have a match in the hashmap, find it
-              Just (Pair _ query) ->
-                return (Success query)
-              -- Otherwise, grab the first selector, the key, restof.
-              Nothing ->
-                let (firstSelector,key,restOf) =
-                      (T.takeWhile (/= '[') q
-                      ,T.takeWhile (/= ']')
-                                   (T.drop 1 (T.dropWhile (/= '[') q))
-                      ,T.drop 1 (T.dropWhile (/= ']') q))
-                in return (case H.lookup firstSelector selectorMap of
-                             Just (Pair _ x) ->
-                               Success x
-                             Nothing ->
-                               Failure (unlines ["I'm sorry, I can't find a selector matching"
-                                                ,T.unpack q
-                                                ,"Try `louse get selectors` for a list."]))
+      -- If we have a match in the hashmap, find it
+      Just (Pair _ query) ->
+        return (Success query)
+      -- Otherwise, grab the first selector, the key, restof.
+      Nothing ->
+        let (firstSelector,key,restOf) =
+        in selectWithKey firstSelector key restOf
 
 instance SelectGet IO Query Text where
   selectGet (QBugs q) = selectGet q
