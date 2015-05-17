@@ -2,6 +2,7 @@
            , MultiParamTypeClasses 
     #-}
 
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -39,6 +40,7 @@ import Data.Louse.Query.Selector
 import Data.Louse.Read
 import Data.Louse.Types
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -64,53 +66,81 @@ data AboutQuery
   deriving (Eq,Show)
 
 data BugsQuery
-  = BQAll
-  | BQClosed
-  | BQOpen
-  deriving (Eq, Show)
+  = BQSuchThat SuchThatQuery
+  | BQBug Text
+          BugQuery
+  deriving (Eq,Show)
 
-data ConfigQuery =
-  CQWhoami {cqWhoamiQuery :: Maybe WhoamiQuery}
-  deriving (Eq, Show)
+data SuchThatQuery
+  = STQAll
+  | STQClosed
+  | STQOpen
+  deriving (Eq,Show)
+
+data BugQuery
+  = BQClosed
+  | BQCreationDate
+  | BQDescription
+  | BQOpen
+  | BQReporter
+  | BQShow
+  | BQTitle
+  deriving (Eq,Show)
+
+data ConfigQuery = CQWhoami
+    { cqWhoamiQuery :: Maybe WhoamiQuery
+    } deriving (Eq,Show)
 
 data WhoamiQuery
-  = WQName
-  | WQEmail
-  deriving (Eq,Show)
+    = WQName
+    | WQEmail
+    deriving (Eq,Show)
 
 data SchemaQuery
-  = SQAll
-  | SQShow Text
-  deriving (Eq,Show)
+    = SQAll
+    | SQShow Text
+    deriving (Eq,Show)
 
 data SelectorPair
+  =
     -- |This is for hashmap lookup
-  = StaticPair {pairSelector :: Selector
+    StaticPair {pairSelector :: Selector
                ,pairQuery :: Query}
+  |
     -- |This is for pairs that need special parsing, such as retrieving a
     --bug by its id. I can't list every bug in a static hashmap.
-  | ParsedPair {pairSelector :: Selector
-               ,pairParser :: (Text -> Query)}
+    ParsedPair {pairSelector :: Selector
+               ,pairParser :: (Text -> Exceptional Query)}
+  |
+    -- |This is for pairs for which I am too lazy to write a parser at
+    -- the moment
+    NullPair {pairSelector :: Selector}
   deriving (Eq,Show)
+  
+instance Eq (Text -> Exceptional Query) where
+  (==) _ _ = False
+
+instance Show (Text -> Exceptional Query) where
+  show _ = "Function :: Text -> Exceptional Query"
 
 -- Take a
 splitToPieces :: Text -> (Text,Text,Text)
-splitToPieces q =
-  (T.takeWhile (/= '{') q
-  ,T.takeWhile (/= '}')
-               (T.drop 1 (T.dropWhile (/= '{') q))
-  ,T.drop 1 (T.dropWhile (/= '}') q))
+splitToPieces q = ( T.takeWhile (/= '{') q
+                  , T.takeWhile
+                        (/= '}')
+                        (T.drop 1 (T.dropWhile (/= '{') q))
+                  , T.drop 1 (T.dropWhile (/= '}') q))
 
-selectorMap :: HashMap Text (Pair Selector Query)
+selectorMap :: HashMap Text SelectorPair
 selectorMap =
   mconcat (do x <- selectorList
               case x of
-                Pair selector _ ->
+                StaticPair selector _ ->
                   pure (H.singleton (name selector)
                                     x)
-                NullPair selector -> pure mempty)
+                _ -> pure mempty)
 
-selectorList :: [Pair Selector Query]
+selectorList :: [SelectorPair]
 selectorList =
   [StaticPair (Selector "about" "About louse." True False)
               (QAbout Nothing)
@@ -118,8 +148,18 @@ selectorList =
               (QAbout (Just AQLicense))
   ,StaticPair (Selector "about.schema" "List the various schemata of louse's data files" True False)
               (QAbout (Just (AQSchema SQAll)))
-  ,ParsedPair (Selector "about.schema{SCHEMA_NAME}" "Get a specific schema." True False)
-              (\t -> SQShow)
+  ,ParsedPair
+     (Selector "about.schema{SCHEMA_NAME}" "Get a specific schema." True False)
+     (\t ->
+        let (sel,ident,rest) = splitToPieces t
+        in if |  sel /= "about.schema" ->
+                fail (mappend "Initial selector doesn't match \"about.schema\". Instead is "
+                              (T.unpack sel))
+              |  rest /= mempty ->
+                fail (mappend "There isn't supposed to be anything after \"{SCHEMA_NAME\"}. Instead, I found "
+                              (T.unpack rest))
+              |  otherwise ->
+                return (QAbout (Just (AQSchema (SQShow ident)))))
   ,StaticPair (Selector "about.selectors" "List all of the selectors" True False)
               (QAbout (Just AQSelectors))
   ,StaticPair (Selector "about.tutorial" "Print the tutorial" True False)
@@ -133,38 +173,82 @@ selectorList =
   ,StaticPair (Selector "config.whoami.name" "Your full name" True True)
               (QConfig (CQWhoami (Just WQName)))
   ,StaticPair (Selector "repo.bugs" "List the bugs" True False)
-              (QBugs BQAll)
+              (QBugs (BQSuchThat STQAll))
   ,StaticPair (Selector "repo.bugs.closed" "List only the closed bugs" True False)
-              (QBugs BQClosed)
+              (QBugs (BQSuchThat STQClosed))
   ,StaticPair (Selector "repo.bugs.open" "List the open bugs" True False)
-              (QBugs BQOpen)
+              (QBugs (BQSuchThat STQOpen))
   ,ParsedPair
-     (Selector "repo.bugs.{bugid}"
+     (Selector "repo.bugs.{BUGID}"
                "Show the bug whose ident is BUGID. (Short bugids are okay)."
                True
                False)
-  ,NullPair (Selector "repo.bugs.{bugid}..closed" "The opposite of \"open\"." True True)
-  ,NullPair (Selector "repo.bugs.{bugid}.creation-date"
+     (\t ->
+        let (sel,ident,rest) = splitToPieces t
+        in if |  sel /= "repo.bugs" ->
+                fail (mappend "Initial selector doesn't match \"repo.bugs\". Instead is "
+                              (T.unpack sel))
+              |  rest == mempty ->
+                return (QBugs (BQBug ident BQShow))
+              |  otherwise ->
+                return (QBugs (BQBug ident
+                                     (case rest of
+                                        "closed" -> BQClosed
+                                        "creation-date" -> BQCreationDate
+                                        "description" -> BQDescription
+                                        "open" -> BQOpen
+                                        "reporter" -> BQReporter
+                                        "title" -> BQTitle))))
+  ,NullPair (Selector "repo.bugs{BUGID}.closed" "The opposite of \"open\"." True True)
+  ,NullPair (Selector "repo.bugs{BUGID}.creation-date"
                       "The date at which the bug was created."
                       True
                       True)
-  ,NullPair (Selector "repo.bugs.{bugid}.description" "Further description of the bug." True True)
-  ,NullPair (Selector "repo.bugs.{bugid}.open" "Whether or not the bug is open." True True)
-  ,NullPair (Selector "repo.bugs.{bugid}.reporter" "The person who reported the bug." True True)
-  ,NullPair (Selector "repo.bugs.{bugid}.title" "The title of the bug." True True)]
+  ,NullPair (Selector "repo.bugs{BUGID}.description" "Further description of the bug." True True)
+  ,NullPair (Selector "repo.bugs{BUGID}.open" "Whether or not the bug is open." True True)
+  ,NullPair (Selector "repo.bugs{BUGID}.reporter" "The person who reported the bug." True True)
+  ,NullPair (Selector "repo.bugs{BUGID}.title" "The title of the bug." True True)]
   
-selectWithKey :: Text -> Text -> Text -> IO Query
-
 instance Select IO Query where
   select q =
     case H.lookup q selectorMap of
       -- If we have a match in the hashmap, find it
-      Just (Pair _ query) ->
+      Just (StaticPair _ query) ->
         return (Success query)
-      -- Otherwise, grab the first selector, the key, restof.
       Nothing ->
-        let (firstSelector,key,restOf) =
-        in selectWithKey firstSelector key restOf
+        let parsedPairs =
+              catMaybes (fmap (\x ->
+                                 case x of
+                                   foo@(ParsedPair _ _) ->
+                                     Just foo
+                                   _ -> Nothing)
+                              selectorList)
+            parses =
+              fmap (\(ParsedPair _ parser) -> parser q) parsedPairs
+            successfulParses =
+              catMaybes (fmap (\x ->
+                                 case x of
+                                   Success foo ->
+                                     Just foo
+                                   _ -> Nothing)
+                              parses)
+            failMsgs =
+              catMaybes (fmap (\x ->
+                                 case x of
+                                   Failure foo ->
+                                     Just foo
+                                   _ -> Nothing)
+                              parses)
+        in return (case headMay successfulParses of
+                     Nothing ->
+                       Failure (mappend (mconcat ["\nI wasn't able to parse the selector.\n"
+                                                 ,"Most of the selectors can be looked up via a static hashmap.\n"
+                                                 ,"If there was a match in the hashmap, I would have gone with that.\n"
+                                                 ,"Since there wasn't, I ran the selector through my list of custom parsers.\n"
+                                                 ,"You are seeing this message because every single parser failed.\n"
+                                                 ,"Here are the error messages from each parser:\n"])
+                                        (unlines (fmap (mappend (replicate 4 ' ')) failMsgs)))
+                     Just x -> Success x)
 
 instance SelectGet IO Query Text where
   selectGet (QBugs q) = selectGet q
@@ -184,18 +268,18 @@ instance SelectSet IO Query Text where
     fail "Selectors are not settable. Settable? Whatever. You get the point. Bad user!"
 
 instance SelectGet IO BugsQuery Text where
-  selectGet x =
-    do louse <- readLouse >>= runExceptional
-       let allBugs = louseBugs louse
-       pure (Success (T.unlines (fmap (T.take 8)
-                                      (M.keys (case x of
-                                                 BQAll -> allBugs
-                                                 BQClosed ->
-                                                   M.filter (not . bugOpen) allBugs
-                                                 BQOpen ->
-                                                   M.filter bugOpen allBugs)))))
+  selectGet _ = fail "Failing temporarily"
+    -- do louse <- readLouse >>= runExceptional
+    --      let allBugs = louseBugs louse
+    --        pure (Success (T.unlines (fmap (T.take 8)
+    --                                         (M.keys (case x of
+    --                                                      BQAll -> allBugs
+    --                                                        BQClosed ->
+    --                                                          M.filter (not . bugOpen) allBugs
+    --                                                          BQOpen ->
+    --                                                            M.filter bugOpen allBugs)))))
 
-  
+
 instance SelectGet IO AboutQuery Text where
   selectGet AQLicense =
     fmap Success (readDataFileText "LICENSE")
@@ -207,7 +291,8 @@ instance SelectGet IO AboutQuery Text where
     return (Success (unpackSelectors
                        (do selectorPair <- selectorList
                            case selectorPair of
-                             Pair s _ -> return s
+                             StaticPair s _ -> return s
+                             ParsedPair s _ -> return s
                              NullPair s -> return s)))
   selectGet x =
     fail (mconcat ["You can't get ",show x," yet"])
