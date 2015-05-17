@@ -31,10 +31,9 @@
 module Data.Louse.Query where
 
 import Control.Exceptional
-import Control.Monad.IO.Class
+import Control.Monad (mzero)
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
-import Data.List
 import Data.Louse.DataFiles
 import Data.Louse.Query.Selector
 import Data.Louse.Read
@@ -46,7 +45,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.IO as TIO
 import Paths_louse
-import Data.Tree
 import Data.Version
 import Data.Yaml
 import Safe
