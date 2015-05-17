@@ -215,6 +215,8 @@ instance Select IO Query where
       -- If we have a match in the hashmap, find it
       Just (StaticPair _ query) ->
         return (Success query)
+      Just _ ->
+        return (Failure "Query.hs:231 - some weird stuff is happening here")
       Nothing ->
         let parsedPairs =
               catMaybes (fmap (\x ->
