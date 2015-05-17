@@ -86,15 +86,6 @@ addBug pwd person title description =
                 nb
      return (T.pack bugid)
 
--- |Close a bug. This actually edits the files, so be careful.
-closeBug :: FilePath -> BugId -> IO ()
-closeBug pwd bugid =
-  do let bugsPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
-     bug <- errDecodeFile bugsPath
-     encodeFile bugsPath
-                (bug {bugOpen = False})
-
 -- |Comment on a bug. This actually edits the data files, so be careful!
 commentOnBug :: FilePath
              -> BugId                      -- ^The bug on which to comment
@@ -173,39 +164,3 @@ newComment fp bid maybeComment =
      commentOnBug fp bid reporter comment
      putStrLn (mappend "Added comment to bug " (T.unpack bid))
 
-
--- |Print out information about a bug to the terminal.
-showBug :: T.Text -- ^The optionally abbreviated bug id
-        -> IO ()
-showBug ident =
-  lookupShortKey ident >>=
-  \case
-    Nothing ->
-      fail (mconcat ["I can't find a bug whose ident starts with:\n\t"
-                    ,(T.unpack ident)])
-    Just x -> print x
-
-data State = Open | Closed | All
--- |Print out a list in the form ident\ttitle to the terminal.
-listBugs :: State -> IO ()
-listBugs state =
-  do louse <- readLouseErr
-     let openBugs =
-           let allBugs = louseBugs louse
-           in case state of
-                Open -> M.filter bugOpen allBugs
-                All -> allBugs
-                Closed ->
-                  M.filter (not . bugOpen) allBugs
-         keys_ = M.keys openBugs
-         titles_ =
-           map bugTitle (M.elems openBugs)
-         keysTitles = zip keys_ titles_
-     forM_ keysTitles
-           (\(key,title) ->
-              TIO.putStrLn
-                (mconcat [T.take 8 key,T.replicate 4 " ",ellipsize title]))
-  where ellipsize t
-          | T.length t > 65 =
-            mappend (T.take 65 t) "..."
-          | otherwise = t
