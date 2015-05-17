@@ -26,32 +26,19 @@
 
 module Data.Louse.Bugs where
 
-import Control.Exceptional
-import Control.Monad (forM_, mzero)
-import Control.Monad.Trans.Resource (runResourceT)
+import Control.Monad (mzero)
 import qualified Data.ByteString.Char8 as Bsc
-import qualified Data.ByteString.Lazy as Bl
-import Data.Conduit
-import Data.Conduit.Attoparsec (sinkParser)
-import Data.Conduit.Binary
-import Data.Conduit.Combinators (sinkLazy)
 import Data.Louse.DataFiles
 import Data.Louse.Read
 import Data.Louse.Templates
 import Data.Louse.Trivia (randomIdent)
 import Data.Louse.Types
-import qualified Data.Map as M
 import Data.Time (getCurrentTime)
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
 import Data.Text.Encoding (decodeUtf8)
-import qualified Data.Text.Lazy as L
-import Data.Traversable (for)
 import Data.Yaml
-import System.Directory (getCurrentDirectory, removeFile)
-import System.IO (openFile, IOMode(..))
-import System.Exit
+import System.Directory (removeFile)
 import Text.Editor
 
 -- For reference:
@@ -94,7 +81,7 @@ commentOnBug :: FilePath
              -> IO ()
 commentOnBug pwd bugid personid comment =
   do let bugsPath =
-           (mconcat [_bugs_dir,T.unpack bugid,".yaml"])
+           (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
      bug <- errDecodeFile bugsPath
      commentTime <- getCurrentTime
      let nc =
@@ -110,11 +97,11 @@ editBug pwd bugid =
   do let bugsPath =
            (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
      bug <- (errDecodeFile bugsPath) :: IO Bug
-     newBug <-
+     newBug_ <-
        (errDecode =<<
         runUserEditorDWIM yamlTemplate
                           (encode bug)) :: IO Bug
-     encodeFile bugsPath newBug
+     encodeFile bugsPath newBug_
 
 -- |Delete a bug from the list of bugs. 
 deleteBug :: FilePath -> BugId -> IO ()
