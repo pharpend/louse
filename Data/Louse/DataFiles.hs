@@ -84,6 +84,8 @@ _templ_new_project =
 _templ_new_bug :: IO TemplatePath
 _templ_new_bug = getDataFileName "res/templates/new-bug.yaml"
 
+
+-- |Extra functions
 errDecodeFile :: FromJSON a => FilePath -> IO a
 errDecodeFile filePath =
   ((>>=) (decodeFileEither filePath)
@@ -115,3 +117,9 @@ decodeExceptional bytes =
 
 ppError :: Monad m => ParseException -> m a
 ppError = fail . prettyPrintParseException
+
+bindl :: Monad m => (a -> m b) -> m a -> m b
+bindl = (=<<)
+
+bindr :: Monad m => m a -> (a -> m b) -> m b
+bindr = (>>=)
