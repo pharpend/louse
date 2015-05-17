@@ -34,6 +34,7 @@ import Control.Monad.IO.Class
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
 import Data.List
+import Data.Louse.DataFiles
 import Data.Louse.Query.Selector
 import Data.Louse.Read
 import Data.Louse.Types
@@ -41,7 +42,10 @@ import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.IO as TIO
+import Paths_louse
 import Data.Tree
+import Data.Version
 import Data.Yaml
 import Safe
 
@@ -53,7 +57,7 @@ data Query
 
 data AboutQuery
   = AQLicense
-  | AQSchema
+  | AQSchema SchemaQuery
   | AQSelectors
   | AQTutorial
   | AQVersion
@@ -74,44 +78,68 @@ data WhoamiQuery
   | WQEmail
   deriving (Eq,Show)
 
-data Pair a b =
-  Pair {first :: a
-       ,second :: b}
+data SchemaQuery
+  = SQAll
+  | SQShow Text
+  deriving (Eq,Show)
+
+data Pair a b
+  = Pair {first :: a
+         ,second :: b}
+  |
+    -- |This is in no way a hack because I didn't account for selectors that needed special parsing.
+    NullPair {first :: a}
   deriving (Eq,Show)
 
 selectorMap :: HashMap Text (Pair Selector Query)
 selectorMap =
-  fromSelectorList
-    [Pair (Selector "about" "About louse." True False)
-          (QAbout Nothing)
-    ,Pair (Selector "about.license" "Print out louse's license (GPL-3)." True False)
-          (QAbout (Just AQLicense))
-    ,Pair (Selector "about.schema" "List the various schemata of louse's data files" True False)
-          (QAbout (Just AQSchema))
-    ,Pair (Selector "about.selectors" "List all of the selectors" True False)
-          (QAbout (Just AQSelectors))
-    ,Pair (Selector "about.tutorial" "Print the tutorial" True False)
-          (QAbout (Just AQTutorial))
-    ,Pair (Selector "about.version" "Print out the version" True False)
-          (QAbout (Just AQVersion))
-    ,Pair (Selector "bugs" "List the bugs" True False)
-          (QBugs BQAll)
-    ,Pair (Selector "bugs.all" "Same as bugs" True False)
-          (QBugs BQAll)
-    ,Pair (Selector "bugs.closed" "List only the closed bugs" True False)
-          (QBugs BQClosed)
-    ,Pair (Selector "bugs.open" "List the open bugs" True False)
-          (QBugs BQOpen)
-    ,Pair (Selector "config.whoami" "Information about yourself" True False)
-          (QConfig (CQWhoami Nothing))
-    ,Pair (Selector "config.whoami.email" "Your email address" True True)
-          (QConfig (CQWhoami (Just WQEmail)))
-    ,Pair (Selector "config.whoami.name" "Your full name" True True)
-          (QConfig (CQWhoami (Just WQName)))]
-  where fromSelectorList sels =
-          H.fromList
-            (do x@(Pair selector _) <- sels
-                pure (name selector,x))
+  mconcat (do x <- selectorList
+              case x of
+                Pair selector _ ->
+                  pure (H.singleton (name selector)
+                                    x)
+                NullPair selector -> pure mempty)
+
+selectorList :: [Pair Selector Query]
+selectorList =
+  [Pair (Selector "about" "About louse." True False)
+        (QAbout Nothing)
+  ,Pair (Selector "about.license" "Print out louse's license (GPL-3)." True False)
+        (QAbout (Just AQLicense))
+  ,Pair (Selector "about.schema" "List the various schemata of louse's data files" True False)
+        (QAbout (Just (AQSchema SQAll)))
+  ,NullPair (Selector "about.schema[SCHEMA_NAME]" "Get a specific schema." True False)
+  ,Pair (Selector "about.selectors" "List all of the selectors" True False)
+        (QAbout (Just AQSelectors))
+  ,Pair (Selector "about.tutorial" "Print the tutorial" True False)
+        (QAbout (Just AQTutorial))
+  ,Pair (Selector "about.version" "Print out the version" True False)
+        (QAbout (Just AQVersion))
+  ,Pair (Selector "repo.bugs" "List the bugs" True False)
+        (QBugs BQAll)
+  ,Pair (Selector "repo.bugs.closed" "List only the closed bugs" True False)
+        (QBugs BQClosed)
+  ,Pair (Selector "repo.bugs.open" "List the open bugs" True False)
+        (QBugs BQOpen)
+  ,NullPair (Selector "repo.bugs[BUGID]"
+                      "Show the bug whose ident is BUGID. (Short bugids are okay)."
+                      True
+                      False)
+  ,NullPair (Selector "repo.bugs[BUGID].closed" "The opposite of \"open\"." True True)
+  ,NullPair (Selector "repo.bugs[BUGID].creation-date"
+                      "The date at which the bug was created."
+                      True
+                      True)
+  ,NullPair (Selector "repo.bugs[BUGID].description" "Further description of the bug." True True)
+  ,NullPair (Selector "repo.bugs[BUGID].open" "Whether or not the bug is open." True True)
+  ,NullPair (Selector "repo.bugs[BUGID].reporter" "The person who reported the bug." True True)
+  ,NullPair (Selector "repo.bugs[BUGID].title" "The title of the bug." True True)
+  ,Pair (Selector "config.whoami" "Information about yourself" True False)
+        (QConfig (CQWhoami Nothing))
+  ,Pair (Selector "config.whoami.email" "Your email address" True True)
+        (QConfig (CQWhoami (Just WQEmail)))
+  ,Pair (Selector "config.whoami.name" "Your full name" True True)
+        (QConfig (CQWhoami (Just WQName)))]
 
 instance Select Query where
   select q =
@@ -125,11 +153,11 @@ instance Select Query where
 instance MonadIO m => SelectGet m Query Text where
   selectGet (QBugs q) = selectGet q
   selectGet (QConfig q) = selectGet q
-  selectGet (QAbout (Just AQSelectors)) =
-    return (Success (unpackSelectors
-                       (do (Pair selector _) <- H.elems selectorMap
-                           return selector)))
-  selectGet (QAbout _) = fail "no,no"
+  selectGet (QAbout Nothing) =
+    do fpath <-
+         liftIO (getDataFileName "README.md")
+       fmap Success (liftIO (TIO.readFile fpath))
+  selectGet (QAbout (Just q)) = selectGet q
 
 instance MonadIO m => SelectSet m Query Text where
   selectSet (QBugs _) _ =
@@ -154,6 +182,22 @@ instance MonadIO m => SelectGet m BugsQuery Text where
                                                    M.filter bugOpen allBugs)))))
 
   
+instance MonadIO m => SelectGet m AboutQuery Text where
+  selectGet AQLicense =
+    liftIO (fmap Success (readDataFileText "LICENSE"))
+  selectGet AQVersion =
+    return (Success (mappend (T.pack (showVersion version)) "\n"))
+  selectGet AQTutorial =
+    liftIO (fmap Success (readDataFileText "TUTORIAL.md"))
+  selectGet AQSelectors =
+    pure (Success (unpackSelectors
+                     (do selectorPair <- selectorList
+                         case selectorPair of
+                           Pair s _ -> return s
+                           NullPair s -> return s)))
+  selectGet x =
+    fail (mconcat ["You can't get ",show x," yet"])
+
 instance MonadIO m => SelectGet m ConfigQuery Text where
   selectGet (CQWhoami x) = selectGet x
 
