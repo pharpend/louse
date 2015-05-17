@@ -141,25 +141,36 @@ selectorList =
   ,NullPair (Selector "repo.bugs[BUGID].reporter" "The person who reported the bug." True True)
   ,NullPair (Selector "repo.bugs[BUGID].title" "The title of the bug." True True)]
 
-instance Select Query where
+instance Select IO Query where
   select q =
     case H.lookup q selectorMap of
-      Just (Pair _ query) -> pure query
-      Nothing ->
-        fail (unlines ["I'm sorry, I can't find a selector matching"
-                      ,T.unpack q
-                      ,"Try `louse get selectors` for a list."])
+              -- If we have a match in the hashmap, find it
+              Just (Pair _ query) ->
+                return (Success query)
+              -- Otherwise, grab the first selector, the key, restof.
+              Nothing ->
+                let (firstSelector,key,restOf) =
+                      (T.takeWhile (/= '[') q
+                      ,T.takeWhile (/= ']')
+                                   (T.drop 1 (T.dropWhile (/= '[') q))
+                      ,T.drop 1 (T.dropWhile (/= ']') q))
+                in return (case H.lookup firstSelector selectorMap of
+                             Just (Pair _ x) ->
+                               Success x
+                             Nothing ->
+                               Failure (unlines ["I'm sorry, I can't find a selector matching"
+                                                ,T.unpack q
+                                                ,"Try `louse get selectors` for a list."]))
 
-instance MonadIO m => SelectGet m Query Text where
+instance SelectGet IO Query Text where
   selectGet (QBugs q) = selectGet q
   selectGet (QConfig q) = selectGet q
   selectGet (QAbout Nothing) =
-    do fpath <-
-         liftIO (getDataFileName "README.md")
-       fmap Success (liftIO (TIO.readFile fpath))
+    do fpath <- getDataFileName "README.md"
+       fmap Success (TIO.readFile fpath)
   selectGet (QAbout (Just q)) = selectGet q
 
-instance MonadIO m => SelectSet m Query Text where
+instance SelectSet IO Query Text where
   selectSet (QBugs _) _ =
     fail (unlines ["You can't use \"set\" on bugs as a whole (although you can change attributes"
                   ,"of individual bugs). I haven't written that code yet, but you will be able to"
@@ -168,10 +179,9 @@ instance MonadIO m => SelectSet m Query Text where
   selectSet _ _ =
     fail "Selectors are not settable. Settable? Whatever. You get the point. Bad user!"
 
-instance MonadIO m => SelectGet m BugsQuery Text where
+instance SelectGet IO BugsQuery Text where
   selectGet x =
-    do louse <-
-         (=<<) runExceptional (liftIO readLouse)
+    do louse <- readLouse >>= runExceptional
        let allBugs = louseBugs louse
        pure (Success (T.unlines (fmap (T.take 8)
                                       (M.keys (case x of
@@ -182,68 +192,66 @@ instance MonadIO m => SelectGet m BugsQuery Text where
                                                    M.filter bugOpen allBugs)))))
 
   
-instance MonadIO m => SelectGet m AboutQuery Text where
+instance SelectGet IO AboutQuery Text where
   selectGet AQLicense =
-    liftIO (fmap Success (readDataFileText "LICENSE"))
+    fmap Success (readDataFileText "LICENSE")
   selectGet AQVersion =
     return (Success (mappend (T.pack (showVersion version)) "\n"))
   selectGet AQTutorial =
-    liftIO (fmap Success (readDataFileText "TUTORIAL.md"))
+    fmap Success (readDataFileText "TUTORIAL.md")
   selectGet AQSelectors =
-    pure (Success (unpackSelectors
-                     (do selectorPair <- selectorList
-                         case selectorPair of
-                           Pair s _ -> return s
-                           NullPair s -> return s)))
+    return (Success (unpackSelectors
+                       (do selectorPair <- selectorList
+                           case selectorPair of
+                             Pair s _ -> return s
+                             NullPair s -> return s)))
   selectGet x =
     fail (mconcat ["You can't get ",show x," yet"])
 
-instance MonadIO m => SelectGet m ConfigQuery Text where
+instance SelectGet IO ConfigQuery Text where
   selectGet (CQWhoami x) = selectGet x
 
-instance MonadIO m => SelectSet m ConfigQuery Text where
+instance SelectSet IO ConfigQuery Text where
   selectSet (CQWhoami (Just x)) = selectSet x
   selectSet (CQWhoami Nothing) =
     fail "You can't set your entire identity (yet). I'm working on it, though."
 
-instance MonadIO m => SelectGet m (Maybe WhoamiQuery) Text where
+instance SelectGet IO (Maybe WhoamiQuery) Text where
   selectGet x =
-    do lc <- liftIO readLouseConfig
-       return (return (case whoami lc of
-                         Anonymous -> "Anonymous"
-                         Person n e ->
-                           case x of
-                             Nothing ->
-                               TE.decodeUtf8 (encode (Person n e))
-                             Just WQName -> n
-                             Just WQEmail -> e))
-  
-instance MonadIO m => SelectSet m WhoamiQuery Text where
+    do lc <- readLouseConfig
+       return (Success (case whoami lc of
+                          Anonymous -> "Anonymous"
+                          Person n e ->
+                            case x of
+                              Nothing ->
+                                TE.decodeUtf8 (encode (Person n e))
+                              Just WQName -> n
+                              Just WQEmail -> e))
+
+instance SelectSet IO WhoamiQuery Text where
   selectSet WQName newName =
-    do c@(LouseConfig oldPerson) <- liftIO readLouseConfig
+    do c@(LouseConfig oldPerson) <- readLouseConfig
        if (T.toLower newName) ==
           "anonymous"
-          then liftIO (writeLouseConfig (LouseConfig Anonymous))
-          else liftIO (case oldPerson of
-                         Person n e ->
-                           writeLouseConfig
-                             (c {whoami =
-                                   Person newName e})
-                         Anonymous ->
-                           writeLouseConfig
-                             (c {whoami =
-                                   Person newName mempty}))
-  selectSet WQEmail newEmail =
-    liftIO (do c@(LouseConfig oldPerson) <- readLouseConfig
-               case oldPerson of
+          then writeLouseConfig (LouseConfig Anonymous)
+          else case oldPerson of
                  Person n e ->
                    writeLouseConfig
                      (c {whoami =
-                           Person n newEmail})
+                           Person newName e})
                  Anonymous ->
                    writeLouseConfig
                      (c {whoami =
-                           Person mempty newEmail}))
+                           Person newName mempty})
+  selectSet WQEmail newEmail =
+    do c@(LouseConfig oldPerson) <- readLouseConfig
+       case oldPerson of
+         Person n e ->
+           writeLouseConfig
+             (c {whoami = Person n newEmail})
+         Anonymous ->
+           writeLouseConfig
+             (c {whoami = Person mempty newEmail}) 
 
 
 -- This is the old version of 'select'
