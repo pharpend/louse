@@ -26,6 +26,7 @@
 
 module Data.Louse.Bugs where
 
+import Control.Exceptional
 import Control.Monad (mzero)
 import qualified Data.ByteString.Char8 as Bsc
 import Data.Louse.DataFiles
@@ -39,6 +40,8 @@ import qualified Data.Text as T
 import Data.Text.Encoding (decodeUtf8)
 import Data.Yaml
 import System.Directory (removeFile)
+import System.Exit
+import System.IO
 import Text.Editor
 
 -- For reference:
@@ -80,8 +83,14 @@ commentOnBug :: FilePath
              -> T.Text                     -- ^The actual comment text
              -> IO ()
 commentOnBug pwd bugid personid comment =
-  do let bugsPath =
-           (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
+  do bugs_ <- readBugsFromErr pwd
+     (key,bug) <-
+       case lookupAbbreviatedKeyInMap bugs_ bugid of
+         Just x -> return x
+         Nothing ->
+           fail "I couldn't find any bug with that key."
+     let bugsPath =
+           (mconcat [pwd,_bugs_dir,T.unpack key,".yaml"])
      bug <- errDecodeFile bugsPath
      commentTime <- getCurrentTime
      let nc =
@@ -106,10 +115,24 @@ editBug pwd bugid =
 -- |Delete a bug from the list of bugs. 
 deleteBug :: FilePath -> BugId -> IO ()
 deleteBug pwd bugid =
-  do let bugPath =
-           (mconcat [pwd,_bugs_dir,T.unpack bugid,".yaml"])
-     removeFile bugPath
-     putStrLn (mappend "Deleted bug " (show bugid))
+  do bugs <- readBugsFromErr pwd
+     (key,bug) <-
+       case lookupAbbreviatedKeyInMap bugs bugid of
+         Just x -> return x
+         Nothing ->
+           fail "I couldn't find any bug with that key."
+     hSetBuffering stdout NoBuffering
+     putStr (mconcat ["Are you sure you want to delete bug "
+                     ,(T.unpack key)
+                     ,"?\nAnswer with all-caps \"YES\": "])
+      
+     response <- getLine
+     if |  response /= "YES" -> exitSuccess
+        |  otherwise ->
+          do let bugPath =
+                   (mconcat [pwd,_bugs_dir,T.unpack key,".yaml"])
+             removeFile bugPath
+             putStrLn (mappend "Deleted bug " (show bugid))
 
 -- |Intermediate type for new bugs
 data NewBug =
