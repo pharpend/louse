@@ -175,11 +175,49 @@ instance FromJSON LouseConfig where
 instance ToJSON LouseConfig where
   toJSON (LouseConfig v) = toJSON v
 
-class Select a where
+class Monad m => Select m a where
+  -- |Given a text query, like @foo.bar.baz@, try to match it to a pure
+  -- value. If we can't, fail (but do so purely, via the 'Exceptional'
+  -- type from "Control.Exceptional").
+  -- 
+  -- You can use this however you want. The way I use it in louse is
+  -- something somewhat like the following:
+  -- 
+  -- > select textValue =
+  -- >   -- look up the text value in a theoretical 'HashMap' matc
+  -- >   case H.lookup textValue selectorMap of
+  -- >        -- If we have a match in the hashmap, just return it
+  -- >        Just pureValue -> Success pureValue
+  -- >        -- Otherwise, grab the first selector, the key, restof.          
+  -- >        Nothing ->
+  -- >          let (firstSelector,key,restOf) =
+  -- >                   (T.takeWhile (/= '[') q
+  -- >                   ,T.takeWhile (/= ']')
+  -- >                                (T.drop 1 (T.dropWhile (/= '[') q))
+  -- >                   ,T.drop 1 (T.dropWhile (/= ']') q))
+  -- >          in selectKey firstSelector key restOf
   select :: Text -> Exceptional a
 
-class (Monad m) => SelectGet m a b  where
+  -- |In louse, 'select' will call this function when given a query like
+  --
+  -- > foo.bar[baz].quux.quuz
+  --
+  -- > firstSelector = "foo.bar"
+  -- > key = "baz"
+  -- > restOf = ".quux.quuz"
+  -- 
+  -- @firstSelector@, @key@, and @restOf@ correspond to the first
+  -- through third arguments to this function, respectively.
+  -- 
+  -- Again, you can pull this out and use it in your code however you
+  -- want.
+  selectKey :: Text              -- ^The original selector
+            -> Text              -- ^The key
+            -> Text              -- ^The rest of the expression
+            -> m (Exceptional a) -- ^The result
+
+class Monad m => SelectGet m a b  where
   selectGet :: a -> m (Exceptional b)
 
-class (Monad m) => SelectSet m a b  where
+class Monad m => SelectSet m a b  where
   selectSet :: a -> b -> m ()
