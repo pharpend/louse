@@ -60,12 +60,17 @@ unpackSelectors selectors =
                              4
                 ,spacifyText (T.pack (show (hasSet selector)))
                              4]
-  in T.unlines (mappend [mconcat [spacifyText "SELECTOR"
-                                              (longestOf name)
-                                 ,spacifyText "DESCRIPTION"
-                                              (longestOf description)
-                                 ,spacifyText "GET" 4
-                                 ,spacifyText "SET" 4]
-                        ,T.replicate 80 "="]
-                        (sort (do r <- selectors
-                                  return (spacify r))))
+      headers =
+        mconcat [spacifyText "SELECTOR"
+                             (longestOf name)
+                ,spacifyText "DESCRIPTION"
+                             (longestOf description)
+                ,spacifyText "GET" 4
+                ,spacifyText "SET" 4]
+      prettySelectors =
+        (sort (do r <- selectors
+                  return (spacify r)))
+  in T.unlines (mappend [headers
+                        ,T.replicate (last (sort (fmap T.length prettySelectors)))
+                                     "-"]
+                        prettySelectors)
