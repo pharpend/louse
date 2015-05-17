@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -29,26 +31,13 @@ module Data.Louse.Read where
 import           Control.Exception
 import           Control.Exceptional
 import           Control.Monad
-import           Control.Monad.Trans.Resource
-import qualified Data.ByteString as Bs
-import qualified Data.ByteString.Lazy as Bl
-import           Data.Conduit
-import           Data.Conduit.Attoparsec
-import           Data.Conduit.Binary hiding (drop)
 import           Data.Louse.DataFiles
-import           Data.Monoid
 import qualified Data.Map as M
-import           Data.List.Utils (split,startswith)
+import           Data.List.Utils (startswith)
 import           Data.Louse.Types
-import           Data.Ratio ((%))
 import qualified Data.Text as T
 import           Data.Yaml
-import           Safe
 import           System.Directory
-import           System.Exit (exitFailure)
-import           System.IO (hPutStrLn, stderr)
-import           System.IO.Error
-import           Text.Editor
 
 -- |Read the 'Louse' from the current directory
 -- 
@@ -138,9 +127,9 @@ writeLouseConfig cfg =
      configPath <- _config_path
      encodeFile configPath cfg
 
-lookupShortKey :: Louse -> T.Text -> Maybe Bug
-lookupShortKey louse k =
-  let longKeys = M.keys (louseBugs louse)
+lookupAbbreviatedKeyInMap :: (M.Map T.Text x) -> T.Text -> Maybe (T.Text,x)
+lookupAbbreviatedKeyInMap map_ k =
+  let longKeys = M.keys map_
       shortKeyLength = T.length k
       shortKeysToLongKeysMap =
         M.fromList
@@ -150,4 +139,12 @@ lookupShortKey louse k =
               return (short_,long_))
   in bindr (M.lookup k shortKeysToLongKeysMap)
            (\longKey ->
-              M.lookup longKey (louseBugs louse))
+              fmap (longKey,)
+                   (M.lookup longKey map_))
+
+lookupShortKey :: Louse -> T.Text -> Maybe Bug
+lookupShortKey louse k =
+  case lookupAbbreviatedKeyInMap (louseBugs louse)
+                                 k of
+    Nothing -> Nothing
+    Just (_,bug) -> Just bug
