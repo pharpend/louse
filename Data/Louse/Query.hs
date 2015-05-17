@@ -128,7 +128,7 @@ splitToPieces q = ( T.takeWhile (/= '{') q
                   , T.takeWhile
                         (/= '}')
                         (T.drop 1 (T.dropWhile (/= '{') q))
-                  , T.drop 1 (T.dropWhile (/= '}') q))
+                  , T.drop 2 (T.dropWhile (/= '}') q))
 
 selectorMap :: HashMap Text SelectorPair
 selectorMap =
@@ -291,7 +291,7 @@ instance SelectGet IO BugsQuery Text where
                                   ,"Here's the full error message:\n    "
                                   ,err])
                   Success s -> return s)
-       let successList = return . Success . T.unwords
+       let successList = return . Success . T.unlines
        case query of
          BQSuchThat STQAll ->
            successList (M.keys (louseBugs louse))
