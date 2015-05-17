@@ -137,3 +137,18 @@ writeLouseConfig cfg =
      createDirectoryIfMissing True dataDir
      configPath <- _config_path
      encodeFile configPath cfg
+
+lookupShortKey :: Louse -> Text -> Maybe Bug
+lookupShortKey louse k =
+      let longKeys =
+             M.keys (louseBugs louse)
+           shortKeyLength = T.length k
+           shortKeysToLongKeysMap =
+             M.fromList
+               (do long_ <- longKeys
+                   let short_ =
+                         T.take shortKeyLength long_
+                   return (short_,long_))
+           longKey =
+             M.lookup k shortKeysToLongKeysMap
+       in M.lookup longKey (louseBugs louse)

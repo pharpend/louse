@@ -173,30 +173,6 @@ newComment fp bid maybeComment =
      commentOnBug fp bid reporter comment
      putStrLn (mappend "Added comment to bug " (T.unpack bid))
 
--- |This is so users don't have to type the entire 40-character long
--- sequence when running 'louse bug show'
-lookupShortKey :: T.Text -> IO (Maybe Bug)
-lookupShortKey k =
-  do louse <-
-       readLouse >>=
-       \case
-         Failure err ->
-           fail (unlines ["I wasn't able to read a louse repo from the current directory."
-                         ,"Are you sure it exists?"
-                         ,"The error message is:"
-                         ,err])
-         Success l -> pure l
-     let longKeys = M.keys (louseBugs louse)
-         shortKeyLength = T.length k
-         shortKeysToLongKeysMap =
-           M.fromList
-             (do long_ <- longKeys
-                 let short_ =
-                       T.take shortKeyLength long_
-                 return (short_,long_))
-     pure ((>>=) (M.lookup k shortKeysToLongKeysMap)
-                 (\longKey ->
-                    M.lookup longKey (louseBugs louse)))
 
 -- |Print out information about a bug to the terminal.
 showBug :: T.Text -- ^The optionally abbreviated bug id
