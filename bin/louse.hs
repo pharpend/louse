@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -57,15 +60,15 @@ runArgs (Args workdir stdin cmd) =
           Query y ->
             case y of
               Get a ->
-                do selection <-
-                     runExceptional (select (T.pack a)) :: IO Query
-                   decoded <-
-                     (runExceptional =<<
-                      (selectGet selection)) :: IO Text
+                do (selection :: Query) <-
+                     select (T.pack a) >>=
+                     runExceptional
+                   decoded <- selectGet selection >>= runExceptional
                    printOrPage decoded
               Set a b ->
-                do selection <-
-                     runExceptional (select (T.pack a)) :: IO Query
+                do (selection :: Query) <-
+                     select (T.pack a) >>=
+                     runExceptional
                    selectSet selection (T.pack (head b))
               Lookup _ _ -> failNotImplemented
           Status -> putStr =<< statusStr workingDirectory
