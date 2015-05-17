@@ -76,9 +76,7 @@ library
     , unordered-containers
     , yaml ==0.8.*
   if flag(dev)
-    ghc-options:        -O0 -Wall
-  else
-    ghc-options:        -O2
+    ghc-options:        --disable-optimization -Wall
 
 executable louse
     hs-source-dirs:     bin
