@@ -9,28 +9,72 @@ louse is licensed under the
 [GNU General Public License, version 3](https://gnu.org/licenses/gpl). A
 copy of the license can be found in the LICENSE file.
 
-## Installation and Usage
+## Installation
 
-Louse is written in Haskell. As a result, you need to [install
-Haskell](https://github.com/bitemyapp/learnhaskell/blob/master/install.md)
-first.
+This varies from OS to OS. In general, you need to
+[install Haskell](https://github.com/bitemyapp/learnhaskell/blob/master/install.md)
+first, then clone the repo, and install.
 
-You can use `cabal` to install this
-
-    git clone https://github.com/pharpend/louse.git
+    git clone git://github.com/pharpend/louse.git
     cd louse
     cabal install
 
-I've included a Makefile and configure script so that UNIX users can
-have the satisfaction of typing
+### Arch Linux
 
-    ./configure && make && sudo make install
+    # pacman -S git ghc cabal-install
+    $ cabal update
+    $ cabal install -j cabal-install alex happy
 
-instead of `cabal install`
+At this point, you'll want to add `$HOME/.cabal/bin` to your `$PATH`.
+
+    $ git clone git://github.com/pharpend/louse.git
+    $ cd louse
+    $ cabal install -j
+
+It takes forever, so I apologize in advance. I'm an Arch user, so I
+should figure out how to put louse in the AUR.
+
+### FreeBSD
+
+The FreeBSD people have some weird vendetta against the GCC people, so
+GCC isn't included in the base system. GHC, the Haskell compiler, needs
+to use a C compiler to do some FFI voodoo. Thus, you need to specify
+that `clang` is the C compiler, and not `gcc`.
+
+    # pkg install ghc hs-cabal-install
+    $ cabal update
+    $ cabal install -j cabal-install alex happy
+    
+At this point, you'll want to add `$HOME/.cabal/bin` to your `$PATH`.
+
+    $ git clone git://github.com/pharpend/louse.git
+    $ cd louse
+    $ cabal install -j --with-gcc=clang
+
+It takes forever, I know. I'm not really a FreeBSD user, so I don't know
+how to make binary distributions for FreeBSD. Sorry.
+
+## Usage
+
+Here's the tl;dr:
+
+* To initialize louse in a repository: `louse init`
+* To add a bug: `louse ab`
+* To list the bugs in the current repository: `louse get repo.bugs`
+* To inspect a bug whose ident is `abcdef`: `louse get repo.bugs{abcdef}`
+* To comment on a bug whose ident is `abcdef`: `louse cob abcdef`
+* To close a bug whose ident is `abcdef`: `louse set repo.bugs{abcdef}.open False`
+
+The rest of the selectors can be found via:
+
+    louse get about.selectors
 
 For a tutorial, you can see the [TUTORIAL.md file](TUTORIAL.md), or run
 `louse get about.tutorial`. For a brief listing of the available
-commands, you can run `louse --help`.
+commands, you can run `louse --help`. The option-parsing library, which
+generates the `--help` stuff, is separate from the selector parsing. I'm
+at the moment too lazy to figure out how to list the selectors in the
+--help menu.
 
 ## Inspiration
 
