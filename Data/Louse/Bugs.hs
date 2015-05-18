@@ -63,6 +63,84 @@ import Data.Monoid
 --                }
 --   deriving (Eq, Show)
 
+data BoolPair = BP Bool Text
+
+-- |Make sure the bug synopsis is valid
+-- 
+-- If it is, just send back the text. Otherwise, return an error message.
+validateSynopsis :: Text -> Exceptional Text
+validateSynopsis t =
+  let conds =
+        [BP (t == "A short synopsis goes here") "You have to change the synopsis."
+        ,BP (T.strip t == mempty) "You can't leave the synopsis empty"
+        ,BP (T.isInfixOf "\r" t) "You can't use stupid Windows newline characters (\\r)."
+        ,BP (T.isInfixOf "\n" t) "You can't use Linux newline characters either (\\n)."
+        ,BP (T.length t > 64) "The synopsis can't be longer than 64 characters."]
+      errorMessages =
+        do BP condition error <- conds
+           if condition
+              then return error
+              else mzero
+  in case errorMessages of
+       [] -> return t
+       messages ->
+         fail (T.unpack (T.unlines messages))
+       
+
+-- |Make sure the bug description is valid
+-- 
+-- If it is, just send back the text. Otherwise, return an error message.
+validateDescription :: Text -> Exceptional Text
+validateDescription t =
+  let defaultDescription =
+        T.strip (T.unlines ["A much longer description of the bug goes here."
+                           ,""
+                           ,"This portion of the bug is usually parsed with Markdown syntax -"
+                           ,"<https://daringfireball.net/projects/markdown/syntax>."
+                           ,""
+                           ,"This entire document is parsed using YAML syntax -"
+                           ,"<https://en.wikipedia.org/wiki/Yaml>."
+                           ,""
+                           ,"This portion of the text is limited to 8192 characters, including spaces and"
+                           ,"line breaks. These here lines are broken at 80 characeters for"
+                           ,"readability. You should do the same thing. If every line is 80 characters"
+                           ,"long, then you can have about 100 lines before you run out of space. So, you"
+                           ,"have plenty of space. Note that most lines are not 80 characters long, it's"
+                           ,"just that 80 characters is the **maximum**."])
+      conds =
+        [BP (T.strip t == defaultDescription) "You have to change the description."
+        ,BP (T.strip t == mempty) "You can't have an empty description."
+        ,BP (T.isInfixOf "\r" t) "You can't use stupid Windows newline characters (\\r)."
+        ,BP ((T.length t < 64) ||
+             (T.length t > 8192))
+            "The synopsis can't be less than 64 characters or less than 8192."]
+      errorMessages =
+        do BP condition error <- conds
+           if condition
+              then return error
+              else mzero
+  in case errorMessages of
+       [] -> return t
+       messages ->
+         fail (T.unpack (T.unlines messages))
+
+-- |Make sure a comment is valid
+-- 
+-- If it is, just send back the text. Otherwise, return an error message.
+validateComment :: Text -> Exceptional Text
+validateComment t =
+  let conds =
+        [BP (T.strip t == mempty) "You have to add a comment"
+        ,BP (T.isInfixOf "\r" t) "You can't use non-standard Windows newlines (\\r)."]
+      errorMessages =
+        do BP condition error <- conds
+           if condition
+              then return error
+              else mzero
+  in case errorMessages of
+       [] -> return t
+       messages ->
+         fail (T.unpack (T.unlines messages))
 
 -- |Add a bug to the current project. This doesn't return a bug. It
 -- instead writes the bug to a file, and returns the 'BugId' pertaining
@@ -74,10 +152,14 @@ addBug :: FilePath
        -> IO BugId       -- ^Resulting 'BugId'
 addBug pwd person title description =
   do reportTime <- getCurrentTime
+     title_ <-
+       runExceptional (validateSynopsis title)
+     description_ <-
+       runExceptional (validateDescription title)
      let bugIsOpen = True
          comments = mempty
          nb =
-           Bug person reportTime title description bugIsOpen comments
+           Bug person reportTime title_ description_ bugIsOpen comments
      bugid <- fmap Bsc.unpack randomIdent
      encodeFile (mconcat [pwd,_bugs_dir,bugid,".yaml"])
                 nb
@@ -90,7 +172,9 @@ commentOnBug :: FilePath
              -> T.Text                     -- ^The actual comment text
              -> IO ()
 commentOnBug pwd bugid personid comment =
-  do bugs_ <- readBugsFromErr pwd
+  do comment_ <-
+       runExceptional (validateComment comment)
+     bugs_ <- readBugsFromErr pwd
      (key,bug) <-
        case lookupAbbreviatedKeyInMap bugs_ bugid of
          Just x -> return x
@@ -101,7 +185,7 @@ commentOnBug pwd bugid personid comment =
      bug <- errDecodeFile bugsPath
      commentTime <- getCurrentTime
      let nc =
-           Comment personid commentTime comment
+           Comment personid commentTime comment_
      (encodeFile
         bugsPath
         (bug {bugComments =
