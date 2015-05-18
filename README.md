@@ -103,7 +103,7 @@ These are liable to change, but this is what I have so far.
 At this point, I should be comfortable using louse, instead of the
 current walking-on-egg-shells approach.
 
-1.  The following commands need to be implemented:
+1.  ~~The following commands need to be implemented:~~
     
     * ~~`louse bug add`~~
     * ~~`louse bug close`~~
