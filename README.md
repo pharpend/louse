@@ -73,7 +73,7 @@ current walking-on-egg-shells approach.
     query system.  The query system is a lot more flexible, so we're
     using that.
 
-2. The following commands need to be removed:
+2. ~~The following commands need to be removed:~~
    
    * ~~`louse ppl`~~
    * ~~`louse schemata`~~
@@ -98,11 +98,11 @@ current walking-on-egg-shells approach.
 6.  Add support for common features like relations, tagging, and
     attachments.
 
+7. Add support for GitHub issues API.
 ### 0.2
 
 Those which exist:
 
-* Add support for GitHub issues API
 * Add support for BitBucket issues API
 * Add support for git.gnu.io issues API
 * Add support for GitLab.com issues API
