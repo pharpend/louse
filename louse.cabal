@@ -54,7 +54,7 @@ library
                         Data.Louse.Types
                         Paths_louse
   build-depends:
-      base ==4.8.*
+      base ==4.*
     , base16-bytestring
     , bytestring
     , conduit >=1.2.3
@@ -80,7 +80,7 @@ library
 
 executable louse
     hs-source-dirs:     bin
-    build-depends:      base >=4.8
+    build-depends:      base
                       , bytestring
                       , directory
                       , exceptional
