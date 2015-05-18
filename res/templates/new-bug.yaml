@@ -1,2 +1,20 @@
-synopsis: A short synopsis of the bug.
-description: A longer description goes here.
+# A short (<= 64 chars) synopsis of the bug
+synopsis: "A short synopsis goes here"
+
+# A longer (<= 8192 chars) description of the bug
+# 
+description: >-
+  A much longer description of the bug goes here.
+
+  This portion of the bug is usually parsed with Markdown syntax -
+  <https://daringfireball.net/projects/markdown/syntax>.
+
+  This entire document is parsed using YAML syntax -
+  <https://en.wikipedia.org/wiki/Yaml>.
+
+  This portion of the text is limited to 8192 characters, including spaces and
+  line breaks. These here lines are broken at 80 characeters for
+  readability. You should do the same thing. If every line is 80 characters
+  long, then you can have about 100 lines before you run out of space. So, you
+  have plenty of space. Note that most lines are not 80 characters long, it's
+  just that 80 characters is the **maximum**.
