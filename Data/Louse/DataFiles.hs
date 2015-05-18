@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE NoOverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 
@@ -43,6 +44,11 @@ import qualified Data.Text.IO as TIO
 import           Data.Yaml
 import           Paths_louse
 import           System.Directory (getAppUserDataDirectory)
+
+
+#if (!MIN_VERSION_base (4,8,0))
+import           Control.Applicative
+#endif
 
 -- |These are all magic values of the paths in the louse hierarchy.
 _app_name :: FilePath

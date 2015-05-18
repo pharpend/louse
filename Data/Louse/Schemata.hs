@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -38,6 +40,11 @@ import           Paths_louse (getDataDir)
 import           System.Directory (getDirectoryContents)
 import           System.IO (stdout)
 import           System.IO.Error (isDoesNotExistError)
+
+#if (!MIN_VERSION_base (4,8,0))
+import Control.Applicative
+import Data.Monoid
+#endif
 
 -- |The list of available schemata
 --

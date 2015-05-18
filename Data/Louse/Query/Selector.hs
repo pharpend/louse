@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -32,6 +34,9 @@
 module Data.Louse.Query.Selector where
 
 import Data.List
+#if (!MIN_VERSION_base (4,8,0))
+import Data.Monoid
+#endif
 import Data.Text (Text)
 import qualified Data.Text as T
 

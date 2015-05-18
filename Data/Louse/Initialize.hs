@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -40,6 +42,11 @@ import qualified Data.Map as M
 import           Data.Monoid ((<>))
 import           System.Directory
 import           System.IO.Error
+
+#if (!MIN_VERSION_base (4,8,0))
+import Control.Applicative
+import Data.Monoid
+#endif
 
 initInDir :: FilePath -> Bool -> IO ()
 initInDir dir force =

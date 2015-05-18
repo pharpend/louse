@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TupleSections #-}
 
 -- louse - distributed bugtracker
@@ -38,6 +39,11 @@ import           Data.Louse.Types
 import qualified Data.Text as T
 import           Data.Yaml
 import           System.Directory
+
+#if (!MIN_VERSION_base (4,8,0))
+import Control.Applicative
+import Data.Monoid
+#endif
 
 -- |Read the 'Louse' from the current directory
 -- 

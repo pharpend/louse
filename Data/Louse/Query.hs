@@ -1,6 +1,6 @@
-{-# LANGUAGE FlexibleInstances
-           , MultiParamTypeClasses 
-    #-}
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 
 -- louse - distributed bugtracker
@@ -48,6 +48,11 @@ import Paths_louse
 import Data.Version
 import Data.Yaml
 import Safe
+
+#if (!MIN_VERSION_base (4,8,0))
+import Control.Applicative
+import Data.Monoid
+#endif
 
 data Query
   = QAbout {qAboutQuery :: Maybe AboutQuery}

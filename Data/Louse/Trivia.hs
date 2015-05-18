@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 
 -- louse - distributed bugtracker
@@ -28,6 +29,10 @@
 -- This has stuff like the license and copyright
 
 module Data.Louse.Trivia where
+
+#if (!MIN_VERSION_base (4,8,0))
+import Control.Applicative
+#endif
 
 import Control.Monad.Trans.Resource (ResourceT, runResourceT)
 import Crypto.Random

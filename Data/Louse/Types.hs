@@ -26,7 +26,7 @@
 
 module Data.Louse.Types where
 
-import           Control.Applicative ((<|>))
+import           Control.Applicative
 import           Control.Exceptional
 import           Control.Monad
 import qualified Data.Map.Lazy as M

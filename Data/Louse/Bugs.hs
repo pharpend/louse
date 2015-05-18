@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -43,6 +45,11 @@ import System.Directory (removeFile)
 import System.Exit
 import System.IO
 import Text.Editor
+
+#if (!MIN_VERSION_base (4,8,0))
+import Control.Applicative
+import Data.Monoid
+#endif
 
 -- For reference:
 -- 

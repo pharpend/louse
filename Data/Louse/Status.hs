@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- louse - distributed bugtracker
 -- Copyright (C) 2015 Peter Harpending
 -- 
@@ -34,6 +36,11 @@ import System.Exit
 import System.IO
 import System.IO.Error
 
+#if (!MIN_VERSION_base (4,8,0))
+import Control.Applicative
+import Data.Monoid
+#endif
+
 -- |Get the status
 statusStr :: FilePath -> IO String
 statusStr dir =
@@ -60,7 +67,7 @@ statusStr dir =
      let bugs = louseBugs louse
          nTotalBugs = M.size bugs
          nOpenBugs =
-           length (M.filter bugOpen bugs)
+           M.size (M.filter bugOpen bugs)
          ratioOf a b = round (a % b)
          closureRateStr
            | nTotalBugs == 0 = mempty
