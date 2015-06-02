@@ -1,9 +1,0 @@
-/.cabal-sandbox/
-/cabal.sandbox.config
-/dist/
-/examples/
-/bin/louse
-/bin/louse.hi
-/bin/louse.o
-.louse
-*\#*

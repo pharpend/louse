@@ -1,6 +1,0 @@
-{
-  "_comment": "All of these fields are optional. Delete the ones you don't want.",
-  "project-name": "my-stupid-project",
-  "project-description": "This is the place for further description of your project. It can be at most 512 characters.\nIt's usually parsed with [Markdown syntax][1].\n[1]: https://daringfireball.net/projects/markdown/",
-  "project-homepage": "http://mysite.com/foo/bar/baz"
-}
