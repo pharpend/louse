@@ -41,7 +41,7 @@ main :: IO ()
 main =
   hspec (parallel develLouseTests)
 
-develLouseTests :: SpecWith a
+develLouseTests :: SpecWith (Arg Expectation)
 develLouseTests =
   context "Development.Louse" $
   do context "Titles" $
@@ -58,9 +58,12 @@ develLouseTests =
                         fromString (show title))
      context "Descriptions" $
        do specify "mkDescription should return a Failure if given an empty string" $
-            pending
-          specify "Descriptions should fromString & show without loss of data" $
-            pending 
+            shouldThrow (runExceptional (mkDescription ""))
+                        anyException
+          specify "Descriptions should fromString . show without loss of data" $
+            property (\(description :: Description) ->
+                        description ==
+                        fromString (show description))
 
 -- |Used for generating long texts >64 characters for testing
 newtype LongText = LongText Text
@@ -81,3 +84,10 @@ instance Arbitrary Title where
                      64 >= length s &&
                      not (null s))
        runExceptional (mkTitle (T.pack string))
+
+instance Arbitrary Description where
+  arbitrary =
+    do string <-
+         suchThat (arbitrary :: Gen String)
+                  (not . null)
+       runExceptional (mkDescription (T.pack string))
