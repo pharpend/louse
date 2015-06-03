@@ -80,11 +80,14 @@ data Bug =
 -- Title {unTitle = "*** Exception: Title mustn't be empty.
 newtype Title =
   Title {unTitle :: Text}
-  deriving (Eq,Show)
+  deriving (Eq)
 
 -- |Compares by the value of @unTitle@.
 instance Ord Title where
   compare = comparing unTitle
+
+instance Show Title where
+  show = T.unpack . unTitle
 
 -- |Note that this will throw an error if you give it an invalid value.
 instance IsString Title where
@@ -118,14 +121,16 @@ mkTitle t
 -- 
 -- >>> "" :: Description
 -- Description {unDescription = "*** Exception: Description mustn't be empty.
-
 newtype Description =
   Description {unDescription :: Text}
-  deriving (Eq,Show)
+  deriving (Eq)
 
 -- |Compares by the value of 'unDescription'.
 instance Ord Description where
   compare = comparing unDescription
+
+instance Show Description where
+  show = T.unpack . unDescription
 
 -- |Note that this will throw an error if given invalid input.
 instance IsString Description where
@@ -135,8 +140,7 @@ instance IsString Description where
       Success bar -> bar
 
 -- |Attempt to make a description from a pure 'Text' value. This returns
--- an error if the description is empty, or if it's longer than 8192
--- characters.
+-- an error if the description is empty.
 mkDescription :: Text -> Exceptional Description
 mkDescription t
   | T.null t = fail "Description mustn't be empty."
