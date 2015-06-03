@@ -45,11 +45,15 @@ executable louse
   build-depends:       base ==4.*
                       ,louse
 
-test-suite louse-tests
+test-suite tests
   hs-source-dirs:      test
   default-language:    Haskell2010
+  other-extensions:    OverloadedStrings
   type:                exitcode-stdio-1.0
   main-is:             Spec.hs
   build-depends:       base ==4.*
+                      ,exceptional
                       ,hspec
                       ,louse
+                      ,QuickCheck
+                      ,text

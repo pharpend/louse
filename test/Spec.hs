@@ -1,3 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- louse - distributed bugtracker
 -- Copyright (c) 2015, Peter Harpending.
 -- 
@@ -25,6 +28,51 @@
 
 module Main where
 
+import Control.Exceptional
+import Data.String (fromString)
+import Data.Text (Text)
+import qualified Data.Text as T
+import Development.Louse
+import Test.Hspec
+import Test.QuickCheck
+
 
 main :: IO ()
-main = return ()
+main =
+  hspec (parallel (do context "Development.Louse"
+                              (do context "Titles"
+                                          (do specify "mkTitle should return a Failure if given an empty string"
+                                                      (shouldThrow (runExceptional (mkTitle ""))
+                                                                   anyException)
+                                              specify "mkTitle should return a Failure if given a string > 64 chars long."
+                                                      (property (\(LongText t) ->
+                                                                   shouldThrow (runExceptional (mkTitle t))
+                                                                               anyException))
+                                              specify "Titles should fromString . show without loss of data"
+                                                      (property (\(title :: Title) ->
+                                                                   title ==
+                                                                   fromString (show title))))
+                                  context "Descriptions"
+                                          (do specify "mkDescription should return a Failure if given an empty string" $
+                                                pending
+                                              specify "Descriptions should fromString & show without loss of data" $
+                                                pending))))
+
+-- |Used for generating long texts >64 characters for testing
+newtype LongText = LongText Text
+  deriving (Eq, Show)
+
+instance Arbitrary LongText where
+  arbitrary =
+    do longString <-
+         suchThat (arbitrary :: Gen String)
+                  (\s -> 64 < length s)
+       return (LongText (T.pack longString))
+       
+instance Arbitrary Title where
+  arbitrary =
+    do string <-
+         suchThat (arbitrary :: Gen String)
+                  (\s ->
+                     and [64 >= length s,not (null s)])
+       runExceptional (mkTitle (T.pack string))
