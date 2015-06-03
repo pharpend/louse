@@ -38,7 +38,8 @@ module Development.Louse
   ,unDescription
    -- * Converting to & from bugs
   ,ToBug(..)
-  ,FromBug(..))
+  ,FromBug(..)
+  ,module Control.Exceptional)
   where
 
 import Control.Exceptional
