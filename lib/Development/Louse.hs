@@ -77,7 +77,9 @@ data Bug =
 -- Note that if you give invalid input, then there will be an error:
 -- 
 -- >>> "" :: Title
--- Title {unTitle = "*** Exception: Title mustn't be empty.
+-- *** Exception: Title mustn't be empty.
+-- >>> fromString (mconcat (replicate 50 "foo")) :: Title
+-- *** Exception: Title mustn't be >64 characters long.
 newtype Title =
   Title {unTitle :: Text}
   deriving (Eq)
@@ -124,7 +126,7 @@ mkTitle t
 -- If you give invalid input, then there will be an error:
 -- 
 -- >>> "" :: Description
--- Description {unDescription = "*** Exception: Description mustn't be empty.
+-- *** Exception: Description mustn't be empty.
 newtype Description =
   Description {unDescription :: Text}
   deriving (Eq)
