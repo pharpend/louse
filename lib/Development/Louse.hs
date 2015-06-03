@@ -98,10 +98,6 @@ instance IsString Title where
       Failure err -> error err
       Success s -> s
 
--- |Note that this will throw an error if you give it an invalid value.
-instance Read Title where
-  read = fromString
-
 -- |Attempt to make a title, returning an error message if the length is
 -- longer than 64 characters, or if the title is empty.
 mkTitle :: Text -> Exceptional Title
@@ -144,10 +140,6 @@ instance IsString Description where
     case mkDescription (T.pack s) of
       Failure foo -> error foo
       Success bar -> bar
-
--- |Note that this will throw an error if given invalid input.
-instance Read Description where
-  read = fromString
 
 -- |Attempt to make a description from a pure 'Text' value. This returns
 -- an error if the description is empty.
