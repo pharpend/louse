@@ -28,8 +28,10 @@
 -- 
 
 module Development.Louse
-  ( -- * Creating pure-ish bugs
-   Bug(..)
+  (-- * Re-exported for convenience
+   module Control.Exceptional
+   -- * Creating pure-ish bugs
+  ,Bug(..)
   ,Title
   ,mkTitle
   ,unTitle
@@ -38,8 +40,7 @@ module Development.Louse
   ,unDescription
    -- * Converting to & from bugs
   ,ToBug(..)
-  ,FromBug(..)
-  ,module Control.Exceptional)
+  ,FromBug(..))
   where
 
 import Control.Exceptional
