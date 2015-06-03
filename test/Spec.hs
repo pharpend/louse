@@ -54,16 +54,14 @@ develLouseTests =
                                     anyException)
           specify "Titles should fromString . show without loss of data" $
             property (\(title :: Title) ->
-                        title ==
-                        fromString (show title))
+                        shouldBe (fromString (show title)) title)
      context "Descriptions" $
        do specify "mkDescription should return a Failure if given an empty string" $
             shouldThrow (runExceptional (mkDescription ""))
                         anyException
           specify "Descriptions should fromString . show without loss of data" $
             property (\(description :: Description) ->
-                        description ==
-                        fromString (show description))
+                        shouldBe (fromString (show description)) description)
 
 -- |Used for generating long texts >64 characters for testing
 newtype LongText = LongText Text
