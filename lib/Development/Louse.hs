@@ -1,3 +1,6 @@
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 -- louse - distributed bugtracker
 -- Copyright (c) 2015, Peter Harpending.
 -- 
