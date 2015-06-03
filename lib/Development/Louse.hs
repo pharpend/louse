@@ -49,12 +49,16 @@ import Data.String (IsString(..))
 import Data.Ord (comparing)
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Github.Issues as GH
+import Data.Time
+import Data.Tree
 
 -- |The type for a bug
 data Bug =
   Bug {bugTitle :: Title
-      ,bugDescription :: Description}
+      ,bugDescription :: Description
+      ,bugAuthor :: Author
+      ,bugTime :: UTCTime
+      ,bugComments :: Forest Comment}
   deriving (Eq,Show)
 
 -- |A newtype over 'Text'. Haskell doesn't have dependent types, so I
@@ -136,11 +140,38 @@ instance IsString Description where
 mkDescription :: Text -> Exceptional Description
 mkDescription t
   | T.null t = fail "Description mustn't be empty."
-  | 8192 < T.length t = fail "Description mustn't be >8192 characters long."
   | otherwise = return (Description t)
 
+-- |Type for a person. Just has email and name
+data Person =
+  Person {personName :: Text
+         ,personEmail :: Text}
+  deriving (Eq)
+
+-- | 
+-- >>> Person "Joe Q. Public" "jqp@foo.bar.baz"
+-- Joe Q. Public <jqp@foo.bar.baz>
+-- it :: Person
+instance Show Person where
+  show (Person n e) = T.unpack (mconcat [n," <",e,">"])
+
+-- |Alias for 'Person'
+type Author = Person
+-- |Alias for 'Person'
+type Reporter = Person
+
+-- |The type for a comment
+data Comment =
+  Comment {commentAuthor :: Author
+          ,commentText :: CommentText}
+  deriving (Eq,Show)
+
+-- |Comment text has the same requirements as a 'Description', so alias
+-- the two:
+type CommentText = Description
+
 -- |Typeclass to convert something to a 'Bug'
-class ToBug a where
+class ToBug a  where
   toBug :: a -> Bug
   
 -- |'Bug' is trivially an instance of 'ToBug'
