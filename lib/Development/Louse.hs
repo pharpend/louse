@@ -42,6 +42,9 @@ module Development.Louse
   where
 
 import Control.Exceptional
+#if !(MIN_VERSION_base(4,8,0))
+import Data.Monoid
+#endif
 import Data.String (IsString(..))
 import Data.Ord (comparing)
 import Data.Text (Text)
