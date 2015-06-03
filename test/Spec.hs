@@ -39,24 +39,28 @@ import Test.QuickCheck
 
 main :: IO ()
 main =
-  hspec (parallel (do context "Development.Louse"
-                              (do context "Titles"
-                                          (do specify "mkTitle should return a Failure if given an empty string"
-                                                      (shouldThrow (runExceptional (mkTitle ""))
-                                                                   anyException)
-                                              specify "mkTitle should return a Failure if given a string > 64 chars long."
-                                                      (property (\(LongText t) ->
-                                                                   shouldThrow (runExceptional (mkTitle t))
-                                                                               anyException))
-                                              specify "Titles should fromString . show without loss of data"
-                                                      (property (\(title :: Title) ->
-                                                                   title ==
-                                                                   fromString (show title))))
-                                  context "Descriptions"
-                                          (do specify "mkDescription should return a Failure if given an empty string" $
-                                                pending
-                                              specify "Descriptions should fromString & show without loss of data" $
-                                                pending))))
+  hspec (parallel develLouseTests)
+
+develLouseTests :: SpecWith a
+develLouseTests =
+  context "Development.Louse" $
+  do context "Titles" $
+       do specify "mkTitle should return a Failure if given an empty string" $
+            shouldThrow (runExceptional (mkTitle ""))
+                        anyException
+          specify "mkTitle should return a Failure if given a string > 64 chars long." $
+            property (\(LongText t) ->
+                        shouldThrow (runExceptional (mkTitle t))
+                                    anyException)
+          specify "Titles should fromString . show without loss of data" $
+            property (\(title :: Title) ->
+                        title ==
+                        fromString (show title))
+     context "Descriptions" $
+       do specify "mkDescription should return a Failure if given an empty string" $
+            pending
+          specify "Descriptions should fromString & show without loss of data" $
+            pending 
 
 -- |Used for generating long texts >64 characters for testing
 newtype LongText = LongText Text
@@ -74,5 +78,6 @@ instance Arbitrary Title where
     do string <-
          suchThat (arbitrary :: Gen String)
                   (\s ->
-                     and [64 >= length s,not (null s)])
+                     64 >= length s &&
+                     not (null s))
        runExceptional (mkTitle (T.pack string))
