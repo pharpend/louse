@@ -34,7 +34,9 @@ library
   other-extensions:    CPP
                        OverloadedStrings
   build-depends:       base ==4.*
+                      ,bytestring
                       ,containers
+                      ,cryptohash
                       ,exceptional >=0.1.1
                       ,text
                       ,time
