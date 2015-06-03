@@ -1,5 +1,5 @@
 -- louse - distributed bugtracker
--- Copyright (C) 2015 Peter Harpending
+-- Copyright (c) 2015, Peter Harpending.
 -- 
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 -- | 
 -- Module      : Skel
 -- Description : Short description
--- Copyright   : Copyright (C) 2015 Peter Harpending
+-- Copyright   : Copyright (c) 2015, Peter Harpending.
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
