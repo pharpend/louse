@@ -75,6 +75,7 @@ import Control.Exceptional
 import Crypto.Hash.SHA1
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Base16 as BH
 import Data.Foldable (Foldable(..))
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
@@ -109,7 +110,6 @@ instance FromBug Bug where
 -- |'Bug' is trivially an instance of 'ToBug'
 instance ToBug Bug where
   toBug = id
-
 -- |A newtype over 'Text'. Haskell doesn't have dependent types, so I
 -- have to use a hack called "smart constructors" to make sure 
 -- 
@@ -287,6 +287,17 @@ instance ToForest CommentTree (Author,CommentText) where
          H.toList (unCommentTree commentTree)
        return (Node (auth,txt)
                     (toForest subcomments))
+
+-- |Since: 0.1.0.0
+instance FromForest (Author,CommentText) CommentTree where
+  fromForest forest_ =
+    CommentTree
+      (mconcat (do Node (auth,commentTxt) subcomments <- forest_
+                   let subcommentTree = fromForest subcomments
+                       commentHash =
+                         B16.decode (hash (TE.encodeUtf8 (unCommentText commentTxt)))
+                   return (H.singleton commentHash
+                                       (Comment auth commentTxt subcommentTree))))
 
 -- |Typeclass to convert something to a 'Bug'
 class ToBug a  where

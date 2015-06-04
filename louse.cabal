@@ -36,6 +36,7 @@ library
                        MultiParamTypeClasses
                        OverloadedStrings
   build-depends:       base ==4.*
+                      ,base16-bytestring
                       ,bytestring
                       ,containers
                       ,cryptohash
