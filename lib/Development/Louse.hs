@@ -70,6 +70,11 @@ module Development.Louse
   where
 
 import Control.Exceptional
+import Crypto.Hash.SHA1
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B
+import Data.HashMap.Lazy (HashMap)
+import qualified Data.HashMap.Lazy as H
 #if !(MIN_VERSION_base(4,8,0))
 import Data.Monoid
 #endif
@@ -77,6 +82,7 @@ import Data.String (IsString(..))
 import Data.Ord (comparing)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Tree
 
