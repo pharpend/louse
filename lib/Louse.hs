@@ -37,6 +37,7 @@
 module Louse
   (-- *** Convenience re-exports
    module Control.Exceptional
+  ,sha1
    -- * Creating pure-ish bugs
   ,Bug(..)
    -- *** Bug titles
@@ -298,6 +299,9 @@ instance FromForest (Author,CommentText) CommentTree where
                          BH.encode (hash (TE.encodeUtf8 (unCommentText commentTxt)))
                    return (H.singleton commentHash
                                        (Comment auth commentTxt subcommentTree))))
+
+sha1 :: Text -> Text
+sha1 = TE.decodeUtf8 . BH.encode . hash . TE.encodeUtf8
 
 -- |Typeclass to convert something to a 'Bug'
 class ToBug a  where
