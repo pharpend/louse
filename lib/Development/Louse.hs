@@ -28,21 +28,45 @@
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
+-- This is the top-level module for the louse library. You only need to
+-- import this module, everything else will automatically be
+-- re-exported.
 
 module Development.Louse
-  (-- * Re-exported for convenience
+  (-- *** Convenience re-exports
    module Control.Exceptional
    -- * Creating pure-ish bugs
   ,Bug(..)
+   -- *** Bug titles
   ,Title
   ,mkTitle
   ,unTitle
+   -- *** Bug descriptions
   ,Description
   ,mkDescription
   ,unDescription
+   -- ** People
+  ,Person(..)
+  ,Author
+  ,Reporter
+   -- ** Comments
+  ,Comment(..)
+   -- *** Comment text
+  ,CommentText
+  ,mkCommentText
+  ,unCommentText
+   -- *** Comment trees
+  ,CommentTree
+  ,unCommentTree
    -- * Converting to & from bugs
   ,ToBug(..)
-  ,FromBug(..))
+  ,FromBug(..)
+   -- * Converting to & from trees
+  ,ToTree(..)
+  ,FromTree(..)
+   -- ** Forests are just lists of trees
+  ,ToForest(..)
+  ,FromForest(..))
   where
 
 import Control.Exceptional
