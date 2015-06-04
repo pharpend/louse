@@ -277,8 +277,7 @@ unCommentText = unDescription
 -- 
 -- Since: 0.1.0.0
 newtype CommentTree =
-  CommentTree   -- |Since: 0.1.0.0
-   {unCommentTree :: HashMap ByteString Comment}
+  CommentTree {unCommentTree :: HashMap ByteString Comment}
   deriving (Eq,Show)
   
 -- |Since: 0.1.0.0
