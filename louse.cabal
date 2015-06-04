@@ -32,7 +32,6 @@ library
   default-language:    Haskell2010
   exposed-modules:     Development.Louse
   other-extensions:    CPP
-                       FlexibleContexts
                        FlexibleInstances
                        MultiParamTypeClasses
                        OverloadedStrings
