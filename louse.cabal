@@ -59,8 +59,12 @@ test-suite tests
   type:                exitcode-stdio-1.0
   main-is:             Spec.hs
   build-depends:       base ==4.*
+                      ,base16-bytestring
+                      ,containers
+                      ,cryptohash
                       ,exceptional
                       ,hspec
                       ,louse
+                      ,process >=1.2
                       ,QuickCheck
                       ,text
