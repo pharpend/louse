@@ -95,6 +95,14 @@ instance Ord Title where
 instance Show Title where
   show = T.unpack . unTitle
 
+-- |'Bug' is trivially an instance of 'FromBug'
+instance FromBug Bug where
+  fromBug = id
+
+-- |'Bug' is trivially an instance of 'ToBug'
+instance ToBug Bug where
+  toBug = id
+
 -- |Note that this will throw an error if you give it an invalid value.
 instance IsString Title where
   fromString s =
@@ -184,14 +192,28 @@ type CommentText = Description
 class ToBug a  where
   toBug :: a -> Bug
   
--- |'Bug' is trivially an instance of 'ToBug'
-instance ToBug Bug where
-  toBug = id
-
 -- |Convert something from a 'Bug'
 class FromBug a where
   fromBug :: Bug -> a
 
--- |'Bug' is trivially an instance of 'FromBug'
-instance FromBug Bug where
-  fromBug = id
+-- |Convert a tree of type @a@s to something of type @b@.
+class FromTree a b where
+  fromTree :: Tree a -> b
+
+-- |Convert something of type @a@ to a tree of @b@s.
+class ToTree a b where
+  toTree :: a -> Tree b
+
+-- |Convert a forest of type @a@s to something of type @b@.
+class FromForest a b where
+  fromForest :: Forest a -> b
+
+instance FromTree a b => FromForest a [b] where
+  fromForest = map fromTree
+
+-- |Convert something of type @a@ to a Forest of @b@s.
+class ToForest a b where
+  toForest :: a -> Forest b
+
+instance ToTree a b => ToForest [a] b where
+  toForest = map toTree
