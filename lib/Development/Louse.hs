@@ -92,8 +92,16 @@ data Bug =
       ,bugDescription :: Description
       ,bugAuthor :: Author
       ,bugTime :: UTCTime
-      ,bugComments :: Forest Comment}
+      ,bugComments :: CommentTree}
   deriving (Eq,Show)
+
+-- |'Bug' is trivially an instance of 'FromBug'
+instance FromBug Bug where
+  fromBug = id
+
+-- |'Bug' is trivially an instance of 'ToBug'
+instance ToBug Bug where
+  toBug = id
 
 -- |A newtype over 'Text'. Haskell doesn't have dependent types, so I
 -- have to use a hack called "smart constructors" to make sure 
@@ -124,14 +132,6 @@ instance Ord Title where
 
 instance Show Title where
   show = T.unpack . unTitle
-
--- |'Bug' is trivially an instance of 'FromBug'
-instance FromBug Bug where
-  fromBug = id
-
--- |'Bug' is trivially an instance of 'ToBug'
-instance ToBug Bug where
-  toBug = id
 
 -- |Note that this will throw an error if you give it an invalid value.
 instance IsString Title where
@@ -211,13 +211,30 @@ type Reporter = Person
 -- |The type for a comment
 data Comment =
   Comment {commentAuthor :: Author
-          ,commentText :: CommentText}
+          ,commentText :: CommentText
+          ,subComments :: CommentTree}
   deriving (Eq,Show)
 
 -- |Comment text has the same requirements as a 'Description', so alias
 -- the two:
 type CommentText = Description
+   
+-- |Alias for 'mkDescription'
+mkCommentText :: Text -> Exceptional CommentText
+mkCommentText = mkDescription
 
+-- |Alias for 'unDescription'
+unCommentText :: CommentText -> Text
+unCommentText = unDescription
+
+-- |This is similar to a Tree from containers, except it's implemented
+-- using lazy 'HashMap's.
+-- 
+-- Specifically, this is a newtype over 'HashMap' 'ByteString' 'Comment'. The idea being that the key 
+newtype CommentTree =
+  CommentTree {unCommentTree :: HashMap ByteString Comment}
+  deriving (Eq, Show)
+  
 -- |Typeclass to convert something to a 'Bug'
 class ToBug a  where
   toBug :: a -> Bug
