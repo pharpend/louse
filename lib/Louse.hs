@@ -68,7 +68,9 @@ module Louse
   ,FromTree(..)
    -- ** Forests are just lists of trees
   ,ToForest(..)
-  ,FromForest(..))
+  ,FromForest(..)
+  -- ** Verifying comment and bug trees
+  ,Verify(..))
   where
 
 import Control.Exceptional
@@ -340,3 +342,14 @@ class FromForest bar foo where
 -- |Since: 0.1.0.0
 instance (FromTree bar foo) => FromForest bar [foo] where
   fromForest = map fromTree
+
+-- |Generic typeclass for something that can be verified
+-- 
+-- Since: 0.1.0.0
+class Verify a where
+  {-# MINIMAL verify #-}
+  verify :: a -> Exceptional a
+  -- |With recursive data structures, such as 'Tree's, resursively
+  -- verify the entire tree. By default this is just 'verify'.
+  verifyRec :: a -> Exceptional a
+  verifyRec = verify
