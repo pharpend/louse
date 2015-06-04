@@ -295,7 +295,7 @@ instance FromForest (Author,CommentText) CommentTree where
       (mconcat (do Node (auth,commentTxt) subcomments <- forest_
                    let subcommentTree = fromForest subcomments
                        commentHash =
-                         B16.decode (hash (TE.encodeUtf8 (unCommentText commentTxt)))
+                         BH.encode (hash (TE.encodeUtf8 (unCommentText commentTxt)))
                    return (H.singleton commentHash
                                        (Comment auth commentTxt subcommentTree))))
 
