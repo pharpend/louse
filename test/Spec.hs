@@ -39,11 +39,12 @@ import Test.QuickCheck
 
 main :: IO ()
 main =
-  hspec (parallel develLouseTests)
+  hspec (parallel (context "Louse library"
+                           (do titleTests
+                               descrTests)))
 
-develLouseTests :: SpecWith (Arg Expectation)
-develLouseTests =
-  context "Development.Louse" $
+titleTests :: SpecWith (Arg Expectation)
+titleTests =
   do context "Titles" $
        do specify "mkTitle should return a Failure if given an empty string" $
             shouldThrow (runExceptional (mkTitle ""))
@@ -56,7 +57,9 @@ develLouseTests =
             property (\(title :: Title) ->
                         (fromString (show title)) `shouldBe`
                         title)
-     context "Descriptions" $
+descrTests :: SpecWith (Arg Expectation)
+descrTests =
+  do context "Descriptions" $
        do specify "mkDescription should return a Failure if given an empty string" $
             shouldThrow (runExceptional (mkDescription ""))
                         anyException
@@ -64,17 +67,6 @@ develLouseTests =
             property (\(description :: Description) ->
                         (fromString (show description)) `shouldBe`
                         description)
-
--- |Used for generating long texts >64 characters for testing
-newtype LongText = LongText Text
-  deriving (Eq, Show)
-
-instance Arbitrary LongText where
-  arbitrary =
-    do longString <-
-         suchThat (arbitrary :: Gen String)
-                  (\s -> 64 < length s)
-       return (LongText (T.pack longString))
        
 instance Arbitrary Title where
   arbitrary =
@@ -91,3 +83,14 @@ instance Arbitrary Description where
          suchThat (arbitrary :: Gen String)
                   (not . null)
        runExceptional (mkDescription (T.pack string))
+
+-- |Used for generating long texts >64 characters for testing
+newtype LongText = LongText Text
+  deriving (Eq, Show)
+
+instance Arbitrary LongText where
+  arbitrary =
+    do longString <-
+         suchThat (arbitrary :: Gen String)
+                  (\s -> 64 < length s)
+       return (LongText (T.pack longString))
