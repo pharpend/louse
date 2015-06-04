@@ -236,6 +236,13 @@ newtype CommentTree =
   CommentTree {unCommentTree :: HashMap ByteString Comment}
   deriving (Eq, Show)
   
+instance ToForest CommentTree (Author,CommentText) where
+  toForest commentTree =
+    do (_,Comment auth txt subcomments) <-
+         H.toList (unCommentTree commentTree)
+       return (Node (auth,txt)
+                    (toForest subcomments))
+
 -- |Typeclass to convert something to a 'Bug'
 class ToBug a  where
   toBug :: a -> Bug
