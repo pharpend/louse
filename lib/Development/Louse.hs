@@ -244,24 +244,24 @@ class ToBug a  where
 class FromBug a where
   fromBug :: Bug -> a
 
--- |Convert a tree of type @a@s to something of type @b@.
-class FromTree a b where
-  fromTree :: Tree a -> b
+-- |Convert something of type @foo@ to a 'Tree' of type @bar@.
+class ToTree foo bar where
+  toTree :: foo -> Tree bar
 
--- |Convert something of type @a@ to a tree of @b@s.
-class ToTree a b where
-  toTree :: a -> Tree b
+-- |Convert a 'Tree' of type @bar@s to something of type @foo@.
+class FromTree bar foo where
+  fromTree :: Tree bar -> foo
 
--- |Convert a forest of type @a@s to something of type @b@.
-class FromForest a b where
-  fromForest :: Forest a -> b
+-- |Convert something of type @foo@ to a 'Forest' of @bar@s.
+class ToForest foo bar where
+  toForest :: foo -> Forest bar
 
-instance FromTree a b => FromForest a [b] where
+instance (ToTree foo bar,Foldable t) => ToForest (t foo) bar where
+  toForest = foldMap (\baz -> [toTree baz])
+
+-- |Convert a 'Forest' of type @bar@ to something of type @foo@.
+class FromForest bar foo where
+  fromForest :: Forest bar -> foo
+
+instance (FromTree bar foo) => FromForest bar [foo] where
   fromForest = map fromTree
-
--- |Convert something of type @a@ to a Forest of @b@s.
-class ToForest a b where
-  toForest :: a -> Forest b
-
-instance ToTree a b => ToForest [a] b where
-  toForest = map toTree
