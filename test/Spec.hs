@@ -32,7 +32,7 @@ import Control.Exceptional
 import Data.String (fromString)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Development.Louse
+import Louse
 import Test.Hspec
 import Test.QuickCheck
 

@@ -20,7 +20,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Development.Louse
+-- Module      : Louse
 -- Description : The louse library
 -- Copyright   : Copyright (c) 2015, Peter Harpending.
 -- License     : GPL-3
@@ -34,7 +34,7 @@
 -- 
 -- Since: 0.1.0.0
 
-module Development.Louse
+module Louse
   (-- *** Convenience re-exports
    module Control.Exceptional
    -- * Creating pure-ish bugs

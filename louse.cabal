@@ -30,7 +30,7 @@ source-repository this
 library
   hs-source-dirs:      lib
   default-language:    Haskell2010
-  exposed-modules:     Development.Louse
+  exposed-modules:     Louse
   other-extensions:    CPP
                        FlexibleInstances
                        MultiParamTypeClasses
