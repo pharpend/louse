@@ -73,6 +73,7 @@ import Control.Exceptional
 import Crypto.Hash.SHA1
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import Data.Foldable (Foldable(..))
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
 #if !(MIN_VERSION_base(4,8,0))
