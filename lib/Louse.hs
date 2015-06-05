@@ -347,9 +347,12 @@ instance (FromTree bar foo) => FromForest bar [foo] where
 -- 
 -- Since: 0.1.0.0
 class Verify a where
-  {-# MINIMAL verify #-}
-  verify :: a -> Exceptional a
-  -- |With recursive data structures, such as 'Tree's, resursively
-  -- verify the entire tree. By default this is just 'verify'.
-  verifyRec :: a -> Exceptional a
-  verifyRec = verify
+  verify :: a 
+         -> [String]      -- ^Error messages
+
+-- |Same as 'Verify', but specifically for recursive data structures.
+-- 
+-- Since: 0.1.0.0
+class VerifyRec a where
+  verifyRec :: a 
+            -> [String]   -- ^Error messages
