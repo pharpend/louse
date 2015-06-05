@@ -303,6 +303,7 @@ instance FromForest (Author,CommentText) CommentTree where
                    return (H.singleton commentHash
                                        (Comment auth commentTxt subcommentTree))))
 
+-- |Since: 0.1.0.0
 instance Verify CommentTree where
   verify (CommentTree unct) =
     catMaybes (do (key,cmt@(Comment _ txt _)) <- H.toList unct
@@ -312,6 +313,7 @@ instance Verify CommentTree where
                      then return Nothing
                      else return (Just (hashMatchFailure key goodKey)))
 
+-- |Since: 0.1.0.0
 instance VerifyRec CommentTree where
   verifyRec (CommentTree unct) =
     do (key,cmt@(Comment _ txt subtree)) <- H.toList unct
@@ -322,6 +324,7 @@ instance VerifyRec CommentTree where
           else (hashMatchFailure key goodKey) :
                subTreeMessages
 
+-- |Since: 0.1.0.0
 hashMatchFailure :: Text -> Text -> String
 hashMatchFailure key goodKey =
   (mconcat ["Hash match failure: comment with key "
@@ -333,6 +336,7 @@ hashMatchFailure key goodKey =
 --   sha1 :: a -> Text
 
 -- instance
+-- |Since: 0.1.0.0
 sha1 :: Text -> Text
 sha1 = TE.decodeUtf8 . BH.encode . hash . TE.encodeUtf8
 
