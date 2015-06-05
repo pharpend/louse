@@ -112,6 +112,7 @@ instance FromBug Bug where
 -- |'Bug' is trivially an instance of 'ToBug'
 instance ToBug Bug where
   toBug = id
+
 -- |A newtype over 'Text'. Haskell doesn't have dependent types, so I
 -- have to use a hack called "smart constructors" to make sure 
 -- 
@@ -279,7 +280,7 @@ unCommentText = unDescription
 -- 
 -- Since: 0.1.0.0
 newtype CommentTree =
-  CommentTree {unCommentTree :: HashMap ByteString Comment}
+  CommentTree {unCommentTree :: HashMap Text Comment}
   deriving (Eq,Show)
   
 -- |Since: 0.1.0.0
@@ -296,8 +297,7 @@ instance FromForest (Author,CommentText) CommentTree where
     CommentTree
       (mconcat (do Node (auth,commentTxt) subcomments <- forest_
                    let subcommentTree = fromForest subcomments
-                       commentHash =
-                         B16.decode (hash (TE.encodeUtf8 (unCommentText commentTxt)))
+                       commentHash = sha1 commentTxt
                    return (H.singleton commentHash
                                        (Comment auth commentTxt subcommentTree))))
 
