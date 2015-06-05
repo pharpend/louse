@@ -301,6 +301,23 @@ instance FromForest (Author,CommentText) CommentTree where
                    return (H.singleton commentHash
                                        (Comment auth commentTxt subcommentTree))))
 
+instance Verify CommentTree where
+  verify (CommentTree unct) =
+    catMaybes (do (key,cmt@(Comment _ txt _)) <- H.toList unct
+                  let goodKey = sha1 txt
+                  if key == goodKey
+                     then return Nothing
+                     else return (Just (mconcat ["Hash match failure: comment with key "
+                                                ,T.unpack key
+                                                ," has SHA1 hash "
+                                                ,T.unpack (goodKey txt)])))
+
+instance VerifyRec CommentTree where
+  verifyRec (CommentTree unct) =
+    and (do (key,cmt@(Comment _ txt subtree)) <- H.toList unct
+            return ((key == sha1 txt) &&
+                    verifyRec subtree))
+
 -- |Typeclass to convert something to a 'Bug'
 class ToBug a  where
   toBug :: a -> Bug
