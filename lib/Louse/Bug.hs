@@ -311,17 +311,24 @@ status fp bugs =
           , ""
           , "Number of open bugs: " ++ show (openBugs bugs)
           , "Number of closed bugs: " ++ show (closedBugs bugs)
-          , "Number of closed "
+          , "Ratio of closed to open: " ++ show (closureRatio bugs)
           ]
+
+-- |Ratio of open bugs to closed bugs
+closureRatio :: [Bug] -> Double
+closureRatio bugs
+  | 0 == openBugs bugs = 0
+  | otherwise = (fromIntegral $ closedBugs bugs) / 
+                (fromIntegral $ openBugs bugs)
 
 -- |Count the number of open bugs in a list.
 --
 -- Since: 0.1.0.0
 openBugs :: [Bug] -> Int
-openBugs = length . filter bugOpen
+openBugs = length . filter ((== BugOpen) . bugClosure)
 
 -- |Count the number of closed bugs in a list.
 --
 -- Since: 0.1.0.0
 closedBugs :: [Bug] -> Int
-closedBugs = length . filter (not . bugOpen)
+closedBugs = length . filter ((/= BugOpen) . bugClosure)

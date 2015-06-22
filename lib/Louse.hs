@@ -44,6 +44,15 @@ module Louse
   ,Description
   ,mkDescription
   ,unDescription
+   -- *** Bug tags
+  ,Tag
+  ,mkTag
+  ,unTag
+   -- *** Bug closures
+  ,BugClosure(..)
+  ,BugClosureReason
+  ,mkBugClosureReason
+  ,unBugClosureReason
    -- ** People
   ,Person(..)
   ,Author
@@ -62,7 +71,15 @@ module Louse
   ,FromTree(..)
    -- ** Forests are just lists of trees
   ,ToForest(..)
-  ,FromForest(..))
+  ,FromForest(..)
+   -- ** Getting information
+  ,status
+  ,closureRatio
+  ,openBugs
+  ,closedBugs
+   -- ** I/O operations
+  ,initialize
+  )
   where
   
 import Louse.Bug
