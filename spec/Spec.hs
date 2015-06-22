@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -90,7 +91,7 @@ commentTreeTests =
        do context "Encoding & decoding comment trees into rose forests" $
             do specify "fromForest . toForest . fromForest = fromForest" $
                  property (\(forest :: Forest (Author,CommentText)) ->
-                             shouldBe ((fromForest (toForest (fromForest forest :: CommentTree) :: Forest (Author,CommentText))) :: CommentTree)
+                             shouldBe ((fromForest (toForest (fromForest forest :: [Comment]) :: Forest (Author,CommentText))) :: [Comment])
                                       (fromForest forest))
                specify "Given a tree, all of the keys should be the SHA1 of the values" pending
 
@@ -165,6 +166,6 @@ instance Arbitrary t => Arbitrary (Tree t) where
        -- creates infinite data structures.
        return (Node topLevelValue [])
 
-instance Arbitrary CommentTree where
+instance Arbitrary Comment where
   arbitrary =
-    fmap fromForest (arbitrary :: Gen (Forest (Author,CommentText)))
+    fmap fromTree (arbitrary :: Gen (Tree (Author,CommentText)))
