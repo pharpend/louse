@@ -1,5 +1,3 @@
-{-# LANGUAGE CPP #-}
-
 -- louse - distributed bugtracker
 -- Copyright (c) 2015, Peter Harpending.
 -- 
@@ -17,60 +15,52 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Louse
--- Description : The louse library
+-- Module      : Louse.Bug
+-- Description : The type for a Louse Bug
 -- Copyright   : Copyright (c) 2015, Peter Harpending.
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 -- 
--- This is the top-level module for the louse library. You only need to
--- import this module, everything else will automatically be
--- re-exported.
--- 
--- Since: 0.1.0.0
+-- The type for a louse bug.
 
-module Louse
-  (-- *** Convenience re-exports
-   module Control.Exceptional
-  ,sha1
-   -- * Creating pure-ish bugs
-  ,Bug(..)
-   -- *** Bug titles
-  ,Title
-  ,mkTitle
-  ,unTitle
-   -- *** Bug descriptions
-  ,Description
-  ,mkDescription
-  ,unDescription
-   -- ** People
-  ,Person(..)
-  ,Author
-  ,Reporter
-   -- ** Comments
-  ,Comment(..)
-   -- *** Comment text
-  ,CommentText
-  ,mkCommentText
-  ,unCommentText
-   -- * Converting to & from bugs
-  ,ToBug(..)
-  ,FromBug(..)
-   -- * Converting to & from trees
-  ,ToTree(..)
-  ,FromTree(..)
-   -- ** Forests are just lists of trees
-  ,ToForest(..)
-  ,FromForest(..))
-  where
-  
-import Louse.Bug
+module Louse.Bug where
+
 import Louse.Comment
 import Louse.Description
 import Louse.Person
 import Louse.Title
-import Louse.Trees
 
-import Control.Exceptional
+import Data.Time
+
+-- |The type for a bug
+-- 
+-- Since: 0.1.0.0
+data Bug =
+  Bug {bugTitle :: Title
+      ,bugDescription :: Description
+      ,bugAuthor :: Author
+      ,bugTime :: UTCTime
+      ,bugComments :: [Comment]}
+  deriving (Eq,Show)
+
+-- |'Bug' is trivially an instance of 'FromBug'
+-- 
+-- Since: 0.1.0.0
+instance FromBug Bug where
+  fromBug = id
+
+-- |'Bug' is trivially an instance of 'ToBug'
+instance ToBug Bug where
+  toBug = id
+
+-- |Typeclass to convert something to a 'Bug'
+class ToBug a  where
+  toBug :: a -> Bug
+  
+-- |Convert something from a 'Bug'
+-- 
+-- Since: 0.1.0.0
+class FromBug a where
+  fromBug :: Bug -> a
