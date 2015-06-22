@@ -28,7 +28,6 @@
 
 module Louse.Trees where
 
-import Data.Foldable (Foldable(..))
 import Data.Tree
 
 -- |Convert something of type @foo@ to a 'Tree' of type @bar@.

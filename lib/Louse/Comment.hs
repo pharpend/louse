@@ -32,16 +32,14 @@ module Louse.Comment
   , CommentText
   , mkCommentText
   , unCommentText
-  , )
+  , sha1
+  )
   where
 
 import           Control.Exceptional
 import           Crypto.Hash.SHA1 (hash)
 import           Control.Monad (mzero)
-import           Data.ByteString (ByteString)
 import qualified Data.ByteString.Base16 as BH
-import           Data.HashMap.Lazy (HashMap)
-import qualified Data.HashMap.Lazy as H
 import           Data.String (IsString(..))
 import           Data.Text (Text)
 import qualified Data.Text as T
