@@ -48,83 +48,85 @@ import Test.Hspec
 import Test.QuickCheck
 
 main :: IO ()
-main =
-  hspec $
-  do context "Louse library" $
-       parallel $
-       do titleTests
-          descrTests
-          commentTreeTests
-          sha1Tests
-
-
+main = 
+  hspec $ context "Louse library" $ parallel $ do 
+    titleTests
+    descrTests
+    commentTreeTests
 
 titleTests :: SpecWith (Arg Expectation)
-titleTests =
-  context "Titles" $
-  do specify "mkTitle should return a Failure if given an empty string" $
-       shouldThrow (runExceptional (mkTitle ""))
-                   anyException
-     specify "mkTitle should return a Failure if given a string > 64 chars long." $
-       property (\(LongText t) ->
+titleTests = 
+  context "Titles" $ do
+    specify "mkTitle should return a Failure if given an empty string" $
+      shouldThrow (runExceptional (mkTitle ""))
+                  anyException
+
+    specify "mkTitle should return a Failure if given a string > 64 chars long." $ 
+      property $ \(LongText t) -> 
                    shouldThrow (runExceptional (mkTitle t))
-                               anyException)
-     specify "Titles should fromString . show without loss of data" $
-       property (\(title :: Title) ->
-                   (fromString (show title)) `shouldBe`
-                   title)
+                               anyException
+
+    specify "Titles should fromString . show without loss of data" $ 
+      property $ \(title :: Title) -> 
+                  shouldBe (fromString $ show title)
+                           title
+
 descrTests :: SpecWith (Arg Expectation)
-descrTests =
-  context "Descriptions" $
-  do specify "mkDescription should return a Failure if given an empty string" $
-       shouldThrow (runExceptional (mkDescription ""))
-                   anyException
-     specify "Descriptions should fromString . show without loss of data" $
-       property (\(description :: Description) ->
-                   (fromString (show description)) `shouldBe`
-                   description)
+descrTests = 
+  context "Descriptions" $ do
+    specify "mkDescription should return a Failure if given an empty string" $
+        shouldThrow (runExceptional $ mkDescription "") 
+                    anyException
+    specify "Descriptions should fromString . show without loss of data" $ 
+      property $ \(description :: Description) -> 
+                    shouldBe (fromString $ show description) 
+                             description
 
 commentTreeTests :: SpecWith (Arg Expectation)
-commentTreeTests =
-  context "Comments" $
-  do context "Comment trees" $
-       do context "Encoding & decoding comment trees into rose forests" $
-            do specify "fromForest . toForest . fromForest = fromForest" $
-                 property (\(forest :: Forest (Author,CommentText)) ->
-                             shouldBe ((fromForest (toForest (fromForest forest :: [Comment]) :: Forest (Author,CommentText))) :: [Comment])
-                                      (fromForest forest))
-               specify "Given a tree, all of the keys should be the SHA1 of the values" pending
+commentTreeTests = 
+  context "Comments" $ do
+    context "Comment trees" $ do
+      context "Encoding & decoding comment trees into rose forests" $
+        specify "fromForest . toForest . fromForest = fromForest" $
+          property $ \(forest :: Forest (Author,CommentText)) ->
+                        shouldBe ((fromForest 
+                                    (toForest 
+                                      (fromForest forest 
+                                       :: [Comment]) 
+                                     :: Forest (Author,CommentText))) 
+                                   :: [Comment])
+                                 (fromForest forest)
 
-sha1Tests :: SpecWith (Arg Expectation)
-sha1Tests =
-  context "sha1sums" $
-  do specify "sha1 = TE.decodeUtf8 . BH.encode . SHA1.hash . TE.encodeUtf8" $
-       do property (\(txt :: Text) ->
-                      shouldBe (sha1 txt)
-                               (TE.decodeUtf8 (BH.encode (hash (TE.encodeUtf8 txt)))))
-     specify "sha1 function should give the same results as the sha1sum program" $
-       do property (\(txt :: Text) ->
-                      shouldBe (sha1 txt)
-                               (unsafePerformIO (sha1sum txt)))
-  where sha1sum txt =
-          do (Just stdinH,Just stdoutH,Nothing,procH) <- createProcess sha1Process
-             TIO.hPutStr stdinH txt
-             hClose stdinH
-             waitForProcess procH
-             contents <- TIO.hGetContents stdoutH
-             hClose stdoutH
-             return (head (T.words contents))
-        sha1Process =
-          CreateProcess {cmdspec =
-                           ShellCommand "sha1sum"
-                        ,cwd = Nothing
-                        ,env = Nothing
-                        ,std_in = CreatePipe
-                        ,std_out = CreatePipe
-                        ,std_err = Inherit
-                        ,close_fds = True
-                        ,create_group = False
-                        ,delegate_ctlc = True}
+-- sha1Tests :: SpecWith (Arg Expectation)
+-- sha1Tests =
+--   context "sha1sums" $
+--   do specify "sha1 = TE.decodeUtf8 . BH.encode . SHA1.hash . TE.encodeUtf8" $
+--        do property (\(txt :: Text) ->
+--                       shouldBe (sha1 txt)
+--                                (TE.decodeUtf8 (BH.encode (hash (TE.encodeUtf8 txt)))))
+--      specify "sha1 function should give the same results as the sha1sum program" $
+--        do property (\(txt :: Text) ->
+--                       shouldBe (sha1 txt)
+--                                (unsafePerformIO (sha1sum txt)))
+--   where sha1sum txt =
+--           do (Just stdinH,Just stdoutH,Nothing,procH) <- createProcess sha1Process
+--              TIO.hPutStr stdinH txt
+--              hClose stdinH
+--              waitForProcess procH
+--              contents <- TIO.hGetContents stdoutH
+--              hClose stdoutH
+--              return (head (T.words contents))
+--         sha1Process =
+--           CreateProcess {cmdspec =
+--                            ShellCommand "sha1sum"
+--                         ,cwd = Nothing
+--                         ,env = Nothing
+--                         ,std_in = CreatePipe
+--                         ,std_out = CreatePipe
+--                         ,std_err = Inherit
+--                         ,close_fds = True
+--                         ,create_group = False
+--                         ,delegate_ctlc = True}
 
 instance Arbitrary Title where
   arbitrary =
@@ -141,6 +143,11 @@ instance Arbitrary Description where
          suchThat (arbitrary :: Gen String)
                   (not . null)
        runExceptional (mkDescription (T.pack string))
+
+instance Arbitrary CommentText where
+  arbitrary = do string <- suchThat (arbitrary :: Gen String)
+                                    (not . null)
+                 runExceptional $ mkCommentText (T.pack string)
 
 -- |Used for generating long texts >64 characters for testing
 newtype LongText = LongText Text
