@@ -33,6 +33,7 @@ import Louse.Person
 import Control.Applicative
 import Control.Exceptional
 import Control.Monad (mzero)
+import Data.Monoid
 import Data.Ord (comparing)
 import Data.String (IsString(..))
 import Data.Text (Text)
@@ -50,7 +51,7 @@ data Bug =
       ,bugTime :: UTCTime
       ,bugComments :: [Comment]
       ,bugTags :: [Tag]
-      ,bugOpen :: Bool}
+      ,bugClosure :: BugClosure}
   deriving (Eq,Show)
 
 -- |'Bug' is trivially an instance of 'FromBug'
@@ -74,7 +75,8 @@ instance FromJSON Bug where
                              <*> v .: "bug-time"
                              <*> v .: "bug-comments"
                              <*> v .: "bug-tags"
-                             <*> v .: "bug-open"
+                             <*> v .: "bug-closure"
+  parseJSON _ = mzero
 
 -- | Since: 0.1.0.0
 instance Ord Bug where
@@ -111,6 +113,8 @@ mkTag txt
   | otherwise = return $ Tag txt
 
 -- |Acceptable characters in a 'Tag'
+-- 
+-- Since: 0.1.0.0
 acceptChars :: [Char]
 acceptChars = mconcat [ ['A'..'Z']
                       , ['a'..'z']
@@ -118,12 +122,51 @@ acceptChars = mconcat [ ['A'..'Z']
                       , "-_./+"
                       ]
 
+-- |Whether or not a bug is open
+-- 
+-- If a bug is closed, you can give a reason
+-- 
+-- Since: 0.1.0.0
+data BugClosure
+  = BugOpen
+  | BugClosed {bugClosureReason :: Maybe BugClosureReason}
+  deriving (Eq,Show)
+  
+-- |I'm getting tired of writing newtypes over 'Text', so I'm just going
+-- to alias 'Reason' to 'Title', since they have the same requirements
+type BugClosureReason = Title
+
+-- |Alias for 'unTitle'
+unBugClosureReason :: BugClosureReason -> Text
+unBugClosureReason = unTitle
+
+-- |Alias for 'mkTitle'
+mkBugClosureReason :: Text -> Exceptional BugClosureReason
+mkBugClosureReason = mkTitle
+
+-- |Since: 0.1.0.0
+instance ToJSON BugClosure where
+  toJSON BugOpen = String "open"
+  toJSON (BugClosed Nothing) = String "closed"
+  toJSON (BugClosed (Just r)) = String ("closed: " <> reason)
+    where reason = let (String s) = toJSON r
+                   in s
+
+-- |Since: 0.1.0.0
+instance FromJSON BugClosure where
+  parseJSON (String "open") = return BugOpen
+  parseJSON (String "closed") = return $ BugClosed Nothing
+  parseJSON (String s) = let ("closed",reason) = T.breakOn ": " s
+                         in do reason_ <- runExceptional $ mkBugClosureReason reason
+                               return $ BugClosed $ Just reason_
+  parseJSON _ = mzero
+
 -- |Throws error on invalid data
 -- 
 -- Since: 0.1.0.0
 instance IsString Tag where
   fromString s = case mkTag (T.pack s) of
-                   Failure s -> error s
+                   Failure s_ -> error s_
                    Success x -> x
 
 -- |Since: 0.1.0.0
@@ -246,7 +289,7 @@ instance IsString Title where
   fromString s =
     case mkTitle (T.pack s) of
       Failure err -> error err
-      Success s -> s
+      Success x -> x
 
 -- |Since: 0.1.0.0
 instance FromJSON Title where
