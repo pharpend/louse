@@ -21,7 +21,7 @@
 -- License     : GPL-3
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
--- Portability : UNIX/GHC
+-- Portability : POSIX
 -- 
 -- Here is a longer description of this module, containing some
 -- commentary with @some markup@.
