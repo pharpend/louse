@@ -34,7 +34,6 @@
 module Louse
   (-- *** Convenience re-exports
    module Control.Exceptional
-  ,sha1
    -- * Creating pure-ish bugs
   ,Bug(..)
    -- *** Bug titles
@@ -68,9 +67,7 @@ module Louse
   
 import Louse.Bug
 import Louse.Comment
-import Louse.Description
 import Louse.Person
-import Louse.Title
 import Louse.Trees
 
 import Control.Exceptional

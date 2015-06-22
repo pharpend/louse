@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE LambdaCase #-}
 
 -- louse - distributed bugtracker
 -- Copyright (c) 2015, Peter Harpending.
@@ -26,7 +27,16 @@
 -- Stability   : experimental
 -- Portability : UNIX/GHC
 
-module Louse.Comment where
+module Louse.Comment 
+  ( Comment
+  , commentAuthor
+  , commentText
+  , subComments
+  , CommentText
+  , mkCommentText
+  , unCommentText
+  , )
+  where
 
 import           Control.Exceptional
 import           Crypto.Hash.SHA1 (hash)
@@ -34,10 +44,12 @@ import           Data.ByteString (ByteString)
 import qualified Data.ByteString.Base16 as BH
 import           Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
+import           Data.String (IsString(..))
 import           Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Tree as RT
-import           Louse.Description
+
 import           Louse.Person
 import           Louse.Trees
 
@@ -49,25 +61,27 @@ data Comment =
   {commentAuthor :: Author
   ,commentText :: CommentText
   ,subComments :: [Comment]}
-  deriving (Eq,Show)
+  deriving (Eq, Show)
 
--- |Comment text has the same requirements as a 'Description', so alias
--- the two
--- 
+-- |A newtype over 'Text'. The comment mustn't be empty or longer than 8192 characters.
+--
 -- Since: 0.1.0.0
-type CommentText = Description
-   
--- |Alias for 'mkDescription'
+newtype CommentText = MkCommentText { unCommentText :: Text }
+  deriving (Eq, Show)
+
+-- |Make a comment text from a non-empty 'Text'.
 -- 
 -- Since: 0.1.0.0
 mkCommentText :: Text -> Exceptional CommentText
-mkCommentText = mkDescription
+mkCommentText txt
+  | T.null txt = fail "Text can't be empty" 
+  | otherwise = Success $ MkCommentText txt
 
--- |Alias for 'unDescription'
--- 
--- Since: 0.1.0.0
-unCommentText :: CommentText -> Text
-unCommentText = unDescription
+instance IsString CommentText where
+  fromString str = 
+    case mkCommentText (T.pack str) of
+      Failure msg -> error msg
+      Success x -> x
 
 -- |Since: 0.1.0.0
 instance ToTree Comment (Author,CommentText) where

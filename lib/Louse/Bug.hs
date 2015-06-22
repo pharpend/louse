@@ -28,10 +28,13 @@
 module Louse.Bug where
 
 import Louse.Comment
-import Louse.Description
 import Louse.Person
-import Louse.Title
 
+import Control.Exceptional
+import Data.Ord (comparing)
+import Data.String (IsString(..))
+import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 
 -- |The type for a bug
@@ -64,3 +67,107 @@ class ToBug a  where
 -- Since: 0.1.0.0
 class FromBug a where
   fromBug :: Bug -> a
+
+-- |Yet another newtype over 'Text'. This is to make sure the
+-- description is less than (or equal to) 8192 characters.
+-- 
+-- Use 'mkDescription' to make a description. This is an instance of
+-- 'IsString', too, so, in pure code, you can just write plain strings,
+-- and turn on the OverloadedStrings extension.
+-- 
+-- >>> :set -XOverloadedStrings 
+-- >>> "hello" :: Description
+-- Description {unDescription = "hello"}
+-- it :: Description
+-- 
+-- If you give invalid input, then there will be an error:
+-- 
+-- >>> "" :: Description
+-- *** Exception: Description mustn't be empty.
+-- 
+-- Since: 0.1.0.0
+newtype Description =
+  Description {unDescription :: Text}
+  deriving (Eq)
+
+-- |Compares by the value of 'unDescription'.
+-- 
+-- Since: 0.1.0.0
+instance Ord Description where
+  compare = comparing unDescription
+
+-- |Since: 0.1.0.0
+instance Show Description where
+  show = T.unpack . unDescription
+
+-- |Note that this will throw an error if given invalid input.
+-- 
+-- Since: 0.1.0.0
+instance IsString Description where
+  fromString s =
+    case mkDescription (T.pack s) of
+      Failure foo -> error foo
+      Success bar -> bar
+
+-- |Attempt to make a description from a pure 'Text' value. This returns
+-- an error if the description is empty.
+-- 
+-- Since: 0.1.0.0
+mkDescription :: Text -> Exceptional Description
+mkDescription t
+  | T.null t = fail "Description mustn't be empty."
+  | otherwise = return (Description t)
+
+-- |A newtype over 'Text'. Haskell doesn't have dependent types, so I
+-- have to use a hack called "smart constructors" to make sure 
+-- 
+-- > 0 < title_length <= 64
+-- 
+-- Use 'mkTitle' to make a title. Alternatively, you could turn on
+-- OverloadedStrings, and use 'Title''s 'IsString' instance:
+-- 
+-- >>> :set -XOverloadedStrings 
+-- >>> "hello" :: Title
+-- Title {unTitle = "hello"}
+-- it :: Title
+-- 
+-- Note that if you give invalid input, then there will be an error:
+-- 
+-- >>> "" :: Title
+-- *** Exception: Title mustn't be empty.
+-- >>> fromString (mconcat (replicate 50 "foo")) :: Title
+-- *** Exception: Title mustn't be >64 characters long.
+-- 
+-- Since: 0.1.0.0
+newtype Title =
+  Title {unTitle :: Text}
+  deriving (Eq)
+
+-- |Compares by the value of @unTitle@.
+-- 
+-- Since: 0.1.0.0
+instance Ord Title where
+  compare = comparing unTitle
+
+-- |Since: 0.1.0.0
+instance Show Title where
+  show = T.unpack . unTitle
+
+-- |Note that this will throw an error if you give it an invalid value.
+-- 
+-- Since: 0.1.0.0
+instance IsString Title where
+  fromString s =
+    case mkTitle (T.pack s) of
+      Failure err -> error err
+      Success s -> s
+
+-- |Attempt to make a title, returning an error message if the length is
+-- longer than 64 characters, or if the title is empty.
+-- 
+-- Since: 0.1.0.0
+mkTitle :: Text -> Exceptional Title
+mkTitle t
+  | T.null t = fail "Title mustn't be empty."
+  | 64 < T.length t = fail "Title mustn't be >64 characters long."
+  | otherwise = return (Title t)

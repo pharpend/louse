@@ -34,9 +34,7 @@ library
     Louse
     Louse.Bug
     Louse.Comment
-    Louse.Description
     Louse.Person
-    Louse.Title
     Louse.Trees
   other-extensions:
     CPP
