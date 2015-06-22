@@ -67,6 +67,7 @@ module Louse
   
 import Louse.Bug
 import Louse.Comment
+import Louse.IO
 import Louse.Person
 import Louse.Trees
 
