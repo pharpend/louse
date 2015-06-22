@@ -48,7 +48,8 @@ data Bug =
       ,bugDescription :: Description
       ,bugAuthor :: Author
       ,bugTime :: UTCTime
-      ,bugComments :: [Comment]}
+      ,bugComments :: [Comment]
+      ,bugOpen :: Bool}
   deriving (Eq,Show)
 
 -- |'Bug' is trivially an instance of 'FromBug'
@@ -71,6 +72,11 @@ instance FromJSON Bug where
                                   v .: "bug-reporter")
                              <*> v .: "bug-time"
                              <*> v .: "bug-comments"
+                             <*> v .: "bug-open"
+
+-- | Since: 0.1.0.0
+instance Ord Bug where
+  compare = comparing bugTime
 
 -- |Typeclass to convert something to a 'Bug'
 -- 
@@ -205,3 +211,29 @@ instance FromJSON Title where
 -- |Since: 0.1.0.0
 instance ToJSON Title where
   toJSON (Title s) = String s
+
+-- |A nice little report explaining the status of a set of bugs.
+-- 
+-- Since: 0.1.0.0
+status :: FilePath              -- ^The directory holding the status report
+       -> [Bug]                 -- ^The list of bugs
+       -> String                -- ^The status string
+status fp bugs =
+  unlines [ "Louse status for " ++ fp
+          , ""
+          , "Number of open bugs: " ++ show (openBugs bugs)
+          , "Number of closed bugs: " ++ show (closedBugs bugs)
+          , "Number of "
+          ]
+
+-- |Count the number of open bugs in a list.
+-- 
+-- Since: 0.1.0.0
+openBugs :: [Bug] -> Int
+openBugs = length . filter bugOpen
+
+-- |Count the number of closed bugs in a list.
+-- 
+-- Since: 0.1.0.0
+closedBugs :: [Bug] -> Int
+closedBugs = length . filter (not . bugOpen)
