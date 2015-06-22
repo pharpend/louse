@@ -51,6 +51,7 @@ library
     , text
     , time
     , unordered-containers
+    , yaml
 
 executable louse
   hs-source-dirs:      src

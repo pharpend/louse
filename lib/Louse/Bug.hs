@@ -30,12 +30,15 @@ module Louse.Bug where
 import Louse.Comment
 import Louse.Person
 
+import Control.Applicative
 import Control.Exceptional
+import Control.Monad (mzero)
 import Data.Ord (comparing)
 import Data.String (IsString(..))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Yaml
 
 -- |The type for a bug
 -- 
@@ -55,13 +58,26 @@ instance FromBug Bug where
   fromBug = id
 
 -- |'Bug' is trivially an instance of 'ToBug'
+-- 
+-- Since: 0.1.0.0
 instance ToBug Bug where
   toBug = id
 
+-- |Since: 0.1.0.0
+instance FromJSON Bug where
+  parseJSON (Object v) = Bug <$> v .: "bug-title"
+                             <*> v .: "bug-description"
+                             <*> (v .: "bug-author" <|> 
+                                  v .: "bug-reporter")
+                             <*> v .: "bug-time"
+                             <*> v .: "bug-comments"
+
 -- |Typeclass to convert something to a 'Bug'
+-- 
+-- Since: 0.1.0.0
 class ToBug a  where
   toBug :: a -> Bug
-  
+
 -- |Convert something from a 'Bug'
 -- 
 -- Since: 0.1.0.0
@@ -90,6 +106,15 @@ newtype Description =
   Description {unDescription :: Text}
   deriving (Eq)
 
+-- |Attempt to make a description from a pure 'Text' value. This returns
+-- an error if the description is empty.
+-- 
+-- Since: 0.1.0.0
+mkDescription :: Text -> Exceptional Description
+mkDescription t
+  | T.null t = fail "Description mustn't be empty."
+  | otherwise = return (Description t)
+
 -- |Compares by the value of 'unDescription'.
 -- 
 -- Since: 0.1.0.0
@@ -109,14 +134,14 @@ instance IsString Description where
       Failure foo -> error foo
       Success bar -> bar
 
--- |Attempt to make a description from a pure 'Text' value. This returns
--- an error if the description is empty.
--- 
--- Since: 0.1.0.0
-mkDescription :: Text -> Exceptional Description
-mkDescription t
-  | T.null t = fail "Description mustn't be empty."
-  | otherwise = return (Description t)
+-- |Since: 0.1.0.0
+instance FromJSON Description where
+  parseJSON (String s) = runExceptional $ mkDescription s
+  parseJSON _ = mzero
+
+-- |Since: 0.1.0.0
+instance ToJSON Description where
+  toJSON (Description s) = String s
 
 -- |A newtype over 'Text'. Haskell doesn't have dependent types, so I
 -- have to use a hack called "smart constructors" to make sure 
@@ -143,6 +168,16 @@ newtype Title =
   Title {unTitle :: Text}
   deriving (Eq)
 
+-- |Attempt to make a title, returning an error message if the length is
+-- longer than 64 characters, or if the title is empty.
+-- 
+-- Since: 0.1.0.0
+mkTitle :: Text -> Exceptional Title
+mkTitle t
+  | T.null t = fail "Title mustn't be empty."
+  | 64 < T.length t = fail "Title mustn't be >64 characters long."
+  | otherwise = return (Title t)
+
 -- |Compares by the value of @unTitle@.
 -- 
 -- Since: 0.1.0.0
@@ -162,12 +197,11 @@ instance IsString Title where
       Failure err -> error err
       Success s -> s
 
--- |Attempt to make a title, returning an error message if the length is
--- longer than 64 characters, or if the title is empty.
--- 
--- Since: 0.1.0.0
-mkTitle :: Text -> Exceptional Title
-mkTitle t
-  | T.null t = fail "Title mustn't be empty."
-  | 64 < T.length t = fail "Title mustn't be >64 characters long."
-  | otherwise = return (Title t)
+-- |Since: 0.1.0.0
+instance FromJSON Title where
+  parseJSON (String s) = runExceptional $ mkTitle s
+  parseJSON _ = mzero
+
+-- |Since: 0.1.0.0
+instance ToJSON Title where
+  toJSON (Title s) = String s

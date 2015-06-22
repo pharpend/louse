@@ -28,10 +28,7 @@
 -- Portability : UNIX/GHC
 
 module Louse.Comment 
-  ( Comment
-  , commentAuthor
-  , commentText
-  , subComments
+  ( Comment(..)
   , CommentText
   , mkCommentText
   , unCommentText
@@ -40,6 +37,7 @@ module Louse.Comment
 
 import           Control.Exceptional
 import           Crypto.Hash.SHA1 (hash)
+import           Control.Monad (mzero)
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString.Base16 as BH
 import           Data.HashMap.Lazy (HashMap)
@@ -49,6 +47,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Tree as RT
+import           Data.Yaml
 
 import           Louse.Person
 import           Louse.Trees
@@ -57,16 +56,22 @@ import           Louse.Trees
 -- 
 -- Since: 0.1.0.0
 data Comment =
-  Comment 
-  {commentAuthor :: Author
-  ,commentText :: CommentText
-  ,subComments :: [Comment]}
-  deriving (Eq, Show)
+  Comment {commentAuthor :: Author
+          ,commentText :: CommentText
+          ,commentComments :: [Comment]}
+  deriving (Eq,Show)
+  
+-- |Since: 0.1.0.0
+instance FromJSON Comment where
+  parseJSON (Object v) = Comment <$> v .: "comment-author"
+                                 <*> v .: "comment-text"
+                                 <*> v .: "comment-comments"
+  parseJSON _ = mzero
 
 -- |A newtype over 'Text'. The comment mustn't be empty or longer than 8192 characters.
 --
 -- Since: 0.1.0.0
-newtype CommentText = MkCommentText { unCommentText :: Text }
+newtype CommentText = CommentText { unCommentText :: Text }
   deriving (Eq, Show)
 
 -- |Make a comment text from a non-empty 'Text'.
@@ -75,8 +80,9 @@ newtype CommentText = MkCommentText { unCommentText :: Text }
 mkCommentText :: Text -> Exceptional CommentText
 mkCommentText txt
   | T.null txt = fail "Text can't be empty" 
-  | otherwise = Success $ MkCommentText txt
+  | otherwise = return $ CommentText txt
 
+-- |Since: 0.1.0.0
 instance IsString CommentText where
   fromString str = 
     case mkCommentText (T.pack str) of
@@ -87,13 +93,24 @@ instance IsString CommentText where
 instance ToTree Comment (Author,CommentText) where
   toTree comment_ =
     RT.Node (commentAuthor comment_, commentText comment_)
-            (toForest $ subComments comment_)
+            (toForest $ commentComments comment_)
 
 -- |Since: 0.1.0.0
 instance FromTree (Author,CommentText) Comment where
   fromTree (RT.Node (auth, commentTxt) subcomments) = 
     Comment auth commentTxt (fromForest subcomments)
+    
+-- |Since: 0.1.0.0
+instance FromJSON CommentText where
+  parseJSON (String s) = runExceptional (mkCommentText s)
+  parseJSON _ = mzero
+
+-- |Since: 0.1.0.0
+instance ToJSON CommentText where
+  toJSON (CommentText txt) = String txt
 
 -- |Take the sha1sum of some UTF-8 encoded text
+-- 
+-- Since: 0.1.0.0
 sha1 :: Text -> Text
 sha1 = TE.decodeUtf8 . BH.encode . hash . TE.encodeUtf8

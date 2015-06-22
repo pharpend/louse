@@ -28,11 +28,15 @@
 
 module Louse.Person where
 
-#if !(MIN_VERSION_base (4,8,0))
-import Data.Monoid
-#endif
+import Control.Monad (mzero)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Yaml
+
+#if !(MIN_VERSION_base (4,8,0))
+import Control.Applicative
+import Data.Monoid
+#endif
 
 -- |Type for a person. Just has email and name
 -- 
@@ -50,6 +54,17 @@ data Person =
 -- Since: 0.1.0.0
 instance Show Person where
   show (Person n e) = T.unpack (mconcat [n," <",e,">"])
+
+-- |Since: 0.1.0.0
+instance FromJSON Person where
+  parseJSON (Object v) = Person <$> v .: "person-name"
+                                <*> v .: "person-email"
+  parseJSON _ = mzero
+
+-- |Since: 0.1.0.0
+instance ToJSON Person where
+  toJSON (Person n e) = object ["person-name" .= n
+                               ,"person-email" .= e]
 
 -- |Alias for 'Person'
 -- 
