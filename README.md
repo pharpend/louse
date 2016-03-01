@@ -1,23 +1,32 @@
 # louse
 
-louse is a simple command line bug tracker.
+louse is a simple command line bug tracker interface. Louse will fetch
+bug information from remote bug trackers, and allow you to browse it on
+your machine.
 
-## Installation
+## Installation and Usage
 
-1.  [Install Haskell][1]
-2.  Run these commands in a terminal:
+First, install [the Haskell Stack][stk] and [git][git]. Then, run these
+commands in a terminal
 
-        git clone git://github.com/pharpend/louse.git
-        cd louse
-        cabal install
+    git clone https://github.com/pharpend/louse.git
+    cd louse
+    stack setup
+    stack build
 
-## Usage
+Louse is still in development, so this won't install louse in your
+`$PATH`. If you want to install louse in your `$PATH`, run
 
-It doesn't do anything yet, so there's no usage.
+    stack build --copy-bins
+    
+Louse is not really useful yet, but you can run the executable via
+
+    stack exec -- louse
 
 ## Contact
 
 * IRC: `pharpend` on FreeNode
 * Email: `peter@harpending.org`
 
-[1]: https://github.com/bitemyapp/learnhaskell/blob/master/install.md
+[git]: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+[stk]: http://docs.haskellstack.org/en/stable/README/
