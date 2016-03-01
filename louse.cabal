@@ -1,16 +1,16 @@
 name:                louse
 version:             0.1.0.0
-synopsis:            A distributed bug tracking program
+synopsis:            A little command line tool to interact with bug trackers.
 description:
-  Louse is a program for tracking bugs. It's designed to fit into a git
-  repository.
+  Louse is a program for reading from remote bug trackers and browsing the bugs
+  locally.
 homepage:            https://github.com/pharpend/louse
 license:             GPL-3
 license-file:        LICENSE
 author:              Peter Harpending
 maintainer:          peter@harpending.org
 copyright:           Copyright (c) 2015, Peter Harpending.
-category:            Data, Development, Git, Workflow
+category:            Data, Development
 bug-reports:         https://github.com/pharpend/louse/issues
 build-type:          Simple
 cabal-version:       >=1.10
