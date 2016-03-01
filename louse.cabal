@@ -18,66 +18,25 @@ extra-source-files:
   LICENSE
   README.md
 
-source-repository head
-  type:     git
-  location: https://github.com/pharpend/louse.git
-
-source-repository this
-  type:     git
-  location: https://github.com/pharpend/louse.git
-  tag: 0.1.0.0
-
-library
-  hs-source-dirs:      lib
-  default-language:    Haskell2010
-  ghc-options:         -Wall
-  exposed-modules:
-    Louse
-    Louse.Bug
-    Louse.Comment
-    Louse.IO
-    Louse.Person
-    Louse.Trees
-
-  other-extensions:
-    CPP
-    FlexibleInstances
-    MultiParamTypeClasses
-    OverloadedStrings
-
-  build-depends:
-      base ==4.*
-    , base16-bytestring
-    , bytestring
-    , containers
-    , cryptohash
-    , directory
-    , exceptional >=0.1.1
-    , text
-    , time
-    , unordered-containers
-    , yaml
-
 executable louse
   hs-source-dirs:      src
   default-language:    Haskell2010
   main-is:             Main.hs
-  build-depends:       base ==4.*
-                      ,louse
+  ghc-options:         -Wall -threaded
+  default-extensions:
+    LambdaCase
+    TemplateHaskell
+  build-depends:      
+      base ==4.8.*
+    , aeson
+    , bytestring
+    , file-embed
+    , github
+    , louse
+    , optparse-applicative
+    , pager
+    , text
 
-test-suite spec
-  hs-source-dirs:      spec
-  default-language:    Haskell2010
-  other-extensions:    OverloadedStrings
-  type:                exitcode-stdio-1.0
-  main-is:             Spec.hs
-  build-depends:       base ==4.*
-                      ,base16-bytestring
-                      ,containers
-                      ,cryptohash
-                      ,exceptional
-                      ,hspec
-                      ,louse
-                      ,process >=1.2
-                      ,QuickCheck
-                      ,text
+source-repository head
+  type:     git
+  location: https://github.com/pharpend/louse.git
