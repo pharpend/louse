@@ -9,7 +9,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              Peter Harpending
 maintainer:          peter@harpending.org
-copyright:           Copyright (c) 2015, Peter Harpending.
+copyright:           Copyright (c) 2015-2016, Peter Harpending.
 category:            Data, Development
 bug-reports:         https://github.com/pharpend/louse/issues
 build-type:          Simple
