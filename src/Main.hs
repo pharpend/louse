@@ -31,6 +31,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.FileEmbed
 import qualified Data.Text.Encoding as TE
+import Louse.Fetch
 import Options.Applicative
 import System.IO
 import System.Pager
@@ -51,11 +52,12 @@ main = execParser mainPI >>= runArgs
 
     actionParser = altConcat (fmap subparser [ licenseParser
                                              , readmeParser
+                                             , githubParser
                                              ])
           
 data Args = License ShowOpts
           | Readme ShowOpts
-          | FetchIssues String S
+          | GitHub String String ShowOpts
   deriving (Show, Eq)     
 
 data ShowOpts = ShowOpts { soNoPager :: Bool
@@ -82,6 +84,17 @@ licenseParser =
                (mappend fullDesc
                          (progDesc "Show the license (GPL-3)."))
 
+githubParser :: Mod CommandFields Args
+githubParser =
+  command "github" $
+    infoHelper (GitHub <$> strArgument (mconcat [ metavar "OWNER"
+                                                , help "Repo owner" ])
+                       <*> strArgument (mconcat [ metavar "REPO"
+                                                , help "Repo name" ])
+                       <*> soParser)
+               (mappend fullDesc
+                        (progDesc "Print out the issues from a GitHub repository"))
+
 
 runArgs :: Args -> IO ()
 runArgs args = do
@@ -89,6 +102,8 @@ runArgs args = do
     case args of
       License so -> show' so $(embedFile "LICENSE")
       Readme so -> show' so $(embedFile "README.md")
+      GitHub owner repoName so ->
+        show' so =<< fetchGitHubIssuesForRepo owner repoName
 
 show' :: ShowOpts -> ByteString -> IO ()
 show' so bs
