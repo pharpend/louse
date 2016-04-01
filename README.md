@@ -35,6 +35,7 @@ You can run the test suite (which again, has no tests) with
   `peter@harpending.org`.
 * My email is `peter@harpending.org` if you haven't picked that up yet.
 * You can contact me on IRC. I go by `pharpend` on freenode.net.
+* There is a [mirror][gh-mirror] of this repository on GitHub.
 
 [git-install]: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 [gh-mirror]: https://github.com/pharpend/louse
